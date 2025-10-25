@@ -14,7 +14,7 @@ terraform {
       source = "hashicorp/local"
     }
     gdp-middleware-helper  = {
-      source = "na.artifactory.swg-devops.com/ibm/gdp-middleware-helper"
+      source = "IBM/gdp-middleware-helper"
       version = "0.0.3"
     }
   }

@@ -3,7 +3,7 @@ terraform {
 
   required_providers {
     guardium-data-protection = {
-      source = "na.artifactory.swg-devops.com/ibm/guardium-data-protection"
+      source = "IBM/guardium-data-protection"
       version = "0.0.4"
     }
     null = {
