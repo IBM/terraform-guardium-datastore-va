@@ -1,0 +1,20 @@
+{
+  "name": "${datasource_name}",
+  "type": "Amazon DynamoDB",
+  "host": "${datasource_hostname}",
+  "port": ${datasource_port},
+  "application": "${application}",
+  "description": "${datasource_description}",
+  "dbName": "${datasource_database}",
+  "severity": "${severity_level}",
+  "savePassword": 0,
+  "useSSL": ${use_ssl ? 1 : 0},
+  "importServerSSLcert": ${import_server_ssl_cert ? 1 : 0},
+  "useKerberos": ${use_kerberos ? 1 : 0},
+  "useLDAP": ${use_ldap ? 1 : 0},
+  "useExternalPassword": 1,
+  "externalPasswordTypeName": "${external_password_type_name}",
+  "awsSecretsManagerConfigName": "${aws_secrets_manager_config_name}",
+  "region": "${region}",
+  "secretName": "${secret_name}"
+}
