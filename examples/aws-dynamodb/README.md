@@ -64,19 +64,6 @@ Before running Terraform, ensure you have valid AWS credentials configured:
    aws_secret_access_key = YOUR_SECRET_KEY
    ```
 
-### Guardium Artifactory Access
-
-For your Terraform CLI to work with this repository, you need to authenticate with the Guardium artifactory:
-
-1. Log in to the Guardium artifactory:
-   ```bash
-   terraform login na.artifactory.swg-devops.com
-   ```
-
-2. Follow the prompts to provide your credentials.
-
-3. This authentication is required to access the Guardium Data Protection provider.
-
 ## Usage
 
 ### 1. Configure the variables

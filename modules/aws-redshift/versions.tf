@@ -7,11 +7,11 @@ terraform {
       version = ">= 4.0.0"
     }
     guardium-data-protection = {
-      source = "na.artifactory.swg-devops.com/ibm/guardium-data-protection"
+      source = "IBM/guardium-data-protection"
       version = "0.0.4"
     }
     gdp-middleware-helper = {
-      source = "na.artifactory.swg-devops.com/ibm/gdp-middleware-helper"
+      source = "IBM/gdp-middleware-helper"
       version = "0.0.2"
     }
     random = {
