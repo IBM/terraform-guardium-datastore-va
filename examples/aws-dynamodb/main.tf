@@ -9,7 +9,7 @@
 locals {
   # Generate a secret name with a prefix based on the datasource name
   secret_name = "${var.dynamodb_datasource_name}-dynamo-credentials"
-  
+
   dynamodb_config_tpl = templatefile("${path.module}/../../modules/datastore-va-config/aws-dynamodb/templates/dynamodb_datasource.tpl", {
     datasource_name = var.dynamodb_datasource_name
     datasource_hostname = "dynamodb.${var.aws_region}.amazonaws.com"
@@ -35,7 +35,7 @@ locals {
 # DynamoDB Vulnerability Assessment Configuration
 #----------------------------------------
 module "dynamodb_va" {
-  source = "../../modules/datastore-va-config/aws-dynamodb"
+  source = "IBM/datastore-va/guardium//modules/aws-dynamodb"
 
   # IAM Configuration
   iam_role_name        = "guardium-dynamodb-va-role-${var.dynamodb_datasource_name}"
@@ -49,7 +49,7 @@ module "dynamodb_va" {
 # Connect DynamoDB to Guardium Data Protection
 #----------------------------------------
 module "dynamodb_gdp_connection" {
-  source = "../../modules/vulnerability-assessment/connect-datasource-to-gdp"
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
 
   #----------------------------------------
   # Guardium Connection Details
@@ -60,15 +60,15 @@ module "dynamodb_gdp_connection" {
   gdp_password          = var.guardium_password
   client_id             = var.client_id
   client_secret         = var.client_secret
-  
+
   #----------------------------------------
   # Datasource Information
   #----------------------------------------
   datasource_name        = var.dynamodb_datasource_name
-  
+
   # Use the encoded JSON payload
   datasource_payload = "${local.dynamodb_config_json_encoded}"
-  
+
   #----------------------------------------
   # Vulnerability Assessment Configuration
   #----------------------------------------
@@ -76,17 +76,17 @@ module "dynamodb_gdp_connection" {
   assessment_schedule             = var.assessment_schedule
   assessment_day                  = var.assessment_day
   assessment_time                 = var.assessment_time
-  
+
   #----------------------------------------
   # Notification Configuration
   #----------------------------------------
   enable_notifications  = false
   notification_emails   = []
   notification_severity = "HIGH"
-  
+
   # Tags
   tags = var.tags
-  
+
   # Dependencies
   depends_on = [module.dynamodb_va]
 }

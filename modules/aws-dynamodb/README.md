@@ -12,8 +12,8 @@ This Terraform module configures the necessary AWS IAM resources for Guardium Da
 ## Usage
 
 ```hcl
-module "dynamodb_va" {
-  source = "path/to/modules/datastore-va-config/aws-dynamodb"
+module "datastore-va_aws-dynamodb" {
+  source = "IBM/datastore-va/guardium//modules/aws-dynamodb"
 
   # IAM Configuration
   iam_role_name        = "guardium-dynamodb-va-role"
