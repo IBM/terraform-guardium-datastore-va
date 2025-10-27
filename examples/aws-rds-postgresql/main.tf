@@ -4,10 +4,10 @@
 # Step 1: Configure Vulnerability Assessment (VA) on the PostgreSQL database
 #------------------------------------------------------------------------------
 module "postgresql_va_config" {
-  source = "../../modules/datastore-va-config/aws-rds-postgresql"
+  source = "IBM/datastore-va/guardium//modules/aws-rds-postgresql"
 
   name_prefix = var.name_prefix
-  
+
   #----------------------------------------
   # Database Connection Details
   #----------------------------------------
@@ -30,7 +30,7 @@ module "postgresql_va_config" {
   vpc_id              = var.vpc_id
   subnet_ids = var.subnet_ids
 
-  
+
   #----------------------------------------
   # General Configuration
   #----------------------------------------
@@ -85,7 +85,7 @@ locals {
 #------------------------------------------------------------------------------
 module "postgresql_gdp_connection" {
   count = var.enable_vulnerability_assessment ? 1 : 0
-  source = "../../modules/vulnerability-assessment/connect-datasource-to-gdp"
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
 
   datasource_payload = local.rds_postgres_config_json_encoded
 
