@@ -8,11 +8,11 @@ terraform {
     }
     guardium-data-protection = {
       source = "IBM/guardium-data-protection"
-      version = "0.0.4"
+      version = ">= 1.0.0"
     }
     gdp-middleware-helper  = {
       source = "IBM/gdp-middleware-helper"
-      version = "0.0.3"
+      version = ">= 1.0.0"
     }
     null = {
       source  = "hashicorp/null"

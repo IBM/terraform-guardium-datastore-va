@@ -20,10 +20,10 @@ locals {
   redshift_database_name  = var.redshift_database_name
   redshift_master_username = var.redshift_master_username
   redshift_master_password = var.redshift_master_password
-  
+
   # Use the first 6 characters of the original name prefix to avoid exceeding AWS IAM role name length limits
   unique_name_prefix = substr(var.name_prefix, 0, 6)
-  
+
   # Generate the Redshift configuration JSON payload for Guardium
   redshift_config = templatefile("${path.module}/templates/redshiftVaConf.tpl", {
     datasource_name                = var.datasource_name
@@ -36,7 +36,7 @@ locals {
     connection_username            = var.sqlguard_username
     connection_password            = var.sqlguard_password
     severity_level                 = var.severity_level
-    
+
     # Optional parameters with empty defaults
     service_name                   = ""
     shared_datasource              = "Not Shared"
@@ -56,7 +56,7 @@ locals {
     secret_name                    = var.secret_name
     db_instance_account            = var.db_instance_account
     db_instance_directory          = var.db_instance_directory
-    
+
     # Boolean parameters
     save_password                  = var.save_password
     use_ssl                        = var.use_ssl
@@ -65,7 +65,7 @@ locals {
     use_ldap                       = var.use_ldap
     use_external_password          = var.use_external_password
   })
-  
+
   # Properly encode the configuration as JSON
   redshift_config_json = local.redshift_config
 }
@@ -74,15 +74,15 @@ locals {
 # Step 2: Configure Vulnerability Assessment (VA) on the Redshift cluster
 #------------------------------------------------------------------------------
 module "redshift_va_config" {
-  source = "../../modules/datastore-va-config/aws-redshift"
-  
+  source = "IBM/datastore-va/guardium//modules/aws-redshift"
+
   #----------------------------------------
   # General Configuration
   #----------------------------------------
   name_prefix = local.unique_name_prefix
   aws_region  = var.aws_region
   tags        = var.tags
-  
+
   #----------------------------------------
   # Redshift Connection Details
   #----------------------------------------
@@ -91,13 +91,13 @@ module "redshift_va_config" {
   redshift_database = local.redshift_database_name
   redshift_username = local.redshift_master_username
   redshift_password = var.redshift_master_password
-  
+
   #----------------------------------------
   # VA User Configuration
   #----------------------------------------
   sqlguard_username = var.sqlguard_username
   sqlguard_password = var.sqlguard_password
-  
+
   #----------------------------------------
   # Network Configuration for Lambda
   #----------------------------------------
@@ -110,8 +110,8 @@ module "redshift_va_config" {
 # Step 3: Connect the Redshift cluster to Guardium Data Protection (GDP)
 #------------------------------------------------------------------------------
 module "redshift_gdp_connection" {
-  source = "../../modules/vulnerability-assessment/connect-datasource-to-gdp"
-  
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
+
   #----------------------------------------
   # Guardium Connection Details
   #----------------------------------------
@@ -127,7 +127,7 @@ module "redshift_gdp_connection" {
   #----------------------------------------
   datasource_name        = var.datasource_name
   datasource_payload     = local.redshift_config_json
-  
+
   #----------------------------------------
   # Vulnerability Assessment Configuration
   #----------------------------------------
@@ -135,19 +135,19 @@ module "redshift_gdp_connection" {
   assessment_schedule             = var.assessment_schedule
   assessment_day                  = var.assessment_day
   assessment_time                 = var.assessment_time
-  
+
   #----------------------------------------
   # Notification Configuration
   #----------------------------------------
   enable_notifications  = var.enable_notifications
   notification_emails   = var.notification_emails
   notification_severity = var.notification_severity
-  
+
   #----------------------------------------
   # Tags
   #----------------------------------------
   tags = var.tags
-  
+
   # Depends on the VA configuration being completed
   depends_on = [module.redshift_va_config]
 }

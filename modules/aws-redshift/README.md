@@ -14,8 +14,8 @@ This module configures an AWS Redshift cluster for Guardium Vulnerability Assess
 
 ```hcl
 # For publicly accessible Redshift clusters
-module "redshift_va_config" {
-  source = "../../modules/datastore-va-config/aws-redshift"
+module "datastore-va_aws-redshift" {
+  source = "IBM/datastore-va/guardium//modules/aws-redshift"
   
   # General Configuration
   name_prefix = "guardium"
@@ -40,8 +40,8 @@ module "redshift_va_config" {
 }
 
 # For Redshift clusters in a private VPC
-module "redshift_va_config_private" {
-  source = "../../modules/datastore-va-config/aws-redshift"
+module "datastore-va_aws-redshift" {
+  source = "IBM/datastore-va/guardium//modules/aws-redshift"
   
   # General Configuration
   name_prefix = "guardium"
