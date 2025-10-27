@@ -8,11 +8,11 @@ terraform {
     }
     guardium-data-protection = {
       source = "IBM/guardium-data-protection"
-      version = "0.0.4"
+      version = ">= 1.0.0"
     }
     gdp-middleware-helper  = {
       source = "IBM/gdp-middleware-helper"
-      version = "0.0.3"
+      version = ">= 1.0.0"
     }
     null = {
       source  = "hashicorp/null"
@@ -29,9 +29,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# The guardium-data-protection provider uses environment variables for authentication:
-# GUARDIUM_USERNAME, GUARDIUM_PASSWORD, GUARDIUM_HOST, GUARDIUM_PORT,
-# GUARDIUM_CLIENT_ID, GUARDIUM_CLIENT_SECRET
 provider "guardium-data-protection" {
   host = var.gdp_server
   port = var.gdp_port

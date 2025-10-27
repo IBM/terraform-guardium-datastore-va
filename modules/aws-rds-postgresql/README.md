@@ -22,42 +22,22 @@ This module configures an AWS RDS PostgreSQL database for Guardium Vulnerability
 ### Basic Usage (Local Execution)
 
 ```hcl
-module "postgresql_va_config" {
-  source = "path/to/modules/datastore-va-config/aws-rds-postgresql"
+module "datastore-va_aws-rds-postgresql" {
+  source = "IBM/datastore-va/guardium//modules/aws-rds-postgresql"
 
   db_host     = "your-postgresql-instance.rds.amazonaws.com"
   db_port     = 5432
   db_name     = "postgres"
   db_username = "postgres"
   db_password = "your-password"
-}
-```
-
-### Using EC2 Instance for Execution
-
-```hcl
-module "postgresql_va_config" {
-  source = "path/to/modules/datastore-va-config/aws-rds-postgresql"
-
-  db_host     = "your-postgresql-instance.rds.amazonaws.com"
-  db_port     = 5432
-  db_name     = "postgres"
-  db_username = "postgres"
-  db_password = "your-password"
-  
-  use_local_exec     = false
-  create_ec2_instance = true
-  vpc_id             = "vpc-12345678"
-  subnet_id          = "subnet-12345678"
-  ec2_key_name       = "your-key-pair"
 }
 ```
 
 ### Custom sqlguard User
 
 ```hcl
-module "postgresql_va_config" {
-  source = "path/to/modules/datastore-va-config/aws-rds-postgresql"
+module "datastore-va_aws-rds-postgresql" {
+  source = "IBM/datastore-va/guardium//modules/aws-rds-postgresql"
 
   db_host          = "your-postgresql-instance.rds.amazonaws.com"
   db_port          = 5432
