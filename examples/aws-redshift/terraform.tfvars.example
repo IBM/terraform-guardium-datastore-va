@@ -1,0 +1,149 @@
+#==============================================================================
+# AWS Redshift with Vulnerability Assessment - Example Configuration
+# This file provides a template for configuring an existing AWS Redshift cluster
+# for vulnerability assessment with IBM Guardium Data Protection.
+#==============================================================================
+
+# MANDATORY FIELDS are marked with "REQUIRED:" in the comments
+# These fields must be set for the configuration to work properly
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+# REQUIRED: AWS region where your Redshift cluster is located
+aws_region = "us-west-2"
+
+# Prefix for resource naming
+name_prefix = "redshift-monitoring"
+
+# Tags to apply to resources
+tags = {
+  Purpose     = "guardium-va-config"
+  Owner       = "your-email@example.com"
+  Environment = "dev"
+  Project     = "guardium-terraform"
+  CostCenter  = "12345"
+  Department  = "Data Security"
+}
+
+#------------------------------------------------------------------------------
+# Existing Redshift Cluster Configuration
+#------------------------------------------------------------------------------
+# REQUIRED: Your existing AWS Redshift cluster details
+redshift_cluster_identifier = "your-redshift-cluster"  # REQUIRED: Cluster identifier
+redshift_database_name      = "guardiumdb"             # REQUIRED: Database name
+redshift_master_username    = "guardium_admin"         # REQUIRED: Master username
+redshift_master_password    = "YourStrongPassword123#" # REQUIRED: Must be secure (no /, @, ", ', or spaces)
+
+# Default port for Redshift (usually 5439)
+redshift_port = 5439
+
+# Reference information for your existing Redshift cluster
+# redshift_endpoint is REQUIRED for reference and troubleshooting
+redshift_endpoint = "your-redshift-cluster.example.region.redshift.amazonaws.com:5439"  # REQUIRED: Full endpoint with port
+
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment User Configuration
+#------------------------------------------------------------------------------
+# This user will be created in Redshift and used by Guardium for VA
+sqlguard_username = "sqlguard"                      # REQUIRED: VA user name
+sqlguard_password = "YourStrongVAPassword123#"      # REQUIRED: Must be secure (no /, @, ", ', or spaces)
+
+# Network Configuration for Lambda (optional, only needed if Redshift is in a private VPC)
+vpc_id              = ""               # Not needed for publicly accessible Redshift
+subnet_id           = ""               # Not needed for publicly accessible Redshift
+
+# Security configuration for Lambda function
+allowed_egress_cidr_blocks = ["0.0.0.0/0"]  # Restrict this to specific IP ranges for better security
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection Connection Configuration
+#------------------------------------------------------------------------------
+# REQUIRED: Your Guardium Data Protection server details
+gdp_server            = "guardium.example.com"  # REQUIRED: Hostname or IP address
+gdp_port              = "8443"                  # Default port is 8443
+gdp_username          = "gdpadmin"              # REQUIRED: Admin username
+gdp_password          = "YourGDPPassword"       # REQUIRED: Admin password
+
+# OAuth client credentials (obtain from Guardium admin)
+client_id             = "client1"               # Default client ID
+client_secret         = "YourClientSecret"      # REQUIRED: Your OAuth client secret
+
+
+#------------------------------------------------------------------------------
+# Data Source Registration Configuration
+#------------------------------------------------------------------------------
+# How the Redshift cluster will appear in Guardium
+datasource_name        = "aws-redshift-va"      # REQUIRED: Unique name for this datasource
+datasource_description = "Redshift data source onboarded via Terraform"
+
+# REQUIRED: Must be "Security Assessment" for VA to work properly
+application            = "Security Assessment"
+
+# Severity classification (LOW, NONE, MED, HIGH)
+severity_level         = "MED"                  # REQUIRED: Severity level
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule Configuration
+#------------------------------------------------------------------------------
+# Enable or disable vulnerability assessment
+enable_vulnerability_assessment = true
+
+# Schedule settings
+assessment_schedule = "weekly"  # Options: daily, weekly, monthly
+assessment_day      = "Monday"  # Day of week for weekly, day of month for monthly
+assessment_time     = "02:00"   # 24-hour format (HH:MM)
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+# Enable or disable email notifications for assessment results
+enable_notifications = true
+
+# Email recipients for notifications
+notification_emails = [
+  "security-team@example.com",
+  "dba-team@example.com"
+]
+
+# Minimum severity level to trigger notifications (HIGH, MED, LOW, NONE)
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# Connection Options (Advanced)
+#------------------------------------------------------------------------------
+# Most of these settings can be left as defaults for Redshift
+
+# Authentication options
+save_password = true                # Whether to save and encrypt credentials
+use_ssl = false                     # Whether to use SSL for connection
+import_server_ssl_cert = false      # Whether to import server SSL certificate
+use_kerberos = false                # Whether to use Kerberos authentication
+use_ldap = false                    # Whether to use LDAP
+use_external_password = false       # Whether to use external password management
+
+# Connection properties
+service_name = ""                   # Not typically used for Redshift
+shared_datasource = "Not Shared"    # Whether to share with other applications
+connection_properties = ""          # Additional JDBC connection properties
+custom_url = ""                     # Custom connection string
+
+# External password management (if needed)
+external_password_type_name = ""    # External password type
+cyberark_config_name = ""           # CyberArk configuration name
+cyberark_object_name = ""           # CyberArk object name
+hashicorp_config_name = ""          # HashiCorp configuration name
+hashicorp_path = ""                 # HashiCorp path
+hashicorp_role = ""                 # HashiCorp role
+hashicorp_child_namespace = ""      # HashiCorp child namespace
+aws_secrets_manager_config_name = "" # AWS Secrets Manager config name
+region = ""                         # AWS region for Secrets Manager
+secret_name = ""                    # Secret name for external password
+
+# Database instance details (for specific monitoring scenarios)
+db_instance_account = ""            # Database account login name used by CAS
+db_instance_directory = ""          # Directory where database software is installed
+
+# IMPORTANT: Do not set compatibility_mode for Redshift datasources
+# compatibility_mode = ""           # Only applicable for MS SQL SERVER datasources
