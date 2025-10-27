@@ -1,0 +1,73 @@
+#------------------------------------------------------------------------------
+# Example terraform.tfvars file
+# Rename to terraform.tfvars and update with your values
+#------------------------------------------------------------------------------
+
+#----------------------------------------
+# General Configuration
+#----------------------------------------
+aws_region  = "us-west-2"
+name_prefix = "prefix-for-aws-resources"
+tags = {
+  Purpose     = "guardium-va-config"
+  Owner       = "example@ibm.com"
+  Environment = "dev"
+  Project     = "guardium-terraform"
+}
+
+#----------------------------------------
+# Database Configuration
+#----------------------------------------
+# Required
+db_password = "YourStrongPasswordHere"  # Replace with a secure password
+db_host = "RDS Postgres endpoint"
+# Optional database settings
+
+db_name                = "guardiumdb"
+db_username            = "guardium_admin"
+db_port                = 5432
+sqlguard_username = "sqlguard"
+sqlguard_password = "YourStrongPasswordHere"
+#----------------------------------------
+# Network Configuration
+#----------------------------------------
+vpc_id = "vpc id where the db is deployed"
+
+subnet_ids = [
+  "subnet-1",
+  "subnet-2",
+]
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Connection Configuration
+#------------------------------------------------------------------------------
+gdp_server = "test.dev.fyre.ibm.com"
+gdp_port              = "8443"
+gdp_username          = "admin"              # Replace with your Guardium admin username
+gdp_password = "password"       # Replace with your Guardium admin password
+client_id             = "client2"
+client_secret         = "12345"      # Replace with your OAuth client secret
+
+
+#------------------------------------------------------------------------------
+# Guardium Data Source Registration Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "rds-postgresql-va"
+datasource_description = "PostgreSQL data source onboarded via Terraform"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule Configuration
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com", "dba-team@example.com"]
+notification_severity = "HIGH"
