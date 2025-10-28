@@ -4,7 +4,7 @@
 # Step 1: Configure Vulnerability Assessment (VA) on the MariaDb database
 #------------------------------------------------------------------------------
 module "mariadb_va_config" {
-  source = "../../modules/aws-rds-mariadb"
+  source = "IBM/datastore-va/guardium/modules/aws-rds-mariadb"
 
   name_prefix = var.name_prefix
 
