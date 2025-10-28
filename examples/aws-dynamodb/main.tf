@@ -10,7 +10,7 @@ locals {
   # Generate a secret name with a prefix based on the datasource name
   secret_name = "${var.dynamodb_datasource_name}-dynamo-credentials"
 
-  dynamodb_config_tpl = templatefile("${path.module}/../../modules/datastore-va-config/aws-dynamodb/templates/dynamodb_datasource.tpl", {
+  dynamodb_config_tpl = templatefile("${path.module}/templates/dynamodb_datasource.tpl", {
     datasource_name = var.dynamodb_datasource_name
     datasource_hostname = "dynamodb.${var.aws_region}.amazonaws.com"
     datasource_port = 5432
