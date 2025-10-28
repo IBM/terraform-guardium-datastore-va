@@ -4,8 +4,6 @@ This Terraform module configures an AWS RDS MariaDB database for Guardium Vulner
 
 ## Architecture
 
-![Architecture Diagram](https://via.placeholder.com/800x400?text=MariaDB+VA+Architecture)
-
 The module deploys the following components:
 1. A Lambda function in your VPC that configures the MariaDB database
 2. AWS Secrets Manager to securely store database credentials
