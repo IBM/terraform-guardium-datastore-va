@@ -15,7 +15,6 @@ This example configures an existing AWS Redshift cluster for vulnerability asses
 - AWS CLI configured with appropriate credentials
 - Terraform >= 1.0.0
 - Access to a Guardium Data Protection instance
-- VPC and subnet with internet access (only if Redshift is in a private VPC)
 
 ## Usage
 
@@ -86,9 +85,9 @@ You can customize this example by modifying the following variables:
   # Resource naming
   name_prefix = "guardium"
   
-  # Network configuration for Lambda (optional, only if Redshift is in a private VPC)
+  # Network configuration for Lambda
   vpc_id = "vpc-12345678"
-  subnet_id = "subnet-12345678"
+  subnet_ids = ["subnet-12345678", "subnet-87654321"]
   ```
 
 ## Cleanup
