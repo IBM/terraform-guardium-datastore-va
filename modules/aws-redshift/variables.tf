@@ -46,15 +46,13 @@ variable "sqlguard_username" {
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC where the Lambda function will be created (optional, only needed if Redshift is in a private VPC)"
+  description = "ID of the VPC where the Lambda function will be created"
   type        = string
-  default     = ""
 }
 
-variable "subnet_id" {
-  description = "ID of the subnet where the Lambda function will be created (optional, only needed if Redshift is in a private VPC)"
-  type        = string
-  default     = ""
+variable "subnet_ids" {
+  description = "ID of the subnet where the Lambda function will be created"
+  type        = list(string)
 }
 
 variable "aws_region" {

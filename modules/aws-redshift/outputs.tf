@@ -23,7 +23,7 @@ output "lambda_function_name" {
 
 output "security_group_id" {
   description = "ID of the security group created for the Lambda function (if VPC is used)"
-  value       = var.vpc_id != "" && var.subnet_id != "" ? try(aws_security_group.lambda_sg[0].id, null) : null
+  value       = var.vpc_id
 }
 
 output "va_config_completed" {
