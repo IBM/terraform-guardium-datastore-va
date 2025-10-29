@@ -74,7 +74,7 @@ locals {
 # Step 2: Configure Vulnerability Assessment (VA) on the Redshift cluster
 #------------------------------------------------------------------------------
 module "redshift_va_config" {
-  source = "IBM/datastore-va/guardium//modules/aws-redshift"
+  source = "../../modules/aws-redshift"
 
   #----------------------------------------
   # General Configuration
@@ -102,7 +102,7 @@ module "redshift_va_config" {
   # Network Configuration for Lambda
   #----------------------------------------
   vpc_id                   = var.vpc_id
-  subnet_id                = var.subnet_id
+  subnet_ids                = var.subnet_ids
   allowed_egress_cidr_blocks = var.allowed_egress_cidr_blocks
 }
 
