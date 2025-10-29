@@ -117,12 +117,6 @@ variable "sqlguard_password" {
   sensitive   = true
 }
 
-variable "subnet_id" {
-  description = "ID of the subnet where the Lambda function will be created (optional, only needed if Redshift is in a private VPC)"
-  type        = string
-  default     = ""
-}
-
 #------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Configuration
 #------------------------------------------------------------------------------

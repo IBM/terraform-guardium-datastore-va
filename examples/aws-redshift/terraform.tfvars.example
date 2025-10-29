@@ -50,9 +50,8 @@ redshift_endpoint = "your-redshift-cluster.example.region.redshift.amazonaws.com
 sqlguard_username = "sqlguard"                      # REQUIRED: VA user name
 sqlguard_password = "YourStrongVAPassword123#"      # REQUIRED: Must be secure (no /, @, ", ', or spaces)
 
-# Network Configuration for Lambda (optional, only needed if Redshift is in a private VPC)
-vpc_id              = ""               # Not needed for publicly accessible Redshift
-subnet_id           = ""               # Not needed for publicly accessible Redshift
+vpc_id              = "vpc-1234"
+subnet_ids           = ["subnet-1", "subnet-2"]
 
 # Security configuration for Lambda function
 allowed_egress_cidr_blocks = ["0.0.0.0/0"]  # Restrict this to specific IP ranges for better security

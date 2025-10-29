@@ -60,7 +60,7 @@ module "datastore-va_aws-redshift" {
   
   # Network Configuration for Lambda (required for private Redshift)
   vpc_id    = "vpc-12345678"
-  subnet_id = "subnet-12345678"
+  subnet_ids = ["subnet-12345678", "subnet-87654321"]
   
   # Tags
   tags = {

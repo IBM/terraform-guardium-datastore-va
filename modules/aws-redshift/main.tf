@@ -6,10 +6,12 @@ data "aws_caller_identity" "current" {}
 locals {
   # Use provided AWS account ID or get it automatically
   aws_account_id = data.aws_caller_identity.current.account_id
-  
+
   # Secret names using the name_prefix for consistency
   redshift_secret_name = "${var.name_prefix}-redshift-password"
   sqlguard_secret_name = "${var.name_prefix}-sqlguard-password"
+  lambda_function_archive = "${path.module}/files/lambda_function.zip"
+  zip_hash = filesha256(local.lambda_function_archive)
 }
 
 # Create IAM role for Lambda function
@@ -99,6 +101,35 @@ resource "aws_iam_policy" "lambda_policy" {
   })
 }
 
+# Security group for the Secrets Manager VPC endpoint
+resource "aws_security_group" "secretsmanager_endpoint_sg" {
+  name        = "${var.name_prefix}-secretsmanager-endpoint-sg"
+  description = "Security group for Secrets Manager VPC endpoint"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    security_groups = [aws_security_group.lambda_sg.id]
+    description = "Allow HTTPS from Lambda security group"
+  }
+
+  tags = var.tags
+}
+
+# VPC Endpoint for Secrets Manager to allow Lambda to access it from private VPC
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id             = var.vpc_id
+  service_name       = "com.amazonaws.${var.aws_region}.secretsmanager"
+  vpc_endpoint_type  = "Interface"
+  subnet_ids         = var.subnet_ids
+  security_group_ids = [aws_security_group.secretsmanager_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = var.tags
+}
+
 # Attach policy to role
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
   role       = aws_iam_role.lambda_role.name
@@ -107,8 +138,6 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
 
 # Create security group for Lambda function (only if VPC is specified)
 resource "aws_security_group" "lambda_sg" {
-  count = var.vpc_id != "" && var.subnet_id != "" ? 1 : 0
-  
   name        = "${var.name_prefix}-redshift-va-config-lambda-sg"
   description = "Security group for Redshift VA configuration Lambda function"
   vpc_id      = var.vpc_id
@@ -141,12 +170,9 @@ resource "aws_lambda_function" "va_config_lambda" {
   memory_size   = 256
 
   # VPC configuration is optional - only apply if vpc_id and subnet_id are provided
-  dynamic "vpc_config" {
-    for_each = var.vpc_id != "" && var.subnet_id != "" ? [1] : []
-    content {
-      subnet_ids         = [var.subnet_id]
-      security_group_ids = [aws_security_group.lambda_sg[0].id]
-    }
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids =  [aws_security_group.lambda_sg.id]
   }
 
   environment {
@@ -163,22 +189,11 @@ resource "aws_lambda_function" "va_config_lambda" {
   }
 
   # Lambda function code with dependencies packaged
-  filename = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  filename = local.lambda_function_archive
+  source_code_hash = local.zip_hash
 
   tags = var.tags
-  
-  depends_on = [data.archive_file.lambda_zip]
 }
-
-# Create zip file for Lambda function
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  output_path = "${path.module}/files/lambda_function.zip"
-  source_dir  = "${path.module}/files/lambda_package"
-}
-
-
 
 # Invoke Lambda function to configure VA using gdp-middleware-helper provider
 # The Lambda function gets its input from environment variables that we've set above
@@ -186,11 +201,12 @@ data "archive_file" "lambda_zip" {
 resource "gdp-middleware-helper_execute_aws_lambda_function" "invoke_lambda" {
   function_name = aws_lambda_function.va_config_lambda.function_name
   region        = var.aws_region
-  
+
   # This variable is not used by the provider, but it will be used as a trigger when the lambda changes
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  
+  source_code_hash = local.zip_hash
+
   depends_on = [
     aws_lambda_function.va_config_lambda,
+    aws_vpc_endpoint.secretsmanager
   ]
 }
