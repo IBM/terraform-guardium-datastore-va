@@ -4,7 +4,7 @@
 # Step 1: Configure Vulnerability Assessment (VA) on the PostgreSQL database
 #------------------------------------------------------------------------------
 module "postgresql_va_config" {
-  source = "IBM/datastore-va/guardium//modules/aws-rds-postgresql"
+  source = "../../modules/aws-rds-postgresql"
 
   name_prefix = var.name_prefix
 
