@@ -35,7 +35,7 @@ locals {
 # DynamoDB Vulnerability Assessment Configuration
 #----------------------------------------
 module "dynamodb_va" {
-  source = "IBM/datastore-va/guardium//modules/aws-dynamodb"
+  source = "../../modules/dynamodb-va"
 
   # IAM Configuration
   iam_role_name        = "guardium-dynamodb-va-role-${var.dynamodb_datasource_name}"
