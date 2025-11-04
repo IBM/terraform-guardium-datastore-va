@@ -1,0 +1,63 @@
+--===================================================================================
+-- ------------------------------
+-- Description
+-- ------------------------------
+-- Database Type: PostgreSQL
+--
+-- This script grants minimum privileges to the user sqlguard to run security assessments and entitlement reports.
+--
+--
+--===============================  For PostgreSQL 9.x  ========================================
+--
+--
+-- There is no need to run this script but, in the PostgresSQL datasource connection, the logged in user must be 'postgres'.
+--
+-- 
+--===============================  For PostgreSQL 10.x or above  ==============================
+--
+--
+-- Do the following
+--
+-- ------------------------------
+-- Before running this script
+-- ------------------------------
+-- 1).  You must create a sql login called 'sqlguard'
+--      This sqlguard login doesn't need to be added to any database or given any privilege.
+--
+--  Note:
+--  	If you wish to use a different login name (instead of 'sqlguard') you need to change
+--  	the name "sqlguard" to your username in the script below.
+--  	(Look for the string: 'sqlguard' and replace it with 'YourUserName')
+--
+--      Example of create sqlguard user syntax:
+--
+--	    CREATE ROLE sqlguard LOGIN
+--	    ENCRYPTED PASSWORD 'your_password_here'
+--	    NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE;
+--
+-- 2).  When running this script, you must be connected as the postgres user or as a user with superuser privilege. 
+--      You must be connected to the actual database named 'postgres'
+--
+-- ------------------------------
+-- After running this script
+-- ------------------------------
+-- Nothing to do.
+--
+--  
+-- ------------------------------
+-- User/Password to use
+-- ------------------------------
+-- User: sqlguard (or any other name, if changed)
+-- Pass: user defined
+--
+-- 20200515 : GRANT pg_read_all_settings TO sqlguard.  Require for new configuration tests
+-- 20220215 : grant SELECT ON pg_authid privilege
+-- 20240620 : user must create login user with CONNECT permission 
+-- 20240709 : commnet out pg_authid line, no longer in use
+--===================================================================================
+
+CREATE GROUP gdmmonitor;
+COMMIT; 
+ALTER GROUP gdmmonitor ADD USER sqlguard;
+GRANT pg_read_all_settings TO gdmmonitor;
+-- GRANT SELECT ON pg_authid TO gdmmonitor;
