@@ -67,3 +67,8 @@ variable "name_prefix" {
   description = "Prefix to use for resource names"
   type        = string
 }
+
+variable "db_security_group_id" {
+  description = "Security group ID of the Aurora PostgreSQL cluster (will be updated to allow Lambda access)"
+  type        = string
+}

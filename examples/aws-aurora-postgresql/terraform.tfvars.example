@@ -36,6 +36,9 @@ db_port = 5432
 vpc_id = "vpc-0123456789abcdef0"
 
 # Subnet IDs where the Lambda function will be deployed (must have connectivity to Aurora cluster)
+
+# Security group ID of the Aurora PostgreSQL cluster (will be updated to allow Lambda access)
+db_security_group_id = "sg-0123456789abcdef0"
 subnet_ids = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
 
 #------------------------------------------------------------------------------

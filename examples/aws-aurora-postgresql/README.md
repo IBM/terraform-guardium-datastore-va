@@ -68,7 +68,79 @@ Before using this example, ensure you have:
 
 ## Usage
 
-### Step 1: Configure Variables
+### Step 1: Find Required AWS Resource IDs
+
+Before configuring variables, you need to gather information about your Aurora cluster's network configuration.
+
+#### Find VPC ID, Subnets, and Security Group
+
+Use the following AWS CLI commands to retrieve the required information from your Aurora cluster:
+
+```bash
+# Set your Aurora cluster identifier and region
+CLUSTER_ID="your-aurora-cluster-name"
+REGION="us-east-1"
+
+# Get the master username
+aws rds describe-db-clusters \
+  --db-cluster-identifier $CLUSTER_ID \
+  --region $REGION \
+  --query 'DBClusters[0].MasterUsername' \
+  --output text
+
+# Get the DB subnet group name
+SUBNET_GROUP=$(aws rds describe-db-clusters \
+  --db-cluster-identifier $CLUSTER_ID \
+  --region $REGION \
+  --query 'DBClusters[0].DBSubnetGroup' \
+  --output text)
+
+# Get VPC ID and Subnet IDs
+aws rds describe-db-subnet-groups \
+  --db-subnet-group-name $SUBNET_GROUP \
+  --region $REGION \
+  --query 'DBSubnetGroups[0].{VpcId:VpcId,Subnets:Subnets[*].SubnetIdentifier}' \
+  --output json
+
+# Get Security Group ID
+aws rds describe-db-clusters \
+  --db-cluster-identifier $CLUSTER_ID \
+  --region $REGION \
+  --query 'DBClusters[0].VpcSecurityGroups[*].VpcSecurityGroupId' \
+  --output text
+```
+
+**Example output:**
+```
+Master Username: gatuser
+
+{
+    "VpcId": "vpc-95525af1",
+    "Subnets": [
+        "subnet-ed97e39b",
+        "subnet-fac680c7"
+    ]
+}
+
+Security Group ID: sg-e415589c
+```
+
+#### Alternative: Using AWS Console
+
+1. **Master Username**:
+   - Go to RDS Console → Databases → Select your Aurora cluster
+   - Under "Configuration" tab, note the "Master username"
+
+2. **VPC and Subnets**:
+   - In the same cluster details page
+   - Under "Connectivity & security" tab, note the VPC ID
+   - Click on the subnet group name to see the subnet IDs
+
+3. **Security Group**:
+   - In the same "Connectivity & security" tab
+   - Note the security group ID under "VPC security groups"
+
+### Step 2: Configure Variables
 
 Copy the example tfvars file and customize it:
 
@@ -76,18 +148,19 @@ Copy the example tfvars file and customize it:
 cp terraform.tfvars.example terraform.tfvars
 ```
 
-Edit `terraform.tfvars` with your specific values:
+Edit `terraform.tfvars` with your specific values (use values from Step 1):
 
 ```hcl
 # Aurora PostgreSQL Configuration
 db_host     = "your-aurora-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com"
 db_name     = "postgres"
-db_username = "postgres"
+db_username = "gatuser"  # Use the master username from Step 1
 db_password = "your-secure-password"
 
-# Network Configuration
-vpc_id     = "vpc-0123456789abcdef0"
-subnet_ids = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
+# Network Configuration (use values from Step 1)
+vpc_id                = "vpc-95525af1"
+subnet_ids            = ["subnet-ed97e39b", "subnet-fac680c7"]
+db_security_group_id  = "sg-e415589c"
 
 # Guardium Configuration
 gdp_server    = "guardium.example.com"
@@ -99,7 +172,12 @@ client_secret = "your-client-secret"
 sqlguard_password = "your-sqlguard-password"
 ```
 
-### Step 2: Initialize Terraform
+**Important Notes:**
+- The `db_security_group_id` is required so Terraform can automatically add an ingress rule allowing the Lambda function to connect to Aurora on port 5432
+- Use the actual master username from your Aurora cluster (found in Step 1), not just "postgres"
+- Ensure you have the correct master password for your Aurora cluster
+
+### Step 3: Initialize Terraform
 
 ```bash
 terraform init
