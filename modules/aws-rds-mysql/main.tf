@@ -140,6 +140,17 @@ resource "aws_security_group" "lambda_sg" {
   tags = var.tags
 }
 
+# Add ingress rule to MySQL RDS security group to allow Lambda access
+resource "aws_security_group_rule" "mysql_allow_lambda" {
+  type                     = "ingress"
+  from_port                = var.db_port
+  to_port                  = var.db_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.lambda_sg.id
+  security_group_id        = var.db_security_group_id
+  description              = "Allow Lambda function to connect to MySQL for VA configuration"
+}
+
 # Create Lambda function for VA configuration
 resource "aws_lambda_function" "va_config_lambda" {
   function_name = "${var.name_prefix}-mysql-va-config"
