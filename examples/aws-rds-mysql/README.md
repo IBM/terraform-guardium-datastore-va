@@ -287,7 +287,12 @@ gdp_connection_status      # Connection status to Guardium
 
 #### VPC Endpoint Already Exists Error
 
-If you encounter an error like "VpcEndpoint already exists in this VPC", it means a Secrets Manager VPC endpoint already exists in your VPC. To resolve this:
+If you encounter an error like:
+```
+Error: creating VPC Endpoint (com.amazonaws.us-east-xx.secretsmanager): VpcEndpointAlreadyExists: VpcEndpoint already exists in this VPC
+```
+
+This means a Secrets Manager VPC endpoint already exists in your VPC. To resolve this:
 
 1. **Find the existing VPC endpoint ID**:
    ```bash
