@@ -333,6 +333,72 @@ This means a Secrets Manager VPC endpoint already exists in your VPC. To resolve
    terraform apply
    ```
 
+#### Secrets Manager Secret Already Scheduled for Deletion
+
+If you encounter an error like:
+```
+Error: creating Secrets Manager Secret (guardium-mysql-va-xxx-xxxx-xxx-xx-password): operation error Secrets Manager: CreateSecret, https response error StatusCode: 400, RequestID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, InvalidRequestException: You can't create this secret because a secret with this name is already scheduled for deletion.
+```
+
+This means a secret with the same name exists but is scheduled for deletion. The secret name is shown in the error message (in this example: `guardium-mysql-va-xxx-xxxx-xxx-xx-password`).
+
+**To resolve this:**
+
+1. **Find the secret ARN** (use the secret name from your error message):
+   ```bash
+   # Replace SECRET_NAME with the name from your error message
+   SECRET_NAME="guardium-mysql-va-xxx-xxxx-xxx-xx-password"
+   REGION="us-east-1"
+   
+   aws secretsmanager list-secrets \
+     --filters Key=name,Values=$SECRET_NAME \
+     --region $REGION \
+     --query 'SecretList[0].ARN' \
+     --output text
+   ```
+
+2. **Choose one of the following options:**
+
+   **Option A: Restore and reuse the secret**:
+   ```bash
+   # Use the ARN from step 1
+   SECRET_ARN="arn:aws:secretsmanager:us-east-1:123456789012:secret:guardium-mysql-va-test-mysql-rds-va-password-AbCdEf"
+   
+   # Restore the secret
+   aws secretsmanager restore-secret \
+     --secret-id $SECRET_ARN \
+     --region $REGION
+   
+   # Import into Terraform state
+   terraform import \
+     'module.mysql_va_config.aws_secretsmanager_secret.mysql_credentials' \
+     $SECRET_ARN
+   
+   # Re-run apply
+   terraform apply
+   ```
+
+   **Option B: Force delete and create new** (recommended for clean start):
+   ```bash
+   # Use the ARN from step 1
+   SECRET_ARN="arn:aws:secretsmanager:us-east-1:123456789012:secret:guardium-mysql-va-test-mysql-rds-va-password-AbCdEf"
+   
+   # Force delete immediately (bypasses 30-day recovery window)
+   aws secretsmanager delete-secret \
+     --secret-id $SECRET_ARN \
+     --force-delete-without-recovery \
+     --region $REGION
+   
+   # Wait a few seconds, then re-run
+   terraform apply
+   ```
+
+   **Option C: Use a different secret name**:
+   - Update the `prefix` variable in your `terraform.tfvars` to use a different value
+   - This will create a secret with a different name, avoiding the conflict
+
+**Note**: By default, AWS Secrets Manager has a 30-day recovery window before permanent deletion. The `force-delete-without-recovery` flag bypasses this for immediate deletion.
+
 #### VA User Creation Fails
 
 1. Ensure master user has superuser privileges
