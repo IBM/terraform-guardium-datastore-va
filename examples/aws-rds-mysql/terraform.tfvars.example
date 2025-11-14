@@ -40,6 +40,9 @@ subnet_ids = [
   "subnet-xxxxxxxxxxxxxxxxx"             # Private subnet 2 (for high availability)
 ]
 
+db_security_group_id = "sg-xxxxxxxxxxxxxxxxx"  # Security group ID of the RDS MySQL instance
+                                                # Terraform will automatically add a rule to allow Lambda access
+
 #------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Configuration
 #------------------------------------------------------------------------------
