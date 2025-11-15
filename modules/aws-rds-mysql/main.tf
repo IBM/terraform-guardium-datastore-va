@@ -168,7 +168,7 @@ resource "aws_lambda_function" "va_config_lambda" {
   environment {
     variables = {
       SECRETS_MANAGER_SECRET_ID = aws_secretsmanager_secret.mysql_credentials.id
-      SECRETS_REGION          = var.aws_region
+      SECRETS_REGION            = var.aws_region
     }
   }
 

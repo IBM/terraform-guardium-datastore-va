@@ -350,12 +350,16 @@ This means a secret with the same name exists but is scheduled for deletion. The
    SECRET_NAME="guardium-mysql-va-xxx-xxxx-xxx-xx-password"
    REGION="us-east-1"
    
+   # Include deleted secrets in the search
    aws secretsmanager list-secrets \
+     --include-planned-deletion \
      --filters Key=name,Values=$SECRET_NAME \
      --region $REGION \
      --query 'SecretList[0].ARN' \
      --output text
    ```
+   
+   **Note**: The `--include-planned-deletion` flag is required to find secrets scheduled for deletion.
 
 2. **Choose one of the following options:**
 
@@ -369,10 +373,8 @@ This means a secret with the same name exists but is scheduled for deletion. The
      --secret-id $SECRET_ARN \
      --region $REGION
    
-   # Import into Terraform state
-   terraform import \
-     'module.mysql_va_config.aws_secretsmanager_secret.mysql_credentials' \
-     $SECRET_ARN
+   # Import into Terraform state (single line to avoid spacing issues)
+   terraform import 'module.mysql_va_config.aws_secretsmanager_secret.mysql_credentials' $SECRET_ARN
    
    # Re-run apply
    terraform apply
