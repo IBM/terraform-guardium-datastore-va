@@ -67,3 +67,9 @@ variable "name_prefix" {
   description = "Prefix to use for resource names"
   type        = string
 }
+
+variable "oracle_security_group_id" {
+  description = "Security group ID of the Oracle RDS instance (optional - will add Lambda access if provided)"
+  type        = string
+  default     = ""
+}

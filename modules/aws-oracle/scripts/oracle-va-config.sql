@@ -203,5 +203,3 @@ end;
 /
 
 spool off
-
--- Made with Bob

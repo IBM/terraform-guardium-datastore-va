@@ -150,11 +150,63 @@ rm -rf lambda_build
 
 ## Usage
 
-### Step 1: Build Lambda Function Package
+### Step 1: Find Required AWS Resource IDs
+
+Before configuring the variables, you need to identify your Oracle database's network configuration. Use these AWS CLI commands:
+
+#### Get Oracle Database Details
+```bash
+# Replace 'your-db-instance-id' with your actual Oracle RDS instance identifier
+aws rds describe-db-instances \
+  --db-instance-identifier your-db-instance-id \
+  --region us-east-2 \
+  --query 'DBInstances[0].{Endpoint:Endpoint.Address,Port:Endpoint.Port,MasterUsername:MasterUsername,DBName:DBName,VpcId:DBSubnetGroup.VpcId,SubnetGroup:DBSubnetGroup.DBSubnetGroupName,SecurityGroups:VpcSecurityGroups[*].VpcSecurityGroupId}' \
+  --output json
+```
+
+This returns:
+- **Endpoint**: Database hostname (use for `db_host`)
+- **Port**: Database port (use for `db_port`)
+- **MasterUsername**: Admin username (use for `db_username`)
+- **DBName**: Service name (use for `db_service_name`)
+- **VpcId**: VPC ID (use for `vpc_id`)
+- **SubnetGroup**: DB subnet group name (needed for next command)
+- **SecurityGroups**: Security group IDs
+
+#### Get Subnet IDs
+```bash
+# Replace 'your-subnet-group-name' with the SubnetGroup value from above
+aws rds describe-db-subnet-groups \
+  --db-subnet-group-name your-subnet-group-name \
+  --region us-east-2 \
+  --query 'DBSubnetGroups[0].Subnets[*].SubnetIdentifier' \
+  --output json
+```
+
+This returns the subnet IDs to use for `subnet_ids`.
+
+**Example for guardium-oracle database:**
+```bash
+# Get database details
+aws rds describe-db-instances \
+  --db-instance-identifier guardium-oracle \
+  --region us-east-2 \
+  --query 'DBInstances[0].{Endpoint:Endpoint.Address,Port:Endpoint.Port,MasterUsername:MasterUsername,DBName:DBName,VpcId:DBSubnetGroup.VpcId,SubnetGroup:DBSubnetGroup.DBSubnetGroupName,SecurityGroups:VpcSecurityGroups[*].VpcSecurityGroupId}' \
+  --output json
+
+# Get subnet IDs
+aws rds describe-db-subnet-groups \
+  --db-subnet-group-name guardium-oracle-subnet-group \
+  --region us-east-2 \
+  --query 'DBSubnetGroups[0].Subnets[*].SubnetIdentifier' \
+  --output json
+```
+
+### Step 2: Build Lambda Function Package
 
 Follow the "Building the Lambda Function" section above to create `lambda_function.zip`.
 
-### Step 2: Configure Variables
+### Step 3: Configure Variables
 
 Copy the example tfvars file and customize it:
 
@@ -186,25 +238,25 @@ client_secret = "your-client-secret"
 sqlguard_password = "your-sqlguard-password"
 ```
 
-### Step 3: Initialize Terraform
+### Step 4: Initialize Terraform
 
 ```bash
 terraform init
 ```
 
-### Step 4: Review the Plan
+### Step 5: Review the Plan
 
 ```bash
 terraform plan
 ```
 
-### Step 5: Apply the Configuration
+### Step 6: Apply the Configuration
 
 ```bash
 terraform apply
 ```
 
-### Step 6: Verify the Configuration
+### Step 7: Verify the Configuration
 
 After successful deployment, verify:
 
@@ -332,6 +384,106 @@ gdp_connection_status      # Connection status to Guardium
 1. Ensure admin user has sufficient privileges
 2. Check Oracle database is not in restricted mode
 3. Verify PL/SQL script syntax is compatible with Oracle version
+
+#### Terraform State Issues
+
+##### Security Group Already Exists Error
+```
+Error: creating Security Group (oracle-monitoring-oracle-va-config-lambda-sg):
+operation error EC2: CreateSecurityGroup, api error InvalidGroup.Duplicate:
+The security group 'oracle-monitoring-oracle-va-config-lambda-sg' already exists
+```
+
+**Cause**: Security group exists in AWS but not in Terraform state (usually after a failed destroy).
+
+**Solution**: Import the existing security group into Terraform state:
+```bash
+# Find the security group ID
+aws ec2 describe-security-groups \
+  --filters "Name=group-name,Values=oracle-monitoring-oracle-va-config-lambda-sg" \
+  --region us-east-2 \
+  --query 'SecurityGroups[0].GroupId' \
+  --output text
+
+# Import it (replace sg-xxxxx with actual ID)
+terraform import module.oracle_va_config.aws_security_group.lambda_sg sg-xxxxx
+```
+
+##### Duplicate Security Group Rule Error
+```
+Error: [WARN] A duplicate Security Group rule was found on (sg-xxxxx).
+api error InvalidPermission.Duplicate: the specified rule already exists
+```
+
+**Cause**: Security group rule exists in AWS but not in Terraform state.
+
+**Solution**: Import the existing rule:
+```bash
+# Import the rule (adjust the ID format based on your configuration)
+terraform import 'module.oracle_va_config.aws_security_group_rule.lambda_to_oracle[0]' \
+  sg-033ba0f72eebae4f1_ingress_tcp_1521_1521_sg-0be7933a2b5b897b4
+```
+
+The rule ID format is: `{security_group_id}_{type}_{protocol}_{from_port}_{to_port}_{source_sg_id}`
+
+##### Security Group Stuck Destroying
+```
+module.oracle_va_config.aws_security_group.lambda_sg: Still destroying... [4m0s elapsed]
+```
+
+**Cause**: AWS Lambda ENIs (Elastic Network Interfaces) take 5-10 minutes to fully release after Lambda deletion.
+
+**Solutions**:
+
+1. **Wait it out** (recommended): Terraform will succeed once AWS releases the ENIs
+2. **Check for dependencies**:
+   ```bash
+   # Check for attached network interfaces
+   aws ec2 describe-network-interfaces \
+     --filters "Name=group-id,Values=sg-xxxxx" \
+     --region us-east-2
+   
+   # Check for Lambda functions using the security group
+   aws lambda list-functions --region us-east-2 \
+     --query "Functions[?VpcConfig.SecurityGroupIds[?contains(@, 'sg-xxxxx')]].FunctionName"
+   ```
+
+3. **Force cleanup** (if stuck for >10 minutes):
+   ```bash
+   # Try to delete manually
+   aws ec2 delete-security-group --group-id sg-xxxxx --region us-east-2
+   
+   # If it fails, wait 5 more minutes and try again
+   ```
+
+##### Re-running Guardium Registration
+
+If you need to re-register with Guardium (e.g., after fixing connectivity issues):
+
+```bash
+# Remove the Guardium connection from state
+terraform state rm 'module.oracle_gdp_connection[0].guardium-data-protection_register_va_datasource.register_va_datasource'
+
+# Re-apply to register again
+terraform apply
+```
+
+##### Complete State Reset
+
+If Terraform state is completely corrupted:
+
+```bash
+# Backup current state
+cp terraform.tfstate terraform.tfstate.backup
+
+# Remove all resources from state
+terraform state list | xargs -n1 terraform state rm
+
+# Re-import or recreate resources
+terraform apply
+```
+
+**Warning**: Only use complete state reset as a last resort. You may need to manually clean up AWS resources first.
 
 ## Cleanup
 
