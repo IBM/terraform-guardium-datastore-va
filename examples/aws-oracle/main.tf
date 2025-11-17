@@ -30,6 +30,11 @@ module "oracle_va_config" {
   subnet_ids = var.subnet_ids
 
   #----------------------------------------
+  # Oracle RDS Security Group (optional)
+  #----------------------------------------
+  oracle_security_group_id = var.oracle_security_group_id
+
+  #----------------------------------------
   # General Configuration
   #----------------------------------------
   aws_region = var.aws_region
@@ -39,7 +44,7 @@ module "oracle_va_config" {
 locals {
   oracle_config = templatefile("${path.module}/templates/oracleVaConf.tpl", {
     datasource_name                     = var.datasource_name
-    datasource_type                     = "Oracle"
+    datasource_type                     = "Oracle (DataDirect - Service Name)"
     datasource_hostname                 = var.db_host
     datasource_port                     = var.db_port
     application                         = var.application

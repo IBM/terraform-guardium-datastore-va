@@ -143,12 +143,25 @@ resource "aws_security_group" "lambda_sg" {
   tags = var.tags
 }
 
+# Add ingress rule to Oracle RDS security group to allow Lambda access
+resource "aws_security_group_rule" "lambda_to_oracle" {
+  count = var.oracle_security_group_id != "" ? 1 : 0
+
+  type                     = "ingress"
+  from_port                = var.db_port
+  to_port                  = var.db_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.lambda_sg.id
+  security_group_id        = var.oracle_security_group_id
+  description              = "Allow Lambda to connect to Oracle RDS"
+}
+
 # Create Lambda function for VA configuration
 resource "aws_lambda_function" "va_config_lambda" {
   function_name = "${var.name_prefix}-oracle-va-config"
   role          = aws_iam_role.lambda_role.arn
   handler       = "index.handler"
-  runtime       = "python3.9"
+  runtime       = "python3.11"
   timeout       = 300
   memory_size   = 512 # Oracle client libraries require more memory
 
