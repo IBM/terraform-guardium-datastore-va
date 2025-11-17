@@ -29,6 +29,11 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │              │  │  PostgreSQL  │  │  MariaDB     │  │              │  │
 │   └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  │
 │                                                                             │
+│   ┌──────────────┐                                                         │
+│   │  Aurora      │                                                         │
+│   │  PostgreSQL  │                                                         │
+│   └──────────────┘                                                         │
+│                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
 │   • Configures IAM roles and policies                                       │
 │   • Sets up database permissions                                            │
@@ -62,7 +67,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, RDS MariaDB, and Redshift
+- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, and Redshift
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -159,6 +164,62 @@ module "connect_postgres_to_gdp" {
   assessment_schedule             = "WEEKLY"
   assessment_day                  = "Sunday"
   assessment_time                 = "01:00"
+}
+```
+
+### AWS Aurora PostgreSQL Vulnerability Assessment
+
+Configure vulnerability assessment for AWS Aurora PostgreSQL:
+
+```hcl
+module "aurora_postgresql_va" {
+  source = "IBM/datastore-va/guardium//modules/aws-aurora-postgresql"
+
+  name_prefix = "myproject"
+  
+  # Database connection details
+  db_host     = "aurora-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com"
+  db_port     = 5432
+  db_name     = "postgres"
+  db_username = "postgres"
+  db_password = var.db_password
+  
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+  
+  # Network configuration
+  vpc_id      = "vpc-12345678"
+  subnet_ids  = ["subnet-12345678", "subnet-87654321"]
+  aws_region  = "us-east-1"
+}
+
+# Connect to Guardium Data Protection
+module "connect_aurora_to_gdp" {
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
+  
+  datasource_payload = local.aurora_postgres_config_json_encoded
+  
+  client_secret = var.client_secret
+  client_id     = var.client_id
+  gdp_password  = var.gdp_password
+  gdp_server    = "guardium.example.com"
+  gdp_username  = "admin"
+  gdp_port      = "8443"
+  
+  # Vulnerability Assessment Configuration
+  datasource_name                 = "aurora-postgresql-production"
+  enable_vulnerability_assessment = true
+  assessment_schedule             = "weekly"
+  assessment_day                  = "Monday"
+  assessment_time                 = "02:00"
+  
+  # Notification Configuration
+  enable_notifications  = true
+  notification_emails   = ["security@example.com"]
+  notification_severity = "HIGH"
+  
+  depends_on = [module.aurora_postgresql_va]
 }
 ```
 
@@ -287,6 +348,19 @@ Creates the necessary database users and permissions for Guardium vulnerability 
 
 [Module Documentation](./modules/aws-rds-postgresql/README.md)
 
+### AWS Aurora PostgreSQL VA Configuration
+
+Creates the necessary database users and permissions for Guardium vulnerability assessment on Aurora PostgreSQL clusters.
+
+**Key Features:**
+- Creates `sqlguard` user with required permissions
+- Configures `gdmmonitor` group
+- Uses Lambda for SQL execution in VPC
+- Integrates with AWS Secrets Manager
+- Connects directly to Guardium Data Protection
+
+[Module Documentation](./modules/aws-aurora-postgresql/README.md)
+
 ### AWS RDS MariaDB VA Configuration
 
 Configures MariaDB databases for vulnerability assessment using Lambda-based deployment.
@@ -317,6 +391,7 @@ Complete working examples are provided for each supported datastore:
 
 - [AWS DynamoDB with VA](./examples/aws-dynamodb) - DynamoDB vulnerability assessment configuration
 - [AWS RDS PostgreSQL with VA](./examples/aws-rds-postgresql) - PostgreSQL vulnerability assessment configuration
+- [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
 
