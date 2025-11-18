@@ -1,3 +1,8 @@
+<!--
+Copyright IBM Corp. 2025
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # AWS RDS MySQL Vulnerability Assessment Configuration Module
 
 This Terraform module configures an AWS RDS MySQL database for Guardium Vulnerability Assessment (VA) and connects it to Guardium Data Protection (GDP). It creates the necessary users and permissions required for Guardium to perform security assessments and entitlement reports.
@@ -25,6 +30,7 @@ The module deploys the following components:
 - An existing AWS RDS MySQL database instance (version 10.x or above)
 - The user executing the module must have superuser privileges on the database
 - The database must be accessible from the Lambda function (in the same VPC or with proper network connectivity)
+- The database security group must allow connections from Guardium server on port 3306
 - VPC and subnet IDs where the Lambda function will be deployed
 - Access to a Guardium Data Protection (GDP) instance
 - OAuth client credentials for the Guardium API
@@ -149,6 +155,62 @@ The module performs the following actions:
    - Registers the database as a data source in Guardium Data Protection
    - Configures vulnerability assessment schedules
    - Sets up notification preferences for assessment results
+
+## Network Configuration for Guardium Access
+
+**Important**: This module configures the database user (`sqlguard`) but does **not** automatically configure network access from Guardium to your RDS instance. You must manually add a security group rule to allow Guardium's IP address.
+
+### Why This Is Required
+
+The module creates:
+-  Lambda function → MySQL connectivity (automatic)
+-  Database user `sqlguard` with proper permissions (automatic)
+-  Guardium server → MySQL connectivity (manual configuration required)
+
+Guardium needs direct network access to perform vulnerability assessments. Without this, you'll see connection timeout errors.
+
+### Quick Setup
+
+1. **Get Guardium's public IP** (run on Guardium server):
+   ```bash
+   curl ifconfig.me
+   ```
+
+2. **Find your MySQL security group**:
+   ```bash
+   aws rds describe-db-instances \
+     --db-instance-identifier <your-instance-id> \
+     --region <your-region> \
+     --query 'DBInstances[0].VpcSecurityGroups[0].VpcSecurityGroupId' \
+     --output text
+   ```
+
+3. **Add security group rule**:
+   ```bash
+   aws ec2 authorize-security-group-ingress \
+     --group-id sg-xxxxxxxxxxxxxxxxx \
+     --protocol tcp \
+     --port 3306 \
+     --cidr xxx.xxx.xxx.xxx/32 \
+     --region <your-region> \
+     --description "Guardium VA access"
+   ```
+
+4. **Verify the rule**:
+   ```bash
+   aws ec2 describe-security-groups \
+     --group-ids sg-xxxxxxxxxxxxxxxxx \
+     --region <your-region> \
+     --query 'SecurityGroups[0].IpPermissions[?ToPort==`3306`]' \
+     --output table
+   ```
+
+5. **Test from Guardium**:
+   ```bash
+   mysql -h your-mysql-host.rds.amazonaws.com -P 3306 -u sqlguard -p -e "SELECT 1;"
+   ```
+
+For detailed instructions and troubleshooting, see the [example README](../../examples/aws-rds-mysql/README.md#configuring-network-access-for-guardium).
 
 ## Security Considerations
 

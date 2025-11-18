@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
 #------------------------------------------------------------------------------
 # Example terraform.tfvars file for AWS RDS MySQL with Guardium VA
 # Rename to terraform.tfvars and update with your specific values

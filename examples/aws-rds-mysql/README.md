@@ -1,3 +1,8 @@
+<!--
+Copyright IBM Corp. 2025
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # AWS RDS MySQL with Guardium Vulnerability Assessment Example
 
 This example demonstrates how to configure an existing AWS RDS MySQL instance for Guardium Vulnerability Assessment (VA) and connect it to Guardium Data Protection (GDP).
@@ -55,6 +60,7 @@ Before using this example, ensure you have:
    - VPC with private subnets
    - Subnets with connectivity to the RDS instance
    - Security groups allowing Lambda to connect to MySQL (port 3306)
+   - Security groups allowing Guardium server to connect to MySQL (port 3306)
 
 3. **Guardium Data Protection**:
    - Guardium server accessible from your network
@@ -203,6 +209,158 @@ After successful deployment, verify:
    ```
 3. **Guardium Registration**: Log into Guardium and verify the datasource appears in the datasource list
 4. **VA Schedule**: Check that the vulnerability assessment schedule is configured
+
+## Configuring Network Access for Guardium
+
+After deploying this module, you must configure your RDS MySQL security group to allow connections from the Guardium server. Without this configuration, Guardium will not be able to connect to your database to perform vulnerability assessments.
+
+### Why This Is Required
+
+Guardium Data Protection needs direct network access to your MySQL database to:
+- Perform vulnerability assessments
+- Execute security scans
+- Generate compliance reports
+- Monitor database activity
+
+The Lambda function (configured by this module) only sets up the `sqlguard` database user. **Network connectivity must be configured separately.**
+
+### Step 1: Find Guardium's Public IP Address
+
+SSH into your Guardium server and run:
+
+```bash
+curl ifconfig.me
+```
+
+This will return Guardium's public IP address (e.g., `xxx.xxx.xxx.xxx`).
+
+**Important**: Do not use internal IP addresses or hostnames - you need the actual public IP that AWS will see when Guardium connects.
+
+### Step 2: Find Your MySQL Security Group
+
+Use the AWS CLI to find the security group attached to your RDS instance:
+
+```bash
+# Set your variables
+INSTANCE_ID="your-mysql-instance-name"
+REGION="us-east-1"
+
+# Get the security group ID
+aws rds describe-db-instances \
+  --db-instance-identifier $INSTANCE_ID \
+  --region $REGION \
+  --query 'DBInstances[0].VpcSecurityGroups[0].VpcSecurityGroupId' \
+  --output text
+```
+
+Example output: `sg-xxxxxxxxxxxxxxxxx`
+
+### Step 3: Add Security Group Rule
+
+Add an ingress rule allowing Guardium's IP to connect on port 3306:
+
+```bash
+# Set your variables
+SECURITY_GROUP_ID="sg-xxxxxxxxxxxxxxxxx"  # From Step 2
+GUARDIUM_IP="xxx.xxx.xxx.xxx"             # From Step 1
+REGION="us-east-1"
+
+# Add the security group rule
+aws ec2 authorize-security-group-ingress \
+  --group-id $SECURITY_GROUP_ID \
+  --protocol tcp \
+  --port 3306 \
+  --cidr ${GUARDIUM_IP}/32 \
+  --region $REGION \
+  --description "Guardium VA access"
+```
+
+### Step 4: Verify the Rule
+
+Confirm the rule was added successfully:
+
+```bash
+aws ec2 describe-security-groups \
+  --group-ids $SECURITY_GROUP_ID \
+  --region $REGION \
+  --query 'SecurityGroups[0].IpPermissions[?ToPort==`3306`]' \
+  --output table
+```
+
+You should see your Guardium IP address in the output.
+
+### Step 5: Test Connection from Guardium
+
+From your Guardium server, test the connection:
+
+```bash
+# Test basic connectivity
+nc -zv your-mysql-instance.rds.amazonaws.com 3306
+
+# Test MySQL connection (if mysql client is installed)
+mysql -h your-mysql-instance.rds.amazonaws.com -P 3306 -u sqlguard -p -e "SELECT 1;"
+```
+
+### Common Issues
+
+**Connection Timeout Error**:
+```
+Could not connect to: 'MYSQL rds-mysql-va x.x.x.x:3306' for user: 'sqlguard'
+within timeout period of: 60 seconds
+```
+
+**Cause**: The security group doesn't allow Guardium's IP address.
+
+**Solution**: Follow the steps above to add the correct IP address to the security group.
+
+**Wrong IP Address**:
+-  Don't use Guardium's internal/management IP
+-  Don't use DNS-resolved IPs from error messages
+-  Don't use your laptop's IP (unless testing)
+- Use the IP from `curl ifconfig.me` run on the Guardium server
+
+**Multiple Databases in Different Regions**:
+Each RDS instance has its own security group. You must add the Guardium IP to each security group separately:
+
+```bash
+# For database in us-east-1
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp --port 3306 \
+  --cidr ${GUARDIUM_IP}/32 \
+  --region us-east-1 \
+  --description "Guardium VA"
+
+# For database in us-east-2
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-yyyyy \
+  --protocol tcp --port 3306 \
+  --cidr ${GUARDIUM_IP}/32 \
+  --region us-east-2 \
+  --description "Guardium VA"
+```
+
+### Security Best Practices
+
+1. **Use /32 CIDR**: Always use `/32` to allow only the specific Guardium IP
+2. **Add Description**: Include a clear description for the rule (e.g., "Guardium VA access")
+3. **Document the IP**: Keep a record of Guardium's IP address for future reference
+4. **Regular Audits**: Periodically review security group rules
+5. **Separate Rules**: Keep Guardium access rules separate from other application rules
+
+### Alternative: Using AWS Console
+
+If you prefer using the AWS Console:
+
+1. Go to **EC2 Console** → **Security Groups**
+2. Find and select your RDS security group
+3. Click **Edit inbound rules**
+4. Click **Add rule**
+5. Configure:
+   - **Type**: MySQL/Aurora (port 3306)
+   - **Source**: Custom, enter `<guardium-ip>/32`
+   - **Description**: "Guardium VA access"
+6. Click **Save rules**
 
 ## What Gets Created
 
