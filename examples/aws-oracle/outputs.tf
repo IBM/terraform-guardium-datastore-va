@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # AWS Oracle with VA Example - Outputs
 
 output "sqlguard_username" {

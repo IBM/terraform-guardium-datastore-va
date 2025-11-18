@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
 #------------------------------------------------------------------------------
 # General Configuration
 #------------------------------------------------------------------------------
@@ -113,66 +118,3 @@ notification_emails = [
 
 # Minimum severity level for notifications: HIGH, MED, LOW, NONE (default is HIGH)
 notification_severity = "HIGH"
-
-#------------------------------------------------------------------------------
-# Optional: Advanced Datasource Connection Options
-#------------------------------------------------------------------------------
-# Uncomment and configure these options if needed
-
-# Use SSL for database connection
-# use_ssl = true
-
-# Import server SSL certificate
-# import_server_ssl_cert = true
-
-# Save password in Guardium (default is true)
-# save_password = true
-
-# Shared datasource: "Shared", "Not Shared" (default is "Not Shared")
-# shared_datasource = "Not Shared"
-
-# Additional connection properties for JDBC URL
-# connection_properties = ""
-
-# Custom JDBC URL (overrides host, port, service_name parameters)
-# custom_url = ""
-
-# Use Kerberos authentication
-# use_kerberos = false
-# kerberos_config_name = ""
-
-# Use LDAP authentication
-# use_ldap = false
-
-# Use external password management
-# use_external_password = false
-# external_password_type_name = ""
-
-# CyberArk configuration
-# cyberark_config_name = ""
-# cyberark_object_name = ""
-
-# HashiCorp Vault configuration
-# hashicorp_config_name = ""
-# hashicorp_path = ""
-# hashicorp_role = ""
-# hashicorp_child_namespace = ""
-
-# AWS Secrets Manager configuration
-# aws_secrets_manager_config_name = ""
-# region = ""
-# secret_name = ""
-
-#------------------------------------------------------------------------------
-# Oracle Autonomous Database Example Configuration
-#------------------------------------------------------------------------------
-# If using Oracle Autonomous Database, use these settings instead:
-#
-# db_host = "your-autonomous-db.adb.us-east-1.oraclecloud.com"
-# db_port = 1522
-# db_service_name = "mydb_high"  # or mydb_medium, mydb_low
-# db_username = "ADMIN"
-# db_password = "your-admin-password"
-#
-# Note: For Autonomous Database, you may need to configure wallet files
-# and SSL certificates depending on your connection requirements.
