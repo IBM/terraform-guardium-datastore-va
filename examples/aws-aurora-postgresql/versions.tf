@@ -18,6 +18,7 @@ terraform {
       source  = "IBM/gdp-middleware-helper"
       version = "~> 1.0"
     }
+
   }
 }
 
