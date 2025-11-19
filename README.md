@@ -24,10 +24,10 @@ This module provides automated configuration of datastores for vulnerability ass
 │                                                                             │
 │                         AWS Datastore Resources                             │
 │                                                                             │
-│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│   │  DynamoDB    │  │  RDS         │  │  RDS         │  │  Redshift    │  │
-│   │              │  │  PostgreSQL  │  │  MariaDB     │  │              │  │
-│   └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  │
+│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│   │DynamoDB  │  │   RDS    │  │   RDS    │  │   RDS    │  │ Redshift │      │
+│   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
+│   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
 │   ┌──────────────┐                                                         │
 │   │  Aurora      │                                                         │
@@ -59,7 +59,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 1. **Datastore Configuration**: The module configures datastores with necessary users, permissions, and IAM roles required for vulnerability assessment
 2. **Database Setup**:
-   - For RDS databases (PostgreSQL, MariaDB, Oracle): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
+   - For RDS databases (PostgreSQL, MariaDB, MySQL, Oracle): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
    - For Aurora PostgreSQL: Creates sqlguard user and gdmmonitor group via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Redshift: Creates VA users and grants system table access
@@ -68,7 +68,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS Oracle, and Redshift
+- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, and Redshift
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -270,6 +270,52 @@ module "mariadb_va" {
 }
 ```
 
+### AWS RDS MySQL Vulnerability Assessment
+
+Configure vulnerability assessment for AWS RDS MySQL:
+
+```hcl
+module "mysql_va" {
+  source = "IBM/datastore-va/guardium//modules/aws-rds-mysql"
+
+  name_prefix = "myproject"
+  
+  # Database connection details
+  db_host     = "mysql.rds.amazonaws.com"
+  db_port     = 3306
+  db_username = "admin"
+  db_password = var.db_password
+  sqlguard_password = var.sqlguard_password
+  
+  # Network configuration
+  vpc_id      = "vpc-12345678"
+  subnet_ids  = ["subnet-12345678", "subnet-87654321"]
+  aws_region  = "us-east-1"
+  
+  # Guardium Data Protection configuration
+  gdp_server   = "guardium.example.com"
+  gdp_username = "admin"
+  gdp_password = var.guardium_password
+  client_id    = "client1"
+  client_secret = var.client_secret
+  
+  # Data source configuration
+  datasource_name        = "mysql-production"
+  datasource_description = "Production MySQL database"
+  
+  # Vulnerability assessment schedule
+  enable_vulnerability_assessment = true
+  assessment_schedule             = "weekly"
+  assessment_day                  = "Sunday"
+  assessment_time                 = "01:00"
+  
+  # Notification configuration
+  enable_notifications  = true
+  notification_emails   = ["security@example.com"]
+  notification_severity = "MED"
+}
+```
+
 ### AWS Redshift Vulnerability Assessment
 
 Configure vulnerability assessment for AWS Redshift:
@@ -430,6 +476,19 @@ Configures MariaDB databases for vulnerability assessment using Lambda-based dep
 
 [Module Documentation](./modules/aws-rds-mariadb/README.md)
 
+### AWS RDS MySQL VA Configuration
+
+Configures MySQL databases for vulnerability assessment using Lambda-based deployment.
+
+**Key Features:**
+- Creates `sqlguard` user via Lambda function
+- Integrates with AWS Secrets Manager
+- Deploys in VPC for secure access
+- Connects directly to Guardium Data Protection
+- Automatically configures security group rules for Lambda access
+
+[Module Documentation](./modules/aws-rds-mysql/README.md)
+
 ### AWS Redshift VA Configuration
 
 Sets up Redshift clusters for vulnerability assessment with automated user creation.
@@ -463,6 +522,7 @@ Complete working examples are provided for each supported datastore:
 - [AWS RDS PostgreSQL with VA](./examples/aws-rds-postgresql) - PostgreSQL vulnerability assessment configuration
 - [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
+- [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
 - [AWS RDS Oracle with VA](./examples/aws-oracle) - Oracle (RDS/Autonomous) vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
 
@@ -493,7 +553,7 @@ Before you begin, ensure you have:
 #### Required Permissions
 Your AWS credentials must have permissions for:
 - Creating and managing IAM roles and policies
-- Creating and managing Lambda functions
+- Creating and managing Lambda functions (for Aurora PostgreSQL, MariaDB, MySQL, Oracle, and Redshift)
 - Creating and managing VPC resources and Security Groups
 - Creating and managing Secrets Manager secrets
 - Access to your specific datastore (RDS, DynamoDB, etc.)
