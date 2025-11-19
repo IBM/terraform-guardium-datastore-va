@@ -62,7 +62,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, RDS MariaDB, RDS MySQL, and Redshift
+- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, and Redshift
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
