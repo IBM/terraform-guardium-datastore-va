@@ -192,8 +192,8 @@ locals {
     datasource_port                = var.db_port
     application                    = var.application
     datasource_description         = var.datasource_description
-    connection_username            = var.db_username
-    connection_password            = var.db_password
+    connection_username            = var.sqlguard_username
+    connection_password            = var.sqlguard_password
     severity_level                 = var.severity_level
     service_name                   = var.service_name
     shared_datasource              = var.shared_datasource
