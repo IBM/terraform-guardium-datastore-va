@@ -27,7 +27,8 @@ db_username = "admin"                    # Admin username for MariaDB
 db_port     = 3306                       # Default MariaDB port (3306)
 
 # Guardium VA user configuration
-gdmmonitor_password = "StrongPasswordForVAUser"  # Password for the Guardium VA user
+sqlguard_username = "sqlguard"           # Username for the Guardium VA user (default: sqlguard)
+sqlguard_password = "StrongPasswordForVAUser"  # Password for the Guardium VA user
 
 #----------------------------------------
 # Network Configuration
