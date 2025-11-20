@@ -13,7 +13,7 @@ The module deploys the following components:
 
 ## Features
 
-- Creates a `gdmmonitor` user with the necessary permissions for vulnerability assessment
+- Creates a `sqlguard` user with the necessary permissions for vulnerability assessment
 - Grants the required permissions for Guardium VA to work properly
 - Configures the database for Guardium Vulnerability Assessment
 - Deploys a Lambda function to execute the configuration in the VPC where the MariaDB instance resides
@@ -44,7 +44,10 @@ module "mariadb_va_config" {
   db_port     = 3306
   db_username = "admin"
   db_password = "your-password"
-  gdmmonitor_password = "Guardium123!"
+  
+  # Guardium VA user configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = "Guardium123!"
   
   # Network configuration
   vpc_id      = "vpc-12345678"
@@ -78,7 +81,10 @@ module "mariadb_va_config" {
   db_port     = 3306
   db_username = "admin"
   db_password = "your-password"
-  gdmmonitor_password = "CustomPassword123!"
+  
+  # Guardium VA user configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = "CustomPassword123!"
   
   # Network configuration
   vpc_id      = "vpc-12345678"
@@ -126,7 +132,8 @@ module "mariadb_va_config" {
 | db_host | Hostname or IP address of the MariaDB database | `string` |
 | db_username | Username for the MariaDB database (must have superuser privileges) | `string` |
 | db_password | Password for the MariaDB database | `string` |
-| gdmmonitor_password | Password for the gdmmonitor user | `string` |
+| sqlguard_username | Username for the Guardium VA user | `string` |
+| sqlguard_password | Password for the sqlguard user | `string` |
 | vpc_id | ID of the VPC where the Lambda function will be deployed | `string` |
 | subnet_ids | List of subnet IDs where the Lambda function will be deployed | `list(string)` |
 | aws_region | AWS region where resources will be created | `string` |
@@ -161,8 +168,8 @@ For a complete list of all input variables, please refer to the [variables.tf](.
 
 | Name | Description |
 |------|-------------|
-| sqlguard_username | Username for the Guardium user (gdmmonitor) |
-| sqlguard_password | Password for the gdmmonitor user (sensitive) |
+| sqlguard_username | Username for the Guardium VA user (sqlguard) |
+| sqlguard_password | Password for the sqlguard user (sensitive) |
 
 ## Implementation Details
 
@@ -179,7 +186,7 @@ The module performs the following actions:
 
 3. **Database Configuration**:
    - The Lambda function connects to the MariaDB database using the provided credentials
-   - Creates or updates the `gdmmonitor` user with the specified password
+   - Creates or updates the `sqlguard` user with the specified password
    - Grants the necessary permissions for Guardium VA:
      - SELECT on mysql.user
      - SELECT on mysql.db
