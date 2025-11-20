@@ -20,8 +20,8 @@ module "mariadb_va_config" {
   #----------------------------------------
   # VA User Configuration
   #----------------------------------------
-
-  gdmmonitor_password = var.gdmmonitor_password
+  sqlguard_username = var.sqlguard_username
+  sqlguard_password = var.sqlguard_password
 
   #----------------------------------------
   # lambda configuration

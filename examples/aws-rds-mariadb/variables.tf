@@ -331,7 +331,15 @@ variable "db_instance_directory" {
   default     = ""
 }
 
-# VA Configuration Outputs
-variable "gdmmonitor_password" {
+# VA Configuration
+variable "sqlguard_username" {
   description = "Username for the Guardium VA user"
+  type        = string
+  default     = "sqlguard"
+}
+
+variable "sqlguard_password" {
+  description = "Password for the Guardium VA user"
+  type        = string
+  sensitive   = true
 }

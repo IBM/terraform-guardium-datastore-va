@@ -10,7 +10,6 @@ locals {
   secret_name = "${var.name_prefix}-mariadb-rds-va-password"
   zip_file = "${path.module}/files/lambda_function.zip"
   zip_hash = filesha256(local.zip_file)
-  gdmmonitor_username = "gdmmonitor"
 }
 
 # Create IAM role for Lambda function
@@ -47,8 +46,8 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials_version" {
     password = var.db_password
     endpoint = var.db_host
     port     = var.db_port
-    gdmmonitor_username = local.gdmmonitor_username
-    gdmmonitor_password = var.gdmmonitor_password
+    sqlguard_username = var.sqlguard_username
+    sqlguard_password = var.sqlguard_password
   })
 }
 
