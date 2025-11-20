@@ -22,8 +22,14 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "gdmmonitor_password" {
-  description = "Password for the gdmmonitor user"
+variable "sqlguard_username" {
+  description = "Username for the Guardium VA user"
+  type        = string
+  default     = "sqlguard"
+}
+
+variable "sqlguard_password" {
+  description = "Password for the sqlguard user"
   type        = string
   sensitive   = true
 }

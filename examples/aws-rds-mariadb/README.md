@@ -45,7 +45,10 @@ db_host     = "your-mariadb-instance.rds.amazonaws.com"
 db_port     = 3306
 db_username = "admin"
 db_password = "your-secure-password"
-gdmmonitor_password = "secure-password-for-gdmmonitor"
+
+# Guardium VA user configuration
+sqlguard_username = "sqlguard"
+sqlguard_password = "secure-password-for-sqlguard"
 
 # Network Configuration
 vpc_id      = "vpc-12345678"
@@ -89,7 +92,7 @@ Review the planned changes and type `yes` to apply them.
 This example uses two main modules:
 
 1. **aws-rds-mariadb** - Configures the MariaDB database for vulnerability assessment by:
-   - Creating a `gdmmonitor` user with the necessary permissions
+   - Creating a `sqlguard` user with the necessary permissions
    - Granting required permissions for Guardium VA
    - Deploying a Lambda function to execute the configuration
 
@@ -108,7 +111,8 @@ This example uses two main modules:
 | db_port                         | Port for MariaDB database                                                | `number`       | `3306`              |    no    |
 | db_username                     | Username for the MariaDB database                                        | `string`       | `"guardium_admin"`  |    no    |
 | db_password                     | Password for the MariaDB database                                        | `string`       | n/a                 |   yes    |
-| gdmmonitor_password             | Password for the Guardium VA user                                        | `string`       | n/a                 |   yes    |
+| sqlguard_username               | Username for the Guardium VA user                                        | `string`       | `"sqlguard"`        |    no    |
+| sqlguard_password               | Password for the Guardium VA user                                        | `string`       | n/a                 |   yes    |
 | vpc_id                          | The ID of the VPC to deploy the lambda into                              | `string`       | n/a                 |   yes    |
 | subnet_ids                      | The subnet IDs to deploy the lambda into                                 | `list(string)` | n/a                 |   yes    |
 | gdp_server                      | The hostname or IP address of the Guardium server                        | `string`       | n/a                 |   yes    |
