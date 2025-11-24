@@ -541,7 +541,7 @@ Follow these steps to configure vulnerability assessment for your AWS datastores
 Before you begin, ensure you have:
 
 #### Required Infrastructure
-- **AWS Account** with an existing database (RDS PostgreSQL, Aurora PostgreSQL, MariaDB, Oracle, Redshift, or DynamoDB)
+- **AWS Account** with an existing database (RDS PostgreSQL, Aurora PostgreSQL, MariaDB, MySQL, Oracle, Redshift, or DynamoDB)
 - **Guardium Data Protection (GDP)** cluster deployed and accessible
 - **Network connectivity** between your workstation and Guardium server
 
@@ -576,7 +576,7 @@ Ensure your database is ready for vulnerability assessment:
 **Get database information using AWS CLI:**
 
 ```bash
-# For RDS databases (PostgreSQL, MariaDB, Oracle)
+# For RDS databases (PostgreSQL, MariaDB, MySQL, Oracle)
 aws rds describe-db-instances \
   --db-instance-identifier your-db-name \
   --query 'DBInstances[0].{Endpoint:Endpoint.Address,Port:Endpoint.Port,VpcId:DBSubnetGroup.VpcId,SubnetGroup:DBSubnetGroup.DBSubnetGroupName}' \
@@ -653,6 +653,9 @@ cd examples/aws-aurora-postgresql
 # For RDS MariaDB
 cd examples/aws-rds-mariadb
 
+# For RDS MySQL
+cd examples/aws-rds-mysql
+
 # For RDS Oracle
 cd examples/aws-oracle
 
@@ -680,7 +683,7 @@ Open `terraform.tfvars` and fill in your values:
 # Database Configuration (from Step 1)
 #------------------------------------------------------------------------------
 db_host     = "your-database.xxxxx.us-east-1.rds.amazonaws.com"
-db_port     = 5432  # or 3306 for MariaDB, 1521 for Oracle, 5439 for Redshift
+db_port     = 5432  # or 3306 for MariaDB/MySQL, 1521 for Oracle, 5439 for Redshift
 db_name     = "postgres"  # or service_name for Oracle
 db_username = "admin"
 db_password = "your-database-password"
@@ -799,9 +802,9 @@ SELECT usename FROM pg_user WHERE usename = 'sqlguard';
 SELECT rolname FROM pg_roles WHERE rolname = 'gdmmonitor';
 ```
 
-**For MariaDB:**
+**For MariaDB/MySQL:**
 ```sql
-SELECT User FROM mysql.user WHERE User = 'gdmmonitor';
+SELECT User FROM mysql.user WHERE User IN ('gdmmonitor', 'sqlguard');
 ```
 
 **For Oracle:**
