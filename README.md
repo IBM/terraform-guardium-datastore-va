@@ -29,6 +29,11 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
 │   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
+│   ┌──────────┐                                                              │
+│   │   RDS    │                                                              │
+│   │  Oracle  │                                                              │
+│   └──────────┘                                                              │
+│                                                                             │
 │   ┌──────────────┐                                                         │
 │   │  Aurora      │                                                         │
 │   │  PostgreSQL  │                                                         │
@@ -59,7 +64,8 @@ This module provides automated configuration of datastores for vulnerability ass
 
 1. **Datastore Configuration**: The module configures datastores with necessary users, permissions, and IAM roles required for vulnerability assessment
 2. **Database Setup**:
-   - For RDS databases (PostgreSQL, MariaDB, MySQL): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
+   - For RDS databases (PostgreSQL, MariaDB, MySQL, Oracle): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
+   - For Aurora PostgreSQL: Creates sqlguard user and gdmmonitor group via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Redshift: Creates VA users and grants system table access
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
@@ -67,7 +73,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, and Redshift
+- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, and Redshift
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -368,6 +374,62 @@ module "connect_redshift_to_gdp" {
 }
 ```
 
+### AWS RDS Oracle Vulnerability Assessment
+
+Configure vulnerability assessment for AWS RDS Oracle or Oracle Autonomous Database:
+
+```hcl
+module "oracle_va" {
+  source = "IBM/datastore-va/guardium//modules/aws-oracle"
+
+  name_prefix = "myproject"
+  
+  # Database connection details
+  db_host         = "oracle-db.xxxxx.us-east-1.rds.amazonaws.com"
+  db_port         = 1521
+  db_service_name = "ORCL"
+  db_username     = "admin"
+  db_password     = var.db_password
+  
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+  
+  # Network configuration
+  vpc_id     = "vpc-12345678"
+  subnet_ids = ["subnet-12345678", "subnet-87654321"]
+  aws_region = "us-east-1"
+}
+
+# Connect to Guardium Data Protection
+module "connect_oracle_to_gdp" {
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
+  
+  datasource_payload = local.oracle_config_json_encoded
+  
+  client_secret = var.client_secret
+  client_id     = var.client_id
+  gdp_password  = var.gdp_password
+  gdp_server    = "guardium.example.com"
+  gdp_username  = "admin"
+  gdp_port      = "8443"
+  
+  # Vulnerability Assessment Configuration
+  datasource_name                 = "oracle-production"
+  enable_vulnerability_assessment = true
+  assessment_schedule             = "weekly"
+  assessment_day                  = "Monday"
+  assessment_time                 = "02:00"
+  
+  # Notification Configuration
+  enable_notifications  = true
+  notification_emails   = ["security@example.com"]
+  notification_severity = "HIGH"
+  
+  depends_on = [module.oracle_va]
+}
+```
+
 ## Modules
 
 ### AWS DynamoDB VA Configuration
@@ -444,6 +506,19 @@ Sets up Redshift clusters for vulnerability assessment with automated user creat
 
 [Module Documentation](./modules/aws-redshift/README.md)
 
+### AWS Oracle VA Configuration
+
+Configures Oracle databases (RDS or Autonomous) for vulnerability assessment using Lambda-based deployment.
+
+**Key Features:**
+- Creates `gdmmonitor` role with required privileges
+- Creates `sqlguard` user via Lambda function
+- Uses Oracle Instant Client for connectivity
+- Integrates with AWS Secrets Manager
+- Connects directly to Guardium Data Protection
+
+[Module Documentation](./modules/aws-oracle/README.md)
+
 ## Examples
 
 Complete working examples are provided for each supported datastore:
@@ -453,6 +528,7 @@ Complete working examples are provided for each supported datastore:
 - [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
 - [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
+- [AWS RDS Oracle with VA](./examples/aws-oracle) - Oracle (RDS/Autonomous) vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
 
 Each example includes:
@@ -479,7 +555,7 @@ Before using this module, ensure you have:
 
 Your AWS credentials must have permissions for:
 - Creating and managing IAM roles and policies
-- Creating and managing Lambda functions (for MariaDB, MySQL, and Redshift)
+- Creating and managing Lambda functions (for Aurora PostgreSQL, MariaDB, MySQL, Oracle, and Redshift)
 - Creating and managing VPC resources and Security Groups
 - Creating and managing Secrets Manager secrets
 - Access to specific datastores (DynamoDB, RDS, Redshift)
@@ -503,7 +579,7 @@ Your AWS credentials must have permissions for:
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-rds-mariadb, aws-redshift
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-redshift
    ```
 
 3. **Configure variables**:
