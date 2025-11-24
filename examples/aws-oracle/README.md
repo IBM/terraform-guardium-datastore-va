@@ -7,10 +7,9 @@ This example demonstrates how to configure AWS RDS Oracle or Oracle Autonomous D
 This Terraform configuration automates the complete setup process:
 
 1. Creates a Lambda function that configures Oracle database for vulnerability assessment
-2. Creates the `gdmmonitor` role with necessary privileges
-3. Creates the `sqlguard` user for Guardium VA scans
-4. Registers the database with Guardium Data Protection
-5. Configures vulnerability assessment schedules and notifications
+2. Creates the `sqlguard` user with necessary privileges for Guardium VA scans
+3. Registers the database with Guardium Data Protection
+4. Configures vulnerability assessment schedules and notifications
 
 ## Architecture
 
@@ -130,7 +129,7 @@ Copy and edit the configuration file:
 cp terraform.tfvars.example terraform.tfvars
 ```
 
-Edit `terraform.tfvars` with your values:
+Edit `terraform.tfvars` with your values. Here are the **essential** variables you must configure:
 
 ```hcl
 # Oracle Configuration
@@ -153,6 +152,13 @@ client_secret = "your-client-secret"
 # VA User Configuration
 sqlguard_password = "your-sqlguard-password"
 ```
+
+**Note**: The `terraform.tfvars.example` file contains additional optional variables for:
+- Datasource registration (name, description, application type, severity)
+- Vulnerability assessment scheduling (schedule, day, time)
+- Notification configuration (emails, severity threshold)
+
+See the full example file for all available configuration options.
 
 ### Step 3: Deploy
 
@@ -191,9 +197,8 @@ After deployment, verify the setup:
 - VPC endpoint for Secrets Manager
 
 ### Oracle Database Objects
-- `gdmmonitor` role with VA privileges
-- `sqlguard` user with gdmmonitor role
-- System privileges and READ permissions
+- `sqlguard` user with necessary VA privileges
+- System privileges and READ permissions on required tables
 
 ### Guardium Configuration
 - Datasource registration
@@ -261,12 +266,11 @@ terraform destroy
 
 **Note**: This removes AWS resources but does NOT delete:
 - The Oracle database itself
-- Oracle database objects (`gdmmonitor` role, `sqlguard` user)
+- The `sqlguard` user created in Oracle
 
-To manually clean up Oracle objects:
+To manually clean up the Oracle user:
 ```sql
 DROP USER sqlguard CASCADE;
-DROP ROLE gdmmonitor;
 ```
 
 ## Cost Estimate
