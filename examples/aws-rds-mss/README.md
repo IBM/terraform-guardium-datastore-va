@@ -160,6 +160,98 @@ use_ssl                = true
 import_server_ssl_cert = true
 ```
 
+## Network Configuration
+
+### Security Group Requirements
+
+**IMPORTANT**: Your SQL Server instance must allow inbound connections from the Guardium server.
+
+#### Step 1: Get Guardium Server IP
+
+```bash
+# Method 1: SSH to Guardium and get public IP (RECOMMENDED)
+ssh admin@your-guardium-server.com
+curl ifconfig.me
+# This returns the public IP that AWS will see
+
+# Method 2: Get private IP (if in same VPC)
+ssh admin@your-guardium-server.com
+hostname -I
+
+# Method 3: DNS lookup
+nslookup your-guardium-server.com
+# or
+dig +short your-guardium-server.com
+```
+
+**Important**: Use the IP returned by `curl ifconfig.me` as this is the public IP that will connect to your RDS instance.
+
+#### Step 2: Update Security Group
+
+Add an inbound rule to your SQL Server's security group:
+
+**Option A: Using AWS CLI**
+
+```bash
+# First, get your RDS instance's security group ID
+aws rds describe-db-instances \
+  --db-instance-identifier your-sqlserver-instance \
+  --query 'DBInstances[0].VpcSecurityGroups[0].VpcSecurityGroupId' \
+  --output text
+
+# Then add the inbound rule (replace with your values)
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxxxxxx \
+  --protocol tcp \
+  --port 1433 \
+  --cidr <GUARDIUM_IP>/32 \
+  --description "Allow Guardium VA access"
+
+```
+
+**Option B: Using Terraform**
+
+```hcl
+# Add to your Terraform configuration
+resource "aws_security_group_rule" "guardium_access" {
+  type              = "ingress"
+  from_port         = 1433
+  to_port           = 1433
+  protocol          = "tcp"
+  cidr_blocks       = ["<GUARDIUM_IP>/32"]  # Replace with actual IP
+  security_group_id = aws_db_instance.sqlserver.vpc_security_group_ids[0]
+  description       = "Allow Guardium VA access"
+}
+```
+
+**Option C: Using AWS Console**
+
+1. Go to **EC2 → Security Groups**
+2. Find your SQL Server's security group
+3. Click **Edit inbound rules**
+4. Add rule:
+   - Type: `MSSQL/Aurora (1433)`
+   - Source: `Custom` → `<GUARDIUM_IP>/32`
+   - Description: `Guardium VA access`
+5. Save rules
+
+#### Step 3: Verify Connectivity
+
+```bash
+# From Guardium server, test connection
+telnet your-sqlserver.rds.amazonaws.com 1433
+
+# Or use sqlcmd
+sqlcmd -S your-sqlserver.rds.amazonaws.com -U admin -P your-password
+```
+
+### Network Topology Considerations
+
+- **Same VPC**: Use Guardium's private IP
+- **Different VPC**: Set up VPC peering or use public IP (if available)
+- **Different Region**: Use VPC peering or Transit Gateway
+- **On-Premises Guardium**: Use VPN or Direct Connect
+
 ## Troubleshooting
 
 ### Issue: Terraform init fails
