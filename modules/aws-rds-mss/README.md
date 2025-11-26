@@ -1,3 +1,8 @@
+<!--
+Copyright IBM Corp. 2025
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # AWS RDS SQL Server Vulnerability Assessment Module
 
 This Terraform module configures AWS RDS SQL Server instances for IBM Guardium Vulnerability Assessment (VA).
@@ -178,11 +183,6 @@ The `rdsadmin` account in AWS RDS SQL Server already has:
 - Verify the SQL Server version is supported
 - Check Guardium logs for specific errors
 - Ensure the database is online and accessible
-
-## License
-
-Copyright IBM Corp. 2025  
-SPDX-License-Identifier: Apache-2.0
 
 ## Support
 
