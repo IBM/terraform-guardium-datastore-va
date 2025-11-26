@@ -29,10 +29,10 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
 │   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
-│   ┌──────────────┐                                                         │
-│   │  Aurora      │                                                         │
-│   │  PostgreSQL  │                                                         │
-│   └──────────────┘                                                         │
+│   ┌──────────────┐  ┌──────────┐                                          │
+│   │  Aurora      │  │   RDS    │                                          │
+│   │  PostgreSQL  │  │SQL Server│                                          │
+│   └──────────────┘  └──────────┘                                          │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
 │   • Configures IAM roles and policies                                       │
@@ -60,6 +60,7 @@ This module provides automated configuration of datastores for vulnerability ass
 1. **Datastore Configuration**: The module configures datastores with necessary users, permissions, and IAM roles required for vulnerability assessment
 2. **Database Setup**:
    - For RDS databases (PostgreSQL, MariaDB, MySQL): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
+   - For RDS SQL Server: Uses the built-in master account (no additional user creation needed)
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Redshift: Creates VA users and grants system table access
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
@@ -67,7 +68,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, and Redshift
+- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS SQL Server, and Redshift
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -315,6 +316,59 @@ module "mysql_va" {
 }
 ```
 
+### AWS RDS SQL Server Vulnerability Assessment
+
+Configure vulnerability assessment for AWS RDS SQL Server:
+
+```hcl
+module "mssql_va" {
+  source = "IBM/datastore-va/guardium//modules/aws-rds-mss"
+
+  name_prefix = "myproject"
+  
+  # Database connection details
+  db_host     = "sqlserver.rds.amazonaws.com"
+  db_port     = 1433
+  db_username = "admin"  # Master username from RDS instance creation
+  db_password = var.db_password
+  database_name = "master"
+  
+  # AWS Configuration
+  aws_region  = "us-east-1"
+  
+  # Guardium Data Protection configuration
+  gdp_server   = "guardium.example.com"
+  gdp_port     = "8443"
+  gdp_username = "admin"
+  gdp_password = var.guardium_password
+  client_id    = "client1"
+  client_secret = var.client_secret
+  
+  # Data source configuration
+  datasource_name        = "sqlserver-production"
+  datasource_description = "Production SQL Server database"
+  application            = "Security Assessment"
+  
+  # Vulnerability assessment schedule
+  enable_vulnerability_assessment = true
+  assessment_schedule             = "weekly"
+  assessment_day                  = "Sunday"
+  assessment_time                 = "01:00"
+  
+  # Notification configuration
+  enable_notifications  = true
+  notification_emails   = ["security@example.com"]
+  notification_severity = "HIGH"
+  
+  tags = {
+    Environment = "Production"
+    Owner       = "Security Team"
+  }
+}
+```
+
+**Note**: SQL Server uses the master username (specified during RDS instance creation) directly. No additional user creation is needed as the master account has all required VA privileges.
+
 ### AWS Redshift Vulnerability Assessment
 
 Configure vulnerability assessment for AWS Redshift:
@@ -432,6 +486,18 @@ Configures MySQL databases for vulnerability assessment using Lambda-based deplo
 
 [Module Documentation](./modules/aws-rds-mysql/README.md)
 
+### AWS RDS SQL Server VA Configuration
+
+Configures SQL Server databases for vulnerability assessment with simplified setup.
+
+**Key Features:**
+- Uses master username directly (no additional user creation needed)
+- Integrates with AWS Secrets Manager
+- Connects directly to Guardium Data Protection
+- Supports all SQL Server editions (Enterprise, Standard, Express, Web)
+
+[Module Documentation](./modules/aws-rds-mss/README.md)
+
 ### AWS Redshift VA Configuration
 
 Sets up Redshift clusters for vulnerability assessment with automated user creation.
@@ -453,6 +519,7 @@ Complete working examples are provided for each supported datastore:
 - [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
 - [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
+- [AWS RDS SQL Server with VA](./examples/aws-rds-mss) - SQL Server vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
 
 Each example includes:
@@ -503,7 +570,7 @@ Your AWS credentials must have permissions for:
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-rds-mariadb, aws-redshift
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-rds-mariadb, aws-redshift, aws-rds-mss
    ```
 
 3. **Configure variables**:
