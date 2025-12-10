@@ -60,7 +60,7 @@ This module provides automated configuration of datastores for vulnerability ass
 1. **Datastore Configuration**: The module configures datastores with necessary users, permissions, and IAM roles required for vulnerability assessment
 2. **Database Setup**:
    - For RDS databases (PostgreSQL, MariaDB, MySQL): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
-   - For RDS SQL Server: Uses the built-in master account (no additional user creation needed)
+   - For RDS SQL Server: Uses the built-in master account (rdsadmin) to create the sqlguard VA user via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Redshift: Creates VA users and grants system table access
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
@@ -333,6 +333,15 @@ module "mssql_va" {
   db_password = var.db_password
   database_name = "master"
   
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+  
+  # Network configuration
+  vpc_id               = "vpc-12345678"
+  subnet_ids           = ["subnet-12345678", "subnet-87654321"]
+  db_security_group_id = "sg-12345678"  # RDS SQL Server security group
+  
   # AWS Configuration
   aws_region  = "us-east-1"
   
@@ -367,7 +376,7 @@ module "mssql_va" {
 }
 ```
 
-**Note**: SQL Server uses the master username (specified during RDS instance creation) directly. No additional user creation is needed as the master account has all required VA privileges.
+**Note**: The module uses Lambda to create a dedicated `sqlguard` user with required VA permissions. The Lambda function connects using the master username (rdsadmin) to create and configure the sqlguard user, then runs in your VPC with automatic security group configuration.
 
 ### AWS Redshift Vulnerability Assessment
 
@@ -488,12 +497,14 @@ Configures MySQL databases for vulnerability assessment using Lambda-based deplo
 
 ### AWS RDS SQL Server VA Configuration
 
-Configures SQL Server databases for vulnerability assessment with simplified setup.
+Configures SQL Server databases for vulnerability assessment using Lambda-based deployment.
 
 **Key Features:**
-- Uses master username directly (no additional user creation needed)
+- Creates `sqlguard` user via Lambda function
 - Integrates with AWS Secrets Manager
+- Deploys in VPC for secure access
 - Connects directly to Guardium Data Protection
+- Automatically configures security group rules for Lambda access
 - Supports all SQL Server editions (Enterprise, Standard, Express, Web)
 
 [Module Documentation](./modules/aws-rds-mss/README.md)

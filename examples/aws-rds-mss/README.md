@@ -120,6 +120,7 @@ sqlguard_password = "your-sqlguard-password"  # Choose a strong password
 # VPC Configuration (where SQL Server is accessible)
 vpc_id     = "vpc-xxxxxxxxx"
 subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # Private subnets with NAT
+db_security_group_id = ""
 
 # Guardium
 gdp_server    = "your-guardium-server.com"
@@ -320,18 +321,18 @@ terraform {
 telnet your-sqlserver.rds.amazonaws.com 1433
 
 # Verify credentials
-sqlcmd -S your-sqlserver.rds.amazonaws.com -U rdsadmin -P your-password
+sqlcmd -S your-sqlserver.rds.amazonaws.com -U admin -P your-password
 ```
 
 ### Issue: Lambda function fails to create sqlguard user
 ```bash
 # Check Lambda logs
-aws logs tail /aws/lambda/mssql-va-sqlguard-creator --follow
+aws logs tail /aws/lambda/<name-prefix>-mssql-va-config --follow
 
 # Common issues:
 # 1. Lambda cannot reach SQL Server (VPC/Security Group)
 # 2. Lambda cannot reach Secrets Manager (VPC endpoint missing)
-# 3. rdsadmin credentials are incorrect
+# 3. admin credentials are incorrect
 # 4. SQL Server is not ready yet
 
 # Verify Lambda can reach SQL Server
@@ -341,6 +342,122 @@ aws logs tail /aws/lambda/mssql-va-sqlguard-creator --follow
 # Verify VPC endpoint for Secrets Manager exists
 aws ec2 describe-vpc-endpoints --filters "Name=vpc-id,Values=<your-vpc-id>"
 ```
+
+#### VPC Endpoint Already Exists Error
+
+If you encounter an error like:
+```
+Error: creating VPC Endpoint (com.amazonaws.us-east-2.secretsmanager): VpcEndpointAlreadyExists: VpcEndpoint already exists in this VPC
+```
+
+This means a Secrets Manager VPC endpoint already exists in your VPC. To resolve this:
+
+1. **Find the existing VPC endpoint ID**:
+   ```bash
+   aws ec2 describe-vpc-endpoints \
+     --filters Name=vpc-id,Values=<your-vpc-id> \
+              Name=service-name,Values=com.amazonaws.<your-region>.secretsmanager \
+     --region <your-region> \
+     --query 'VpcEndpoints[].VpcEndpointId' \
+     --output text
+   ```
+
+   Example:
+   ```bash
+   aws ec2 describe-vpc-endpoints \
+     --filters Name=vpc-id,Values=vpc-123456789 \
+              Name=service-name,Values=com.amazonaws.us-east-2.secretsmanager \
+     --region us-east-2 \
+     --query 'VpcEndpoints[].VpcEndpointId' \
+     --output text
+   ```
+
+2. **Import the existing endpoint into Terraform state**:
+   ```bash
+   terraform import \
+     'module.mssql_va_config.aws_vpc_endpoint.secretsmanager' \
+     <vpc-endpoint-id>
+   ```
+
+   Example:
+   ```bash
+   terraform import \
+     'module.mssql_va_config.aws_vpc_endpoint.secretsmanager' \
+     vpce-0a1b2c3d4e5f6g7h8
+   ```
+
+3. **Re-run terraform apply**:
+   ```bash
+   terraform apply
+   ```
+
+#### Secrets Manager Secret Already Scheduled for Deletion
+
+If you encounter an error like:
+```
+Error: creating Secrets Manager Secret (guardium-sqlserver-test-va-mssql-rds-va-credentials): operation error Secrets Manager: CreateSecret, https response error StatusCode: 400, RequestID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, InvalidRequestException: You can't create this secret because a secret with this name is already scheduled for deletion.
+```
+
+This means a secret with the same name exists but is scheduled for deletion. The secret name is shown in the error message.
+
+**To resolve this:**
+
+1. **Find the secret ARN** (use the secret name from your error message):
+   ```bash
+   # Replace SECRET_NAME with the name from your error message
+   SECRET_NAME="guardium-sqlserver-test-va-mssql-rds-va-credentials"
+   REGION="us-east-2"
+   
+   # Include deleted secrets in the search
+   aws secretsmanager list-secrets \
+     --include-planned-deletion \
+     --filters Key=name,Values=$SECRET_NAME \
+     --region $REGION \
+     --query 'SecretList[0].ARN' \
+     --output text
+   ```
+   
+   **Note**: The `--include-planned-deletion` flag is required to find secrets scheduled for deletion.
+
+2. **Choose one of the following options:**
+
+   **Option A: Restore and reuse the secret**:
+   ```bash
+   # Use the ARN from step 1
+   SECRET_ARN="arn:aws:secretsmanager:us-east-2:1234567893:secret:guardium-sqlserver-test-va-mssql-rds-va-credentials-AbCdEf"
+   
+   # Restore the secret
+   aws secretsmanager restore-secret \
+     --secret-id $SECRET_ARN \
+     --region $REGION
+   
+   # Import into Terraform state (single line to avoid spacing issues)
+   terraform import 'module.mssql_va_config.aws_secretsmanager_secret.mssql_credentials' $SECRET_ARN
+   
+   # Re-run apply
+   terraform apply
+   ```
+
+   **Option B: Force delete and create new** (recommended for clean start):
+   ```bash
+   # Use the ARN from step 1
+   SECRET_ARN="arn:aws:secretsmanager:us-east-2:1234567893:secret:guardium-sqlserver-test-va-mssql-rds-va-credentials-AbCdEf"
+   
+   # Force delete immediately (bypasses 30-day recovery window)
+   aws secretsmanager delete-secret \
+     --secret-id $SECRET_ARN \
+     --force-delete-without-recovery \
+     --region $REGION
+   
+   # Wait a few seconds, then re-run
+   terraform apply
+   ```
+
+   **Option C: Use a different secret name**:
+   - Update the `name_prefix` variable in your `terraform.tfvars` to use a different value
+   - This will create a secret with a different name, avoiding the conflict
+
+**Note**: By default, AWS Secrets Manager has a 30-day recovery window before permanent deletion. The `force-delete-without-recovery` flag bypasses this for immediate deletion.
 
 ### Issue: VA tests failing
 - Verify `sqlguard` password is correct in Secrets Manager

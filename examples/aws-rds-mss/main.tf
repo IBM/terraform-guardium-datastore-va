@@ -31,8 +31,9 @@ module "mssql_va_config" {
   #----------------------------------------
   # Lambda Configuration
   #----------------------------------------
-  vpc_id     = var.vpc_id
-  subnet_ids = var.subnet_ids
+  vpc_id               = var.vpc_id
+  subnet_ids           = var.subnet_ids
+  db_security_group_id = var.db_security_group_id
 
   #----------------------------------------
   # General Configuration

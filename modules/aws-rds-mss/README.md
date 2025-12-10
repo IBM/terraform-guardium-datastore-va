@@ -9,20 +9,28 @@ This Terraform module configures AWS RDS SQL Server instances for IBM Guardium V
 
 ## Overview
 
-**Important Note:** AWS RDS SQL Server's built-in `rdsadmin` account already has all the necessary privileges to run Guardium VA tests.
+This module uses AWS Lambda to automatically create and configure a dedicated `sqlguard` user for Guardium Vulnerability Assessment on AWS RDS SQL Server instances.
 
-This module simply stores the `rdsadmin` credentials securely in AWS Secrets Manager for use with Guardium VA registration.
+**How it works:**
+1. Lambda connects to SQL Server using the master account (`rdsadmin`)
+2. Creates a dedicated `sqlguard` login and user
+3. Grants required server-level and database-level permissions
+4. Configures `gdmmonitor` role in all user databases
+5. Stores credentials securely in AWS Secrets Manager
 
 ## Features
 
-- ✅ Secure credential storage in AWS Secrets Manager
-- ✅ No user creation needed (uses existing `rdsadmin` account)
-- ✅ Support for all Guardium VA tests out-of-the-box
+-  Automated `sqlguard` user creation via Lambda
+-  Secure credential storage in AWS Secrets Manager
+-  VPC-based deployment with automatic security group configuration
+-  Support for all SQL Server editions (Enterprise, Standard, Express, Web)
+
 
 ## Prerequisites
 
 - AWS RDS SQL Server instance
-- `rdsadmin` account password
+- Master account (`rdsadmin`) credentials
+- VPC with private subnets and NAT gateway
 - Terraform >= 1.0.0
 - AWS Provider ~> 5.0
 
@@ -39,8 +47,18 @@ module "mssql_va_config" {
   # Database Connection
   db_host     = "my-sqlserver.abc123.us-east-1.rds.amazonaws.com"
   db_port     = 1433
-  db_username = "rdsadmin"  # AWS RDS SQL Server admin account
+  db_username = "rdsadmin"  # AWS RDS SQL Server master account
   db_password = var.rdsadmin_password
+  database_name = "master"
+
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+
+  # Network Configuration
+  vpc_id               = "vpc-12345678"
+  subnet_ids           = ["subnet-12345678", "subnet-87654321"]
+  db_security_group_id = "sg-12345678"
 
   # General Configuration
   aws_region = "us-east-1"
@@ -55,7 +73,7 @@ module "mssql_va_config" {
 ### Complete Example with VA Registration
 
 ```hcl
-# Step 1: Configure credentials
+# Step 1: Create sqlguard user via Lambda
 module "mssql_va_config" {
   source = "../../modules/aws-rds-mss"
 
@@ -65,8 +83,16 @@ module "mssql_va_config" {
   db_username   = "rdsadmin"
   db_password   = var.rdsadmin_password
   database_name = "master"
-  aws_region    = var.aws_region
-  tags          = var.tags
+  
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+  
+  vpc_id               = var.vpc_id
+  subnet_ids           = var.subnet_ids
+  db_security_group_id = var.db_security_group_id
+  
+  aws_region = var.aws_region
+  tags       = var.tags
 }
 
 # Step 2: Create datasource configuration
@@ -78,8 +104,8 @@ locals {
     database_name          = "master"
     application            = "Security Assessment"
     datasource_description = "SQL Server VA datasource"
-    db_username            = "rdsadmin"
-    db_password            = var.rdsadmin_password
+    db_username            = "sqlguard"  # Use sqlguard for VA
+    db_password            = var.sqlguard_password
     severity_level         = "MED"
     save_password          = true
     use_ssl                = false
@@ -122,19 +148,7 @@ module "mssql_gdp_connection" {
 ```
 
 
-### SQL Server Approach (Simple)
-```
-SQL Server RDS → rdsadmin already has VA privileges → 
-Use rdsadmin directly for VA
-```
 
-The `rdsadmin` account in AWS RDS SQL Server already has:
-- ✅ Access to all system catalogs (sys.*)
-- ✅ VIEW SERVER STATE permission
-- ✅ VIEW ANY DATABASE permission
-- ✅ VIEW ANY DEFINITION permission
-- ✅ Access to master, msdb, and all user databases
-- ✅ All privileges needed for Guardium VA tests
 
 ## Inputs
 
@@ -143,13 +157,14 @@ The `rdsadmin` account in AWS RDS SQL Server already has:
 | name_prefix | Prefix for resource names | `string` | n/a | yes |
 | db_host | SQL Server database hostname | `string` | n/a | yes |
 | db_port | SQL Server database port | `number` | `1433` | no |
-| db_name | Database name | `string` | `"master"` | no |
+| database_name | Database name | `string` | `"master"` | no |
 | db_username | Database admin username (rdsadmin) | `string` | n/a | yes |
 | db_password | Database admin password | `string` | n/a | yes |
 | sqlguard_username | VA user username | `string` | `"sqlguard"` | no |
 | sqlguard_password | VA user password | `string` | n/a | yes |
-| vpc_id | VPC ID for Lambda | `string` | n/a | yes |
-| subnet_ids | Private subnet IDs for Lambda | `list(string)` | n/a | yes |
+| vpc_id | VPC ID for Lambda deployment | `string` | n/a | yes |
+| subnet_ids | Private subnet IDs for Lambda (with NAT gateway) | `list(string)` | n/a | yes |
+| db_security_group_id | Security group ID of RDS SQL Server instance | `string` | n/a | yes |
 | aws_region | AWS region | `string` | n/a | yes |
 | tags | Resource tags | `map(string)` | `{}` | no |
 
@@ -202,6 +217,9 @@ SELECT IS_SRVROLEMEMBER('setupadmin', 'sqlguard');
 USE YourDatabase;
 SELECT IS_ROLEMEMBER('gdmmonitor', 'sqlguard');
 ```
+
+
+
 
 ## Support
 

@@ -158,6 +158,17 @@ resource "aws_vpc_endpoint" "secretsmanager" {
   tags = var.tags
 }
 
+# Add ingress rule to SQL Server RDS security group to allow Lambda access
+resource "aws_security_group_rule" "mssql_allow_lambda" {
+  type                     = "ingress"
+  from_port                = var.db_port
+  to_port                  = var.db_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.lambda_sg.id
+  security_group_id        = var.db_security_group_id
+  description              = "Allow Lambda function to connect to SQL Server for VA configuration"
+}
+
 #------------------------------------------------------------------------------
 # Lambda Function
 #------------------------------------------------------------------------------
