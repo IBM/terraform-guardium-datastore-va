@@ -25,6 +25,19 @@ db_host     = "my-sqlserver.abc123.us-east-1.rds.amazonaws.com"
 db_port     = 1433
 db_username = "rdsadmin"  # AWS RDS SQL Server admin account
 db_password = "your-rdsadmin-password-here"  # CHANGE THIS
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"  # VA user that will be created
+sqlguard_password = "your-sqlguard-password-here"  # CHANGE THIS - Strong password for VA user
+
+#------------------------------------------------------------------------------
+# Lambda Configuration (VPC where SQL Server is accessible)
+#------------------------------------------------------------------------------
+vpc_id     = "vpc-xxxxxxxxx"  # CHANGE THIS - VPC ID where your SQL Server is located
+subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # CHANGE THIS - Private subnet IDs with NAT gateway
+
 database_name = "master"
 
 #------------------------------------------------------------------------------

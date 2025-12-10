@@ -140,16 +140,17 @@ The `rdsadmin` account in AWS RDS SQL Server already has:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| name_prefix | Prefix for resource names | `string` | n/a | yes |
 | db_host | SQL Server database hostname | `string` | n/a | yes |
 | db_port | SQL Server database port | `number` | `1433` | no |
-| db_username | Database username (typically rdsadmin) | `string` | `"rdsadmin"` | no |
-| db_password | Database password | `string` | n/a | yes |
-| database_name | Database name | `string` | `"master"` | no |
-| name_prefix | Prefix for resource names | `string` | n/a | yes |
+| db_name | Database name | `string` | `"master"` | no |
+| db_username | Database admin username (rdsadmin) | `string` | n/a | yes |
+| db_password | Database admin password | `string` | n/a | yes |
+| sqlguard_username | VA user username | `string` | `"sqlguard"` | no |
+| sqlguard_password | VA user password | `string` | n/a | yes |
+| vpc_id | VPC ID for Lambda | `string` | n/a | yes |
+| subnet_ids | Private subnet IDs for Lambda | `list(string)` | n/a | yes |
 | aws_region | AWS region | `string` | n/a | yes |
-| datasource_name | Guardium datasource name | `string` | `"rds-mssql-va"` | no |
-| enable_vulnerability_assessment | Enable VA | `bool` | `true` | no |
-| assessment_schedule | VA schedule (daily/weekly/monthly) | `string` | `"weekly"` | no |
 | tags | Resource tags | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -158,31 +159,49 @@ The `rdsadmin` account in AWS RDS SQL Server already has:
 |------|-------------|
 | secret_arn | ARN of the Secrets Manager secret |
 | secret_name | Name of the Secrets Manager secret |
+| lambda_function_name | Name of the Lambda function |
+| lambda_log_group | CloudWatch log group for Lambda |
 | db_host | SQL Server database host |
 | db_port | SQL Server database port |
-| db_username | Database username (rdsadmin) |
-| datasource_name | Guardium datasource name |
+| sqlguard_username | VA user username (sqlguard) |
 
 ## Security Considerations
 
-1. **Credentials Storage**: The `rdsadmin` password is stored encrypted in AWS Secrets Manager
-2. **Least Privilege**: The `rdsadmin` account is AWS-managed and has appropriate permissions
-3. **No Additional Users**: No need to create additional database users, reducing attack surface
-4. **Secrets Rotation**: Consider enabling automatic rotation for the Secrets Manager secret
+1. **Credentials Storage**: Both `rdsadmin` and `sqlguard` passwords are stored encrypted in AWS Secrets Manager
+2. **Least Privilege**: `sqlguard` has only the permissions needed for VA scans:
+   - Server-level VIEW permissions (VIEW SERVER STATE, VIEW ANY DEFINITION, VIEW ANY DATABASE)
+   - setupadmin server role
+   - gdmmonitor role in user databases (SELECT on system views)
+3. **Separation of Duties**: `rdsadmin` for administration, `sqlguard` for VA scans only
+4. **Network Security**: Lambda runs in private subnet with VPC endpoint for Secrets Manager
+5. **Secrets Rotation**: Consider enabling automatic rotation for both secrets
 
 ## Troubleshooting
 
-### Issue: Cannot connect to SQL Server
-**Solution**: Verify that:
-- The RDS instance is accessible
-- Security groups allow connections
-- The `rdsadmin` password is correct
+### Issue: Lambda function fails to create sqlguard user
+**Solution**: Check Lambda logs:
+```bash
+aws logs tail /aws/lambda/<name-prefix>-mssql-va-config --follow
+```
+Common issues:
+- Lambda cannot reach SQL Server (check security groups)
+- Lambda cannot reach Secrets Manager (check VPC endpoint)
+- rdsadmin credentials are incorrect
+- SQL Server is not ready yet
 
 ### Issue: VA tests failing
-**Solution**: The `rdsadmin` account should have all necessary privileges by default. If tests fail:
-- Verify the SQL Server version is supported
-- Check Guardium logs for specific errors
-- Ensure the database is online and accessible
+**Solution**: Verify sqlguard user was created successfully:
+```sql
+-- Check server-level permissions
+SELECT * FROM sys.server_permissions WHERE grantee_principal_id = SUSER_ID('sqlguard');
+
+-- Check server role membership
+SELECT IS_SRVROLEMEMBER('setupadmin', 'sqlguard');
+
+-- Check database role membership (in user databases)
+USE YourDatabase;
+SELECT IS_ROLEMEMBER('gdmmonitor', 'sqlguard');
+```
 
 ## Support
 

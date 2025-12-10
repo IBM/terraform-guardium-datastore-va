@@ -64,6 +64,40 @@ variable "database_name" {
 }
 
 #------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+
+variable "sqlguard_username" {
+  description = "Username for the sqlguard VA user to be created"
+  type        = string
+  default     = "sqlguard"
+}
+
+variable "sqlguard_password" {
+  description = "Password for the sqlguard VA user"
+  type        = string
+  sensitive   = true
+}
+
+#------------------------------------------------------------------------------
+# Lambda Configuration
+#------------------------------------------------------------------------------
+
+variable "vpc_id" {
+  description = "VPC ID where Lambda function will be deployed"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for Lambda function (should be private subnets with NAT gateway)"
+  type        = list(string)
+}
+
+variable "db_security_group_id" {
+  description = "Security group ID of the RDS SQL Server instance"
+  type        = string
+}
+#------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Configuration
 #------------------------------------------------------------------------------
 

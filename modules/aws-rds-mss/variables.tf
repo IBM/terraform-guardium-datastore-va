@@ -37,6 +37,36 @@ variable "database_name" {
   type        = string
   default     = "master"
 }
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+
+variable "sqlguard_username" {
+  description = "Username for the sqlguard VA user to be created"
+  type        = string
+  default     = "sqlguard"
+}
+
+variable "sqlguard_password" {
+  description = "Password for the sqlguard VA user"
+  type        = string
+  sensitive   = true
+}
+
+#------------------------------------------------------------------------------
+# Lambda Configuration
+#------------------------------------------------------------------------------
+
+variable "vpc_id" {
+  description = "VPC ID where Lambda function will be deployed"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for Lambda function"
+  type        = list(string)
+}
+
 
 #------------------------------------------------------------------------------
 # General Configuration

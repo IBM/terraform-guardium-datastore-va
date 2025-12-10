@@ -11,5 +11,9 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    gdp-middleware-helper = {
+      source  = "ibm/gdp-middleware-helper"
+      version = ">= 1.0.0"
+    }
   }
 }

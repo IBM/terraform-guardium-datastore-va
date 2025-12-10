@@ -16,11 +16,23 @@ module "mssql_va_config" {
   #----------------------------------------
   # Database Connection Details
   #----------------------------------------
-  db_host     = var.db_host
-  db_port     = var.db_port
-  db_username = var.db_username  
-  db_password = var.db_password
+  db_host       = var.db_host
+  db_port       = var.db_port
+  db_username   = var.db_username  
+  db_password   = var.db_password
   database_name = var.database_name
+
+  #----------------------------------------
+  # VA User Configuration
+  #----------------------------------------
+  sqlguard_username = var.sqlguard_username
+  sqlguard_password = var.sqlguard_password
+
+  #----------------------------------------
+  # Lambda Configuration
+  #----------------------------------------
+  vpc_id     = var.vpc_id
+  subnet_ids = var.subnet_ids
 
   #----------------------------------------
   # General Configuration
@@ -40,8 +52,8 @@ locals {
     database_name                   = var.database_name
     application                     = var.application
     datasource_description          = var.datasource_description
-    db_username                     = var.db_username
-    db_password                     = var.db_password
+    db_username                     = var.sqlguard_username
+    db_password                     = var.sqlguard_password
     severity_level                  = var.severity_level
     service_name                    = var.service_name
     shared_datasource               = var.shared_datasource
