@@ -1,0 +1,120 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+aws_region  = "us-east-1"
+name_prefix = "oracle-monitoring"
+
+tags = {
+  Purpose     = "guardium-va-config"
+  Owner       = "security-team@example.com"
+  Environment = "production"
+  ManagedBy   = "terraform"
+}
+
+#------------------------------------------------------------------------------
+# Oracle Configuration
+#------------------------------------------------------------------------------
+# The hostname or endpoint of your Oracle database
+db_host = "your-oracle-db.xxxxx.us-east-1.rds.amazonaws.com"
+
+# Port for Oracle database (default is 1521, Autonomous usually uses 1522)
+db_port = 1521
+
+# Service name (e.g., ORCL, ORCLPDB1 for RDS, or service_high/medium/low for Autonomous)
+db_service_name = "ORCL"
+
+# Admin username (must have DBA privileges, or ADMIN for Autonomous)
+db_username = "admin"
+
+# Admin password (sensitive - use environment variable or secure method)
+db_password = "your-secure-password-here"
+
+#------------------------------------------------------------------------------
+# Network Configuration
+#------------------------------------------------------------------------------
+# VPC ID where the Lambda function will be deployed
+vpc_id = "vpc-0123456789abcdef0"
+
+# Subnet IDs where the Lambda function will be deployed (must have connectivity to Oracle)
+subnet_ids = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Configuration
+#------------------------------------------------------------------------------
+# Username for the Guardium VA user (will be created and granted gdmmonitor role)
+sqlguard_username = "sqlguard"
+
+# Password for the sqlguard user (sensitive - use environment variable or secure method)
+sqlguard_password = "your-sqlguard-password-here"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Connection Configuration
+#------------------------------------------------------------------------------
+# Guardium server hostname or IP address
+gdp_server = "guardium.example.com"
+
+# Guardium server port (default is 8443)
+gdp_port = "8443"
+
+# Guardium username
+gdp_username = "admin"
+
+# Guardium password (sensitive - use environment variable or secure method)
+gdp_password = "your-guardium-password-here"
+
+# OAuth client ID (default is 'client1')
+client_id = "client1"
+
+# OAuth client secret (sensitive - use environment variable or secure method)
+# Generate this using: grdapi register_oauth_client client_id=client1 grant_types=password
+client_secret = "your-client-secret-here"
+
+#------------------------------------------------------------------------------
+# Guardium Data Source Registration Configuration
+#------------------------------------------------------------------------------
+# Unique name for the datasource in Guardium
+datasource_name = "oracle-production"
+
+# Description of the datasource
+datasource_description = "Oracle production database onboarded via Terraform"
+
+# Application type (default is 'Security Assessment')
+application = "Security Assessment"
+
+# Severity level: LOW, NONE, MED, HIGH (default is MED)
+severity_level = "MED"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule Configuration
+#------------------------------------------------------------------------------
+# Enable vulnerability assessment (default is true)
+enable_vulnerability_assessment = true
+
+# Assessment schedule: daily, weekly, monthly (default is weekly)
+assessment_schedule = "weekly"
+
+# Day to run the assessment (e.g., Monday for weekly, 1 for monthly)
+assessment_day = "Monday"
+
+# Time to run the assessment in 24-hour format (e.g., 02:00)
+assessment_time = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+# Enable notifications for assessment results (default is true)
+enable_notifications = true
+
+# List of email addresses to notify
+notification_emails = [
+  "security-team@example.com",
+  "dba-team@example.com"
+]
+
+# Minimum severity level for notifications: HIGH, MED, LOW, NONE (default is HIGH)
+notification_severity = "HIGH"
