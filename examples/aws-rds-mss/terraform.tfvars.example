@@ -35,8 +35,9 @@ sqlguard_password = "your-sqlguard-password-here"  # CHANGE THIS - Strong passwo
 #------------------------------------------------------------------------------
 # Lambda Configuration (VPC where SQL Server is accessible)
 #------------------------------------------------------------------------------
-vpc_id     = "vpc-xxxxxxxxx"  # CHANGE THIS - VPC ID where your SQL Server is located
-subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # CHANGE THIS - Private subnet IDs with NAT gateway
+vpc_id               = "vpc-xxxxxxxxx"  # CHANGE THIS - VPC ID where your SQL Server is located
+subnet_ids           = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # CHANGE THIS - Private subnet IDs with NAT gateway
+db_security_group_id = "sg-xxxxxxxxx"  # CHANGE THIS - Security group ID of your RDS SQL Server instance
 
 database_name = "master"
 
