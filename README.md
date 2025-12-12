@@ -322,7 +322,7 @@ Configure vulnerability assessment for AWS RDS SQL Server:
 
 ```hcl
 module "mssql_va" {
-  source = "IBM/datastore-va/guardium//modules/aws-rds-mss"
+  source = "IBM/datastore-va/guardium//modules/aws-rds-sql-server"
 
   name_prefix = "myproject"
   
@@ -507,7 +507,7 @@ Configures SQL Server databases for vulnerability assessment using Lambda-based 
 - Automatically configures security group rules for Lambda access
 - Supports all SQL Server editions (Enterprise, Standard, Express, Web)
 
-[Module Documentation](./modules/aws-rds-mss/README.md)
+[Module Documentation](./modules/aws-rds-sql-server/README.md)
 
 ### AWS Redshift VA Configuration
 
@@ -530,7 +530,7 @@ Complete working examples are provided for each supported datastore:
 - [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
 - [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
-- [AWS RDS SQL Server with VA](./examples/aws-rds-mss) - SQL Server vulnerability assessment configuration
+- [AWS RDS SQL Server with VA](./examples/aws-rds-sql-server) - SQL Server vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
 
 Each example includes:
@@ -581,7 +581,7 @@ Your AWS credentials must have permissions for:
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-rds-mariadb, aws-redshift, aws-rds-mss
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-rds-mariadb, aws-redshift, aws-rds-sql-server
    ```
 
 3. **Configure variables**:

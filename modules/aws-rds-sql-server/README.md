@@ -40,7 +40,7 @@ This module uses AWS Lambda to automatically create and configure a dedicated `s
 
 ```hcl
 module "mssql_va_config" {
-  source = "../../modules/aws-rds-mss"
+  source = "../../modules/aws-rds-sql-server"
 
   name_prefix = "my-app"
 
@@ -75,7 +75,7 @@ module "mssql_va_config" {
 ```hcl
 # Step 1: Create sqlguard user via Lambda
 module "mssql_va_config" {
-  source = "../../modules/aws-rds-mss"
+  source = "../../modules/aws-rds-sql-server"
 
   name_prefix   = "my-app"
   db_host       = var.db_host

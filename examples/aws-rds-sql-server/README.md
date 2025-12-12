@@ -96,7 +96,7 @@ This module creates a dedicated `sqlguard` user with appropriate privileges for 
 ### 1. Clone and Navigate
 
 ```bash
-cd examples/aws-rds-mss
+cd examples/aws-rds-sql-server
 ```
 
 ### 2. Configure Variables

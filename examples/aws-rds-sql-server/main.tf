@@ -9,7 +9,7 @@
 # Step 1: Store SQL Server credentials securely
 #------------------------------------------------------------------------------
 module "mssql_va_config" {
-  source = "../../modules/aws-rds-mss"
+  source = "../../modules/aws-rds-sql-server"
 
   name_prefix = var.name_prefix
 
