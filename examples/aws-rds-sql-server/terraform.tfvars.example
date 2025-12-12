@@ -1,0 +1,99 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# AWS RDS SQL Server with VA Example - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+aws_region  = "us-east-1"
+name_prefix = "my-app-mssql-va"
+
+tags = {
+  Environment = "production"
+  Application = "guardium-va"
+  Owner       = "security-team@example.com"
+}
+
+#------------------------------------------------------------------------------
+# RDS SQL Server Configuration
+#------------------------------------------------------------------------------
+db_host     = "my-sqlserver.abc123.us-east-1.rds.amazonaws.com"
+db_port     = 1433
+db_username = "rdsadmin"  # AWS RDS SQL Server admin account
+db_password = "your-rdsadmin-password-here"  # CHANGE THIS
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"  # VA user that will be created
+sqlguard_password = "your-sqlguard-password-here"  # CHANGE THIS - Strong password for VA user
+
+#------------------------------------------------------------------------------
+# Lambda Configuration (VPC where SQL Server is accessible)
+#------------------------------------------------------------------------------
+vpc_id               = "vpc-xxxxxxxxx"  # CHANGE THIS - VPC ID where your SQL Server is located
+subnet_ids           = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  # CHANGE THIS - Private subnet IDs with NAT gateway
+db_security_group_id = "sg-xxxxxxxxx"  # CHANGE THIS - Security group ID of your RDS SQL Server instance
+
+database_name = "master"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Connection
+#------------------------------------------------------------------------------
+gdp_server   = "guardium.example.com"
+gdp_port     = "8443"
+gdp_username = "guardium_admin"
+gdp_password = "your-guardium-password-here"  # CHANGE THIS
+
+# OAuth client credentials (from: grdapi register_oauth_client client_id=client1 grant_types=password)
+client_id     = "client1"
+client_secret = "your-client-secret-here"  # CHANGE THIS
+
+#------------------------------------------------------------------------------
+# Datasource Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "my-sqlserver-va"
+datasource_description = "Production SQL Server for Vulnerability Assessment"
+application            = "Security Assessment"
+severity_level         = "HIGH"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"  # Options: daily, weekly, monthly
+assessment_day                  = "Monday"  # For weekly: day name; for monthly: day number
+assessment_time                 = "02:00"   # 24-hour format
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com", "dba-team@example.com"]
+notification_severity = "HIGH"  # Options: HIGH, MED, LOW, NONE
+
+#------------------------------------------------------------------------------
+# Advanced Configuration (Optional)
+#------------------------------------------------------------------------------
+save_password     = true
+use_ssl           = false
+shared_datasource = "Not Shared"
+
+# External Password Management (Optional)
+use_external_password = false
+# external_password_type_name     = "AWS Secrets Manager"
+# aws_secrets_manager_config_name = "my-secrets-config"
+# region                          = "us-east-1"
+# secret_name                     = "my-db-secret"
+
+# Kerberos Authentication (Optional)
+use_kerberos = false
+# kerberos_config_name = "my-kerberos-config"
+
+# Custom Connection Properties (Optional)
+# connection_properties = "encrypt=true;trustServerCertificate=false"
+# custom_url            = "jdbc:sqlserver://host:port;databaseName=mydb"
