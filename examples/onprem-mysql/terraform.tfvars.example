@@ -1,0 +1,72 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# On-Premise MySQL VA Example - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+
+#------------------------------------------------------------------------------
+# Database Connection Details
+#------------------------------------------------------------------------------
+# Example: mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED
+db_host     = "api.rr1.cp.fyre.ibm.com"
+db_port     = 3306
+db_username = "root"
+db_password = "your-mysql-root-password"
+
+#------------------------------------------------------------------------------
+# Guardium VA User Configuration
+#------------------------------------------------------------------------------
+# These credentials will be used to create a dedicated VA user in MySQL
+sqlguard_username = "sqlguard"
+sqlguard_password = "your-sqlguard-password"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Connection Details
+#------------------------------------------------------------------------------
+gdp_server    = "your-guardium-server.example.com"
+gdp_username  = "your-guardium-username"
+gdp_password  = "your-guardium-password"
+client_id     = "your-oauth-client-id"
+client_secret = "your-oauth-client-secret"
+
+#------------------------------------------------------------------------------
+# Datasource Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "onprem-mysql-fyre"
+datasource_description = "On-premise MySQL database at api.rr1.cp.fyre.ibm.com"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# SSL Configuration
+#------------------------------------------------------------------------------
+# Set to true if your MySQL requires SSL (--ssl-mode=REQUIRED)
+use_ssl                = true
+import_server_ssl_cert = false
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule Configuration
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# Tags
+#------------------------------------------------------------------------------
+tags = {
+  Purpose     = "guardium-va-onprem-mysql"
+  Owner       = "security-team@example.com"
+  Environment = "production"
+  Database    = "mysql-fyre"
+}
