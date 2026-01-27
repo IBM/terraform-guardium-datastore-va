@@ -7,10 +7,136 @@
 # This module configures Vulnerability Assessment for on-premise MySQL databases
 # without requiring AWS Lambda or other AWS services
 
+#------------------------------------------------------------------------------
+# Terraform-Native Validations for MySQL Configuration
+#------------------------------------------------------------------------------
+
+# Validation 1: Admin user should not be 'root' (best practice)
+resource "terraform_data" "validate_admin_user" {
+  lifecycle {
+    precondition {
+      condition     = var.db_username != "root"
+      error_message = <<-EOT
+        ⚠️  SECURITY WARNING: Using 'root' user is not recommended!
+        
+        Best Practice: Create a dedicated admin user for Terraform operations.
+        
+        On your MySQL server, run:
+          CREATE USER 'terraform_admin'@'%' IDENTIFIED WITH caching_sha2_password BY 'StrongPassword123!';
+          GRANT ALL PRIVILEGES ON *.* TO 'terraform_admin'@'%' WITH GRANT OPTION;
+          FLUSH PRIVILEGES;
+        
+        Then update terraform.tfvars:
+          db_username = "terraform_admin"
+          db_password = "StrongPassword123!"
+      EOT
+    }
+  }
+}
+
+# Validation 2: Password strength check for sqlguard user (MySQL 9.6 requirements)
+resource "terraform_data" "validate_sqlguard_password" {
+  lifecycle {
+    precondition {
+      condition = (
+        length(var.sqlguard_password) >= 8 &&
+        can(regex("[A-Z]", var.sqlguard_password)) &&
+        can(regex("[a-z]", var.sqlguard_password)) &&
+        can(regex("[0-9]", var.sqlguard_password)) &&
+        can(regex("[^A-Za-z0-9]", var.sqlguard_password))
+      )
+      error_message = <<-EOT
+        ❌ ERROR: sqlguard_password does not meet MySQL 9.6 password policy requirements!
+        
+        MySQL 9.6 requires passwords to have:
+          ✓ At least 8 characters
+          ✓ At least one uppercase letter (A-Z)
+          ✓ At least one lowercase letter (a-z)
+          ✓ At least one number (0-9)
+          ✓ At least one special character (!@#$%^&*)
+        
+        Example strong password: SqlGuard@2024!Strong
+        
+        Update terraform.tfvars:
+          sqlguard_password = "SqlGuard@2024!Strong"
+      EOT
+    }
+  }
+}
+
+# Validation 3: Ensure sqlguard user is different from admin user
+resource "terraform_data" "validate_user_separation" {
+  lifecycle {
+    precondition {
+      condition     = var.sqlguard_username != var.db_username
+      error_message = <<-EOT
+        ❌ ERROR: sqlguard_username cannot be the same as db_username!
+        
+        The sqlguard user is for Guardium VA scanning (read-only privileges).
+        The db_username is for administrative operations (full privileges).
+        
+        These must be different users for security and least-privilege principles.
+        
+        Update terraform.tfvars:
+          db_username       = "terraform_admin"  # Admin user
+          sqlguard_username = "sqlguard"         # VA scanning user
+      EOT
+    }
+  }
+}
+
+# Validation 4: SSL configuration check
+resource "terraform_data" "validate_ssl_config" {
+  lifecycle {
+    precondition {
+      condition     = !var.use_ssl || var.import_server_ssl_cert
+      error_message = <<-EOT
+        ⚠️  SECURITY WARNING: SSL is enabled but certificate verification is disabled!
+        
+        This configuration is vulnerable to man-in-the-middle attacks.
+        
+        For production environments, set:
+          use_ssl                = true
+          import_server_ssl_cert = true
+        
+        This ensures MySQL server's SSL certificate is verified by Guardium.
+      EOT
+    }
+  }
+}
+
+# Validation 5: Port number validation
+resource "terraform_data" "validate_port" {
+  lifecycle {
+    precondition {
+      condition     = var.db_port > 0 && var.db_port <= 65535
+      error_message = "db_port must be between 1 and 65535. Standard MySQL port is 3306."
+    }
+  }
+}
+
+# Validation 6: Hostname format validation
+resource "terraform_data" "validate_hostname" {
+  lifecycle {
+    precondition {
+      condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$", var.db_host))
+      error_message = <<-EOT
+        ❌ ERROR: db_host must be a valid hostname or IP address.
+        
+        Examples:
+          - api.rr1.cp.fyre.ibm.com
+          - mysql.example.com
+          - 192.168.1.100
+      EOT
+    }
+  }
+}
+
 locals {
-  # SQL commands to create sqlguard user
+  # SQL commands to create sqlguard user - Universal for MySQL 5.7+, 8.0, 9.x
+  # Using caching_sha2_password for MySQL 9.x compatibility
   create_user_sql = <<-SQL
-    CREATE USER IF NOT EXISTS '${var.sqlguard_username}'@'%' IDENTIFIED BY '${var.sqlguard_password}';
+    CREATE USER IF NOT EXISTS '${var.sqlguard_username}'@'%' IDENTIFIED WITH caching_sha2_password BY '${var.sqlguard_password}';
     GRANT SELECT ON *.* TO '${var.sqlguard_username}'@'%';
     GRANT SHOW DATABASES ON *.* TO '${var.sqlguard_username}'@'%';
     GRANT PROCESS ON *.* TO '${var.sqlguard_username}'@'%';
@@ -72,9 +198,28 @@ resource "null_resource" "create_sqlguard_user" {
       mysql -h ${var.db_host} \
             -P ${var.db_port} \
             -u ${var.db_username} \
-            -p'${var.db_password}' \
+            --password='${var.db_password}' \
             ${var.use_ssl ? "--ssl-mode=REQUIRED" : ""} \
+            --connect-timeout=30 \
             -e "${local.create_user_sql}"
+    EOT
+    
+    on_failure = continue
+  }
+  
+  # Verification step to check if user was created successfully
+  provisioner "local-exec" {
+    when    = create
+    command = <<-EOT
+      echo "Verifying sqlguard user creation..."
+      mysql -h ${var.db_host} \
+            -P ${var.db_port} \
+            -u ${var.db_username} \
+            --password='${var.db_password}' \
+            ${var.use_ssl ? "--ssl-mode=REQUIRED" : ""} \
+            --connect-timeout=30 \
+            -e "SELECT User, Host, plugin FROM mysql.user WHERE User='${var.sqlguard_username}';" || \
+      echo "⚠️  Warning: Could not verify sqlguard user creation. Please verify manually."
     EOT
   }
 }

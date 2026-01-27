@@ -40,11 +40,19 @@ application            = "Security Assessment"
 severity_level         = "MED"
 
 #------------------------------------------------------------------------------
-# SSL Configuration
+# SSL Configuration - SECURE DEFAULTS FOR PRODUCTION
 #------------------------------------------------------------------------------
-# Set to true if your MySQL requires SSL (--ssl-mode=REQUIRED)
+# ⚠️ IMPORTANT SECURITY NOTICE:
+# - use_ssl = true: Enables SSL/TLS encryption
+# - import_server_ssl_cert = true: Verifies the server's SSL certificate (RECOMMENDED)
+#
+# Certificate verification prevents man-in-the-middle (MITM) attacks by ensuring
+# you're connecting to the legitimate MySQL server.
+#
+# Set import_server_ssl_cert = false ONLY for dev/test environments where security
+# is not critical. NEVER disable certificate verification in production!
 use_ssl                = true
-import_server_ssl_cert = false
+import_server_ssl_cert = true  # Default changed to true for security
 
 #------------------------------------------------------------------------------
 # Vulnerability Assessment Schedule Configuration
