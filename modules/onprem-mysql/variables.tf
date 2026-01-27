@@ -173,9 +173,9 @@ variable "use_ssl" {
 }
 
 variable "import_server_ssl_cert" {
-  description = "Whether to import the server SSL certificate"
+  description = "Whether to import and verify the server SSL certificate. IMPORTANT: For production environments, this should be true when use_ssl is enabled to prevent man-in-the-middle attacks."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "service_name" {
