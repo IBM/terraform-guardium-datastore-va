@@ -1,0 +1,35 @@
+#
+# Copyright IBM Corp. 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# On-Premise PostgreSQL VA Configuration Example
+# Copy this file to terraform.tfvars and update with your values
+
+# PostgreSQL Database Connection
+db_host     = "api.rr1.cp.fyre.ibm.com"
+db_port     = 5432
+db_name     = "postgres"
+db_username = "postgres"  # ⚠️ Consider creating a dedicated admin user instead
+db_password = "Vancouver1213412@@@@"
+
+# Guardium VA User Configuration
+sqlguard_username = "sqlguard"
+sqlguard_password = "SqlGuard@2024!Strong"  # Must meet password requirements
+
+# SSL Configuration
+# For development/testing without SSL:
+use_ssl  = false
+ssl_mode = "disable"
+
+# For production with SSL (recommended):
+# use_ssl  = true
+# ssl_mode = "require"  # or "verify-ca" or "verify-full"
+
+# Tags
+tags = {
+  Environment = "Development"
+  Owner       = "Security Team"
+  Purpose     = "Guardium VA Configuration"
+  ManagedBy   = "Terraform"
+}
