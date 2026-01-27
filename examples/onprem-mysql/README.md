@@ -11,7 +11,7 @@ This example demonstrates how to configure Vulnerability Assessment (VA) for an 
 ## Overview
 
 This example shows how to:
-- Connect to an on-premise MySQL database (e.g., `mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED`)
+- Connect to an on-premise MySQL database (e.g., `mysql -h mysql.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED`)
 - Register the database with Guardium for vulnerability assessments
 - Configure **secure** SSL/TLS connections with certificate verification
 - Set up automated assessment schedules
