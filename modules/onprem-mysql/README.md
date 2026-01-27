@@ -14,10 +14,13 @@ This Terraform module configures Vulnerability Assessment (VA) for on-premise My
 ## Prerequisites
 
 1. **MySQL Database**: An accessible on-premise MySQL database (version 5.7 or higher recommended)
+   - **MySQL 9.6 Users**: See [MySQL 9.6 Troubleshooting Guide](./MYSQL_9.6_TROUBLESHOOTING.md) for version-specific considerations
 2. **Network Connectivity**: Guardium must be able to reach your MySQL database
 3. **MySQL Admin Access**: Database credentials with privileges to create users and grant permissions
+   - For MySQL 9.6+, root user may need remote access configured (see troubleshooting guide)
 4. **Guardium Data Protection**: A configured Guardium instance with API access
 5. **Terraform**: Version 1.3 or higher
+6. **MySQL Client**: MySQL command-line client installed on the machine running Terraform
 
 ## MySQL Connection Example
 
@@ -145,6 +148,15 @@ module "onprem_mysql_va" {
 
 ## Troubleshooting
 
+### MySQL 9.6 Specific Issues
+
+**⚠️ If you're using MySQL 9.6, please see the [MySQL 9.6 Troubleshooting Guide](./MYSQL_9.6_TROUBLESHOOTING.md) for detailed solutions.**
+
+Common MySQL 9.6 issues:
+- **ERROR 1045 (28000): Access denied** - Root user may not have remote access configured
+- **Authentication plugin errors** - MySQL 9.6 uses different default authentication
+- **Connection timeouts** - Stricter security settings in MySQL 9.6
+
 ### Connection Issues
 
 If Guardium cannot connect to MySQL:
@@ -153,6 +165,7 @@ If Guardium cannot connect to MySQL:
 2. Check firewall rules
 3. Verify MySQL is listening on the correct interface
 4. Test SSL connection manually if enabled
+5. For MySQL 9.6+, verify remote access is configured (see troubleshooting guide)
 
 ### SSL Issues
 
@@ -169,6 +182,7 @@ If VA fails due to permissions:
 1. Verify admin user has sufficient privileges
 2. Check MySQL error logs
 3. Ensure `sqlguard` user was created successfully
+4. For MySQL 9.6+, verify authentication plugin compatibility
 
 ## Example: Testing Connection
 
