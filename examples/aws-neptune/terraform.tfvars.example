@@ -1,0 +1,96 @@
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+aws_region  = "us-west-2"
+name_prefix = "guardium-neptune-va"
+
+tags = {
+  Environment = "production"
+  Purpose     = "guardium-va-neptune"
+  Owner       = "your-email@example.com"
+  ManagedBy   = "terraform"
+}
+
+#------------------------------------------------------------------------------
+# Neptune Configuration
+# Replace these with your actual Neptune cluster details
+#------------------------------------------------------------------------------
+neptune_cluster_endpoint    = "guardium-neptune-rr-guardium-neptune.cluster-cfgvn1b2xaft.us-west-2.neptune.amazonaws.com"
+neptune_cluster_identifier  = "guardium-neptune-rr-guardium-neptune"
+neptune_cluster_port        = 8182
+db_username                 = "sqlguard"  # For Guardium registration (Neptune uses IAM auth at runtime)
+db_password                 = "your-neptune-admin-password"  # For Guardium registration (Neptune uses IAM auth at runtime)
+datasource_database         = "your-neptune-cluster-identifier"  # Neptune cluster identifier (required by Guardium)
+
+# AWS Secrets Manager Configuration (must exist in Guardium before registering Neptune datasource)
+aws_secrets_manager_config_name = "your-aws-secrets-manager-config-name"  # Name of existing AWS Secrets Manager config in Guardium (e.g., "matt")
+
+#------------------------------------------------------------------------------
+# Network Configuration
+# Replace with your VPC and subnet IDs
+#------------------------------------------------------------------------------
+vpc_id     = "vpc-xxxxxxxxxxxxx"
+subnet_ids = ["subnet-xxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyy"]
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Configuration
+#------------------------------------------------------------------------------
+gdp_server   = "guardium.example.com"
+gdp_port     = "8443"
+gdp_username = "admin"
+gdp_password = "your-guardium-password"  # Use a secure password
+
+# OAuth client credentials (generated via: grdapi register_oauth_client client_id=client1 grant_types=password)
+client_id     = "client1"
+client_secret = "your-client-secret"
+
+#------------------------------------------------------------------------------
+# Data Source Registration
+#------------------------------------------------------------------------------
+datasource_name        = "neptune-production-va"
+datasource_description = "Production Neptune cluster for vulnerability assessment"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"
+sqlguard_password = "your-sqlguard-password"  # Use a secure password
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com", "dba-team@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# Advanced Configuration (Optional)
+#------------------------------------------------------------------------------
+save_password          = true
+use_ssl                = true
+import_server_ssl_cert = false
+shared_datasource      = "Not Shared"
+
+# External Password Management (Optional)
+# use_external_password          = false
+# external_password_type_name    = ""
+# aws_secrets_manager_config_name = ""
+# region                         = ""
+# secret_name                    = ""
+
+# Kerberos Configuration (Optional)
+# use_kerberos         = false
+# kerberos_config_name = ""
+
+# LDAP Configuration (Optional)
+# use_ldap = false
