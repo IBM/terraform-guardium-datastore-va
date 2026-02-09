@@ -323,11 +323,7 @@ variable "region" {
   default     = ""
 }
 
-variable "secret_name" {
-  description = "Secret name for external password management"
-  type        = string
-  default     = ""
-}
+
 
 variable "db_instance_account" {
   description = "Database account login name used by CAS"
