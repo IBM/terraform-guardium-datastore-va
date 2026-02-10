@@ -1,6 +1,6 @@
 # Guardium Datastore Vulnerability Assessment Terraform Module
 
-Terraform module which configures AWS datastores for vulnerability assessment and connects them to IBM Guardium Data Protection (GDP).
+Terraform module which configures AWS and on-premises datastores for vulnerability assessment and connects them to IBM Guardium Data Protection (GDP).
 
 ## Scope
 
@@ -22,7 +22,7 @@ This module provides automated configuration of datastores for vulnerability ass
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│                         AWS Datastore Resources                             │
+│                    AWS & On-Premises Datastore Resources                    │
 │                                                                             │
 │   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
 │   │DynamoDB  │  │   RDS    │  │   RDS    │  │   RDS    │  │ Redshift │      │
@@ -33,11 +33,10 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │  Aurora      │  │   RDS    │                                            │
 │   │  PostgreSQL  │  │SQL Server│                                            │
 │   └──────────────┘  └──────────┘                                            │
-│   ┌──────────┐                                                              │
-│   │   RDS    │                                                              │
-│   │  Oracle  │                                                              │
-│   └──────────┘                                                              │
-│                                                                             │
+│   ┌──────────┐  ┌──────────────┐  ┌──────────────┐                          │
+│   │   RDS    │  │  On-Prem     │  │  On-Prem     │                          │
+│   │  Oracle  │  │  MySQL       │  │  PostgreSQL  │                          │
+│   └──────────┘  └──────────────┘  └──────────────┘                          │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
 │   • Configures IAM roles and policies                                       │
@@ -69,19 +68,51 @@ This module provides automated configuration of datastores for vulnerability ass
    - For RDS SQL Server: Creates sqlguard user and gdmmonitor group via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Redshift: Creates VA users and grants system table access
+   - For On-Premises databases (MySQL, PostgreSQL): Creates dedicated VA users with appropriate permissions
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
 4. **Ongoing Monitoring**: Guardium performs scheduled security assessments and generates compliance reports
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, RDS SQL Server, and Redshift
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, RDS SQL Server, Redshift) and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
 - **Guardium Integration**: Seamlessly registers datasources with Guardium Data Protection
-- **Scheduled Assessments**: Configure automated vulnerability assessment schedules
-- **Notification Support**: Set up email notifications for assessment results
-- **Security Best Practices**: Implements least-privilege access and secure credential management
+
+## Getting Started
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/IBM/terraform-guardium-datastore-va.git
+   cd terraform-guardium-datastore-va
+   ```
+
+2. **Choose an example**:
+   ```bash
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-redshift, aws-rds-sql-server
+   ```
+
+3. **Configure variables**:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your configuration
+   ```
+
+4. **Initialize Terraform**:
+   ```bash
+   terraform init
+   ```
+
+5. **Review the plan**:
+   ```bash
+   terraform plan
+   ```
+
+6. **Apply the configuration**:
+   ```bash
+   terraform apply
+   ```
 
 ## Usage
 
@@ -166,11 +197,6 @@ module "connect_postgres_to_gdp" {
   
   connection_username = module.postgres_va.sqlguard_username
   connection_password = module.postgres_va.sqlguard_password
-  
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "WEEKLY"
-  assessment_day                  = "Sunday"
-  assessment_time                 = "01:00"
 }
 ```
 
@@ -214,17 +240,7 @@ module "connect_aurora_to_gdp" {
   gdp_username  = "admin"
   gdp_port      = "8443"
   
-  # Vulnerability Assessment Configuration
-  datasource_name                 = "aurora-postgresql-production"
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "weekly"
-  assessment_day                  = "Monday"
-  assessment_time                 = "02:00"
-  
-  # Notification Configuration
-  enable_notifications  = true
-  notification_emails   = ["security@example.com"]
-  notification_severity = "HIGH"
+  datasource_name = "aurora-postgresql-production"
   
   depends_on = [module.aurora_postgresql_va]
 }
@@ -262,17 +278,6 @@ module "mariadb_va" {
   # Data source configuration
   datasource_name        = "mariadb-production"
   datasource_description = "Production MariaDB database"
-  
-  # Vulnerability assessment schedule
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "weekly"
-  assessment_day                  = "Sunday"
-  assessment_time                 = "01:00"
-  
-  # Notification configuration
-  enable_notifications  = true
-  notification_emails   = ["security@example.com"]
-  notification_severity = "MED"
 }
 ```
 
@@ -308,17 +313,6 @@ module "mysql_va" {
   # Data source configuration
   datasource_name        = "mysql-production"
   datasource_description = "Production MySQL database"
-  
-  # Vulnerability assessment schedule
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "weekly"
-  assessment_day                  = "Sunday"
-  assessment_time                 = "01:00"
-  
-  # Notification configuration
-  enable_notifications  = true
-  notification_emails   = ["security@example.com"]
-  notification_severity = "MED"
 }
 ```
 
@@ -363,17 +357,6 @@ module "mssql_va" {
   datasource_name        = "sqlserver-production"
   datasource_description = "Production SQL Server database"
   application            = "Security Assessment"
-  
-  # Vulnerability assessment schedule
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "weekly"
-  assessment_day                  = "Sunday"
-  assessment_time                 = "01:00"
-  
-  # Notification configuration
-  enable_notifications  = true
-  notification_emails   = ["security@example.com"]
-  notification_severity = "HIGH"
   
   tags = {
     Environment = "Production"
@@ -429,11 +412,6 @@ module "connect_redshift_to_gdp" {
   
   connection_username = module.redshift_va.sqlguard_username
   connection_password = module.redshift_va.sqlguard_password
-  
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "MONTHLY"
-  assessment_day                  = "1"
-  assessment_time                 = "03:00"
 }
 ```
 
@@ -477,17 +455,7 @@ module "connect_oracle_to_gdp" {
   gdp_username  = "admin"
   gdp_port      = "8443"
   
-  # Vulnerability Assessment Configuration
-  datasource_name                 = "oracle-production"
-  enable_vulnerability_assessment = true
-  assessment_schedule             = "weekly"
-  assessment_day                  = "Monday"
-  assessment_time                 = "02:00"
-  
-  # Notification Configuration
-  enable_notifications  = true
-  notification_emails   = ["security@example.com"]
-  notification_severity = "HIGH"
+  datasource_name = "oracle-production"
   
   depends_on = [module.oracle_va]
 }
@@ -619,15 +587,15 @@ Each example includes:
 
 Before using this module, ensure you have:
 
-1. **Guardium Data Protection Instance**: A running GDP cluster with API access enabled
+1. **Guardium Data Protection Instance**: A running GDP cluster with API access enabled (version 12.2.1 or later)
 2. **Guardium Configuration**: Complete the one-time manual configurations:
    - Enable OAuth client for REST API access
    - Configure AWS credentials (for DynamoDB)
    - Set up SSH access for Terraform
 3. **AWS Credentials**: Valid AWS credentials with appropriate permissions
-4. **Terraform**: Version 1.0.0 or later
+4. **Terraform**: Version 1.4.0 or later
 5. **AWS Provider**: Version 4.0.0 or later
-6. **Guardium Provider**: Version 1.0.0 or later
+6. **Guardium Terraform Provider**: Latest version
 
 ### Required AWS Permissions
 
@@ -647,54 +615,20 @@ Your AWS credentials must have permissions for:
 - **Audit Logging**: Enable CloudTrail for API activity monitoring
 - **Encryption**: Use encrypted connections for database access
 
-## Getting Started
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/IBM/terraform-guardium-datastore-va.git
-   cd terraform-guardium-datastore-va
-   ```
-
-2. **Choose an example**:
-   ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-redshift, aws-rds-sql-server
-   ```
-
-3. **Configure variables**:
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars with your configuration
-   ```
-
-4. **Initialize Terraform**:
-   ```bash
-   terraform init
-   ```
-
-5. **Review the plan**:
-   ```bash
-   terraform plan
-   ```
-
-6. **Apply the configuration**:
-   ```bash
-   terraform apply
-   ```
-
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.0.0 |
-| aws | >= 4.0.0 |
-| guardium | >= 1.0.0 |
+| Terraform CLI | >= 1.4.0 |
+| AWS CLI | >= 2.33 |
+| Guardium Data Protection (GDP) Instance | >= 12.2.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | aws | >= 4.0.0 |
-| guardium | >= 1.0.0 |
+| guardium | latest |
 
 ## Contributing
 
