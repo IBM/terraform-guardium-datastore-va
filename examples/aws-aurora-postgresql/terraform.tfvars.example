@@ -125,15 +125,15 @@ notification_emails = [
 notification_severity = "HIGH"
 
 #------------------------------------------------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#------------------------------------------------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS RDS CA certificate automatically (DEFAULT: true)
+
+#------------------------------------------------------------------------------
 # Optional: Advanced Datasource Connection Options
 #------------------------------------------------------------------------------
 # Uncomment and configure these options if needed
-
-# Use SSL for database connection
-# use_ssl = true
-
-# Import server SSL certificate
-# import_server_ssl_cert = true
 
 # Save password in Guardium (default is true)
 # save_password = true

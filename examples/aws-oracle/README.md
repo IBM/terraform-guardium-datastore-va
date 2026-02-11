@@ -10,6 +10,7 @@ This Terraform configuration automates the complete setup process:
 2. Creates the `sqlguard` user with necessary privileges for Guardium VA scans
 3. Registers the database with Guardium Data Protection
 4. Configures vulnerability assessment schedules and notifications
+5. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 
 ## Architecture
 
@@ -280,6 +281,42 @@ Monthly AWS costs (approximate):
 - Secrets Manager: ~$0.40/month
 - VPC Endpoint: ~$7.20/month
 - CloudWatch Logs: Minimal
+## Input Variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aws_region | AWS region where resources will be created | `string` | `"us-east-1"` | no |
+| name_prefix | Prefix for resource names | `string` | `"oracle-monitoring"` | no |
+| db_host | Oracle database hostname or endpoint | `string` | n/a | yes |
+| db_port | Oracle database port | `number` | `1521` | no |
+| db_service_name | Oracle service name | `string` | n/a | yes |
+| db_username | Oracle admin username | `string` | n/a | yes |
+| db_password | Oracle admin password | `string` | n/a | yes |
+| vpc_id | VPC ID where Lambda will be deployed | `string` | n/a | yes |
+| subnet_ids | Subnet IDs for Lambda deployment | `list(string)` | n/a | yes |
+| sqlguard_username | Guardium VA user to be created | `string` | `"sqlguard"` | no |
+| sqlguard_password | Password for sqlguard user | `string` | n/a | yes |
+| gdp_server | Guardium Data Protection server hostname | `string` | n/a | yes |
+| gdp_port | Guardium server port | `string` | `"8443"` | no |
+| gdp_username | Guardium admin username | `string` | n/a | yes |
+| gdp_password | Guardium admin password | `string` | n/a | yes |
+| client_id | OAuth client ID | `string` | `"client1"` | no |
+| client_secret | OAuth client secret | `string` | n/a | yes |
+| datasource_name | Name for datasource in Guardium | `string` | `"oracle-production"` | no |
+| datasource_description | Description for datasource | `string` | `"Oracle production database onboarded via Terraform"` | no |
+| application | Application type | `string` | `"Security Assessment"` | no |
+| severity_level | Severity level (LOW, NONE, MED, HIGH) | `string` | `"MED"` | no |
+| enable_vulnerability_assessment | Enable vulnerability assessment | `bool` | `true` | no |
+| assessment_schedule | Assessment schedule (daily, weekly, monthly) | `string` | `"weekly"` | no |
+| assessment_day | Day to run assessment | `string` | `"Monday"` | no |
+| assessment_time | Time to run assessment (HH:MM) | `string` | `"02:00"` | no |
+| enable_notifications | Enable email notifications | `bool` | `true` | no |
+| notification_emails | Email addresses for notifications | `list(string)` | `[]` | no |
+| notification_severity | Minimum severity for notifications | `string` | `"HIGH"` | no |
+| use_ssl | Enable SSL/TLS for Guardium connections | `bool` | `true` | no |
+| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
+| tags | Tags to apply to resources | `map(string)` | `{}` | no |
+
 
 ## Support
 

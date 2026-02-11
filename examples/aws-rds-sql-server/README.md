@@ -14,6 +14,7 @@ This module creates a dedicated `sqlguard` user with appropriate privileges for 
 **Why create a separate user?**
 - Security best practice: Separate credentials for VA scanning
 - Audit trail: Distinguish VA activities from admin operations
+- **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 - Credential rotation: Can rotate sqlguard password independently
 
 ## Architecture

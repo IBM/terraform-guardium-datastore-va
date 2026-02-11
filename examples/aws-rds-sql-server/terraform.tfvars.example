@@ -77,10 +77,15 @@ notification_emails   = ["security-team@example.com", "dba-team@example.com"]
 notification_severity = "HIGH"  # Options: HIGH, MED, LOW, NONE
 
 #------------------------------------------------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#------------------------------------------------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS RDS CA certificate automatically (DEFAULT: true)
+
+#------------------------------------------------------------------------------
 # Advanced Configuration (Optional)
 #------------------------------------------------------------------------------
 save_password     = true
-use_ssl           = false
 shared_datasource = "Not Shared"
 
 # External Password Management (Optional)

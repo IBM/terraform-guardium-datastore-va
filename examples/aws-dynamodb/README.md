@@ -1,5 +1,7 @@
 # AWS DynamoDB with Vulnerability Assessment
 
+
+**SSL/TLS encryption is enabled by default** for all Guardium connections to AWS services.
 This example demonstrates how to configure vulnerability assessment for AWS DynamoDB using Guardium Data Protection. It sets up the necessary IAM roles and policies for Guardium to perform security assessments on your DynamoDB tables and connects the datasource to Guardium for ongoing vulnerability monitoring.
 
 ## Architecture
@@ -161,6 +163,8 @@ terraform apply
 | notification_emails | Email addresses to receive vulnerability assessment notifications | `list(string)` | `[]` | no |
 | notification_severity | Minimum severity level for notifications (LOW, MEDIUM, HIGH, CRITICAL) | `string` | `"HIGH"` | no |
 | tags | Tags to apply to resources created by this module | `map(string)` | `{}` | no |
+| use_ssl | Enable SSL/TLS for Guardium connections to AWS services | `bool` | `true` | no |
+| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
 | debug_mode | Enable debug mode to print API responses for troubleshooting | `bool` | `false` | no |
 
 ## Outputs

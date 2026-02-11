@@ -118,3 +118,9 @@ notification_emails = [
 
 # Minimum severity level for notifications: HIGH, MED, LOW, NONE (default is HIGH)
 notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#------------------------------------------------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS RDS CA certificate automatically (DEFAULT: true)

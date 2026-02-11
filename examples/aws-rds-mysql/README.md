@@ -13,6 +13,7 @@ This example performs the following steps:
 
 1. **Configure VA on RDS MySQL**: Creates the necessary `sqlguard` user and grants required permissions for Guardium VA using a Lambda function
 2. **Register with Guardium**: Connects the RDS MySQL instance to Guardium Data Protection and configures vulnerability assessment schedules
+3. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 
 ## Architecture
 
@@ -382,6 +383,42 @@ This example creates the following resources:
 1. **Datasource Registration**: Registers MySQL instance in Guardium
 2. **VA Schedule**: Configures vulnerability assessment schedule
 3. **Notifications**: Sets up email notifications for assessment results
+
+## Input Variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aws_region | AWS region where resources will be created | `string` | `"us-west-2"` | no |
+| name_prefix | Prefix for resource names | `string` | `"mysql-va"` | no |
+| db_host | RDS MySQL endpoint | `string` | n/a | yes |
+| db_username | Database admin username | `string` | `"admin"` | no |
+| db_password | Database admin password | `string` | n/a | yes |
+| db_port | Database port | `number` | `3306` | no |
+| vpc_id | VPC ID where Lambda will be deployed | `string` | n/a | yes |
+| subnet_ids | Subnet IDs for Lambda deployment | `list(string)` | n/a | yes |
+| db_security_group_id | Security group ID of RDS MySQL instance | `string` | n/a | yes |
+| sqlguard_username | Guardium VA user to be created | `string` | `"sqlguard"` | no |
+| sqlguard_password | Password for sqlguard user | `string` | n/a | yes |
+| gdp_server | Guardium Data Protection server hostname | `string` | n/a | yes |
+| gdp_port | Guardium server port | `string` | `"8443"` | no |
+| gdp_username | Guardium admin username | `string` | n/a | yes |
+| gdp_password | Guardium admin password | `string` | n/a | yes |
+| client_id | OAuth client ID | `string` | `"client1"` | no |
+| client_secret | OAuth client secret | `string` | n/a | yes |
+| datasource_name | Name for datasource in Guardium | `string` | `"rds-mysql-va"` | no |
+| datasource_description | Description for datasource | `string` | `"MySQL data source onboarded via Terraform"` | no |
+| application | Application type | `string` | `"Security Assessment"` | no |
+| severity_level | Severity level (LOW, NONE, MED, HIGH) | `string` | `"MED"` | no |
+| enable_vulnerability_assessment | Enable vulnerability assessment | `bool` | `true` | no |
+| assessment_schedule | Assessment schedule (daily, weekly, monthly) | `string` | `"weekly"` | no |
+| assessment_day | Day to run assessment | `string` | `"Monday"` | no |
+| assessment_time | Time to run assessment (HH:MM) | `string` | `"02:00"` | no |
+| enable_notifications | Enable email notifications | `bool` | `true` | no |
+| notification_emails | Email addresses for notifications | `list(string)` | `[]` | no |
+| notification_severity | Minimum severity for notifications | `string` | `"HIGH"` | no |
+| use_ssl | Enable SSL/TLS for Guardium connections | `bool` | `true` | no |
+| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
+| tags | Tags to apply to resources | `map(string)` | `{}` | no |
 
 ## Outputs
 

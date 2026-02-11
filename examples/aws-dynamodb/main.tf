@@ -18,8 +18,8 @@ locals {
     datasource_description = var.dynamodb_description
     datasource_database = "default"
     severity_level = "MED"
-    use_ssl = false
-    import_server_ssl_cert = false
+    use_ssl = true
+    import_server_ssl_cert = true
     use_kerberos = false
     use_ldap = false
     external_password_type_name = "AWS SECRETS MANAGER"

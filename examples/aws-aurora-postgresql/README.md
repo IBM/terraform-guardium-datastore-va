@@ -8,6 +8,7 @@ This example performs the following steps:
 
 1. **Configure VA on Aurora PostgreSQL**: Creates the necessary `sqlguard` user and grants required permissions for Guardium VA using a Lambda function
 2. **Register with Guardium**: Connects the Aurora PostgreSQL cluster to Guardium Data Protection and configures vulnerability assessment schedules
+3. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 
 ## Architecture
 
@@ -252,6 +253,44 @@ For issues or questions:
 1. Check the [main README](../../README.md) for general information
 2. Review the [module documentation](../../modules/aws-aurora-postgresql/README.md)
 3. Open an issue in the GitHub repository
+
+## Input Variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aws_region | AWS region where resources will be created | `string` | `"us-east-1"` | no |
+| name_prefix | Prefix for resource names | `string` | `"aurora-pg-monitoring"` | no |
+| db_host | Aurora PostgreSQL cluster endpoint | `string` | n/a | yes |
+| db_name | Database name | `string` | `"postgres"` | no |
+| db_username | Database master username | `string` | `"postgres"` | no |
+| db_password | Database master password | `string` | n/a | yes |
+| db_port | Database port | `number` | `5432` | no |
+| vpc_id | VPC ID where Lambda will be deployed | `string` | n/a | yes |
+| subnet_ids | Subnet IDs for Lambda deployment | `list(string)` | n/a | yes |
+| db_security_group_id | Security group ID of Aurora cluster | `string` | n/a | yes |
+| sqlguard_username | Guardium VA user to be created | `string` | `"sqlguard"` | no |
+| sqlguard_password | Password for sqlguard user | `string` | n/a | yes |
+| gdp_server | Guardium Data Protection server hostname | `string` | n/a | yes |
+| gdp_port | Guardium server port | `string` | `"8443"` | no |
+| gdp_username | Guardium admin username | `string` | n/a | yes |
+| gdp_password | Guardium admin password | `string` | n/a | yes |
+| client_id | OAuth client ID | `string` | `"client1"` | no |
+| client_secret | OAuth client secret | `string` | n/a | yes |
+| datasource_name | Name for datasource in Guardium | `string` | `"aurora-postgresql-production"` | no |
+| datasource_description | Description for datasource | `string` | `"Aurora PostgreSQL production cluster onboarded via Terraform"` | no |
+| application | Application type | `string` | `"Security Assessment"` | no |
+| severity_level | Severity level (LOW, NONE, MED, HIGH) | `string` | `"MED"` | no |
+| enable_vulnerability_assessment | Enable vulnerability assessment | `bool` | `true` | no |
+| assessment_schedule | Assessment schedule (daily, weekly, monthly) | `string` | `"weekly"` | no |
+| assessment_day | Day to run assessment | `string` | `"Monday"` | no |
+| assessment_time | Time to run assessment (HH:MM) | `string` | `"02:00"` | no |
+| enable_notifications | Enable email notifications | `bool` | `true` | no |
+| notification_emails | Email addresses for notifications | `list(string)` | `[]` | no |
+| notification_severity | Minimum severity for notifications | `string` | `"HIGH"` | no |
+| use_ssl | Enable SSL/TLS for Guardium connections | `bool` | `true` | no |
+| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
+| tags | Tags to apply to resources | `map(string)` | `{}` | no |
+
 
 ## License
 

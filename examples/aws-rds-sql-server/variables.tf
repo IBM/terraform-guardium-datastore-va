@@ -232,13 +232,13 @@ variable "save_password" {
 variable "use_ssl" {
   description = "Enable to use SSL authentication"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "import_server_ssl_cert" {
   description = "Whether to import the server SSL certificate"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "service_name" {

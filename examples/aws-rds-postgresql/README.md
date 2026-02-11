@@ -8,6 +8,7 @@ This example:
 
 1. Configures a PostgreSQL database for Vulnerability Assessment by creating a dedicated `sqlguard` user with appropriate permissions
 2. Connects the PostgreSQL database to Guardium Data Protection (GDP) for vulnerability scanning
+3. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 3. Sets up scheduled vulnerability assessments and configures notification preferences
 
 ## Architecture
@@ -123,6 +124,13 @@ Before using this example, you need:
 | `enable_notifications` | Whether to enable notifications | `true` |
 | `notification_emails` | Email addresses for notifications | `[]` |
 | `notification_severity` | Minimum severity for notifications | `"HIGH"` |
+
+### SSL/TLS Configuration
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `use_ssl` | Enable SSL/TLS for Guardium connections | `true` |
+| `import_server_ssl_cert` | Import AWS server SSL certificate automatically | `true` |
 
 ## How It Works
 

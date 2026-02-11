@@ -32,16 +32,37 @@ def handler(event, context):
         logger.info(f"Service name: {creds['service_name']}")
         logger.info(f"Will create user: {creds['sqlguard_username']}")
         
-        # Connect to Oracle using thin mode (pure Python, no Instant Client needed)
-        logger.info("Connecting to Oracle database...")
-        connection = oracledb.connect(
-            user=creds['username'],
-            password=creds['password'],
-            host=creds['host'],
-            port=int(creds['port']),
-            service_name=creds['service_name']
-        )
-        logger.info("Connected to Oracle successfully")
+        # Connect to Oracle using thin mode with SSL enforcement
+        logger.info("Connecting to Oracle database with SSL (required)...")
+        try:
+            connection = oracledb.connect(
+                user=creds['username'],
+                password=creds['password'],
+                host=creds['host'],
+                port=int(creds['port']),
+                service_name=creds['service_name'],
+                ssl_server_cert_dn="CN=*.rds.amazonaws.com",
+                ssl_server_dn_match=True
+            )
+            logger.info("Connected to Oracle successfully with SSL enabled")
+            
+            # Verify SSL connection is active
+            cursor = connection.cursor()
+            cursor.execute("SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') FROM dual")
+            protocol = cursor.fetchone()[0]
+            logger.info(f"Connection protocol: {protocol}")
+            
+            if protocol != 'tcps':
+                cursor.close()
+                connection.close()
+                raise Exception(f"SSL connection required but got protocol: {protocol}. Connection rejected for security.")
+            
+            logger.info("SSL connection verified successfully")
+            cursor.close()
+            
+        except oracledb.Error as ssl_error:
+            logger.error(f"Failed to establish SSL connection to Oracle: {ssl_error}")
+            raise Exception(f"SSL connection to Oracle database failed. SSL is required for security. Error: {ssl_error}")
         
         cursor = connection.cursor()
         
