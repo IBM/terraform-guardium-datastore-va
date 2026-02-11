@@ -254,18 +254,8 @@ va_config_completed = true
 
 ## Clean Up
 
-To remove the sqlguard user and gdmmonitor group:
 
-```bash
-# Connect as admin
-PGPASSWORD='YourAdminPassword' psql \
-  -h your-server.example.com \
-  -U postgres \
-  -d postgres \
-  -c "DROP ROLE IF EXISTS sqlguard; DROP ROLE IF EXISTS gdmmonitor;"
-```
-
-Then destroy Terraform state:
+Destroy Terraform state:
 
 ```bash
 terraform destroy
