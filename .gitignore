@@ -33,6 +33,9 @@ terraform.rc
 # *.zip
 # .tox
 
+# SSL/TLS Certificate files
+*.pem
+
 # Local editors/macos files
 .DS_Store
 .idea

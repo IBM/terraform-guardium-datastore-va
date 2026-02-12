@@ -55,6 +55,7 @@ locals {
     datasource_description          = var.datasource_description
     sqlguard_username               = var.sqlguard_username
     sqlguard_password               = var.sqlguard_password
+    db_name                         = var.db_name
     severity_level                  = var.severity_level
     service_name                    = var.service_name
     shared_datasource               = var.shared_datasource

@@ -195,7 +195,6 @@ resource "aws_lambda_function" "va_config_lambda" {
       SECRETS_MANAGER_SECRET_ID = aws_secretsmanager_secret.documentdb_credentials.id
       SECRETS_REGION            = var.aws_region
       LOG_LEVEL                 = var.lambda_log_level
-      TLS                       = "true"  # SSL/TLS enabled for secure connections
     }
   }
 

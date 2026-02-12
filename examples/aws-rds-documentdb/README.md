@@ -59,7 +59,7 @@ This example will:
 ### 2. DocumentDB Configuration
 - Admin user credentials with privileges to create users and grant roles
 - Cluster must be accessible from the Lambda function's VPC/subnets
-- SSL/TLS enabled (default for DocumentDB)
+- SSL/TLS enabled (enforced by default )
 
 ### 3. Guardium Data Protection
 - Access to a Guardium Data Protection instance
@@ -307,8 +307,8 @@ notification_severity = "MED"  # Options: HIGH, MED, LOW, NONE
 ### SSL Configuration
 
 ```hcl
-use_ssl                = true   # Recommended for DocumentDB
-import_server_ssl_cert = false  # Set to true if using custom certificates
+use_ssl                = true   # SSL/TLS enabled by default for secure connections
+import_server_ssl_cert = true   # Import server SSL certificate for GDP registration
 ```
 
 ## Troubleshooting

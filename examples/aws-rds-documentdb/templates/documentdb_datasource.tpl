@@ -6,23 +6,16 @@
   "application": "${application}",
   "description": "${datasource_description}",
   "severity": "${severity_level}",
-%{if use_ssl }
-  "importServerSSLcert": ${import_server_ssl_cert ? 1 : 0},
-  "useSSL": 1,
-%{ else }
-  "useSSL": 0,
-%{ endif }
-%{ if use_external_password }
-  "useExternalPassword": 1,
-  "externalPasswordTypeName": "${external_password_type_name}",
-  "awsSecretsManagerConfigName": "${aws_secrets_manager_config_name}",
-  "region": "${region}",
-  "secretName": "${secret_name}",
-  "user": "${sqlguard_username}"
-%{ else }
-  "savePassword": 1,
-  "useExternalPassword": 0,
+  "dbName": "${db_name}",
   "user": "${sqlguard_username}",
-  "password": "${sqlguard_password}"
-%{ endif }
+  "password": "${sqlguard_password}",
+  "savePassword": ${save_password ? 1 : 0},
+  "useSSL": ${use_ssl ? 1 : 0},
+  "importServerSSLcert": ${import_server_ssl_cert ? 1 : 0}%{if aws_secrets_manager_config_name != ""},%{endif}
+%{if aws_secrets_manager_config_name != ""}
+  "awsSecretsManagerConfigName": "${aws_secrets_manager_config_name}"%{if region != ""},%{endif}
+%{endif}
+%{if region != ""}
+  "region": "${region}"
+%{endif}
 }
