@@ -84,13 +84,8 @@ notification_severity = "HIGH"
 use_ssl                = true
 import_server_ssl_cert = true
 save_password          = true
-
-# External Password Management (Optional)
-# use_external_password           = true
-# external_password_type_name     = "AWS SECRETS MANAGER"
-# aws_secrets_manager_config_name = "your-gdp-aws-config-name"
-# region                          = "us-east-1"
-# Note: secret_name is automatically generated from module output
+aws_secrets_manager_config_name = "your-gdp-aws-config-name"
+region                          = "us-east-1"
 
 # Connection Properties (Optional)
 # connection_properties = ""
