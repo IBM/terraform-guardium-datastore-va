@@ -204,7 +204,7 @@ variable "use_ssl" {
 variable "import_server_ssl_cert" {
   description = "Whether to import the server SSL certificate"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "service_name" {
