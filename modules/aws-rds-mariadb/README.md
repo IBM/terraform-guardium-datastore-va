@@ -47,7 +47,7 @@ module "mariadb_va_config" {
   
   # Guardium VA user configuration
   sqlguard_username = "sqlguard"
-  sqlguard_password = "Guardium123!"
+  sqlguard_password = var.sqlguard_password
   
   # Network configuration
   vpc_id      = "vpc-12345678"

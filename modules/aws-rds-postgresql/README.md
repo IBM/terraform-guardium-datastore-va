@@ -60,7 +60,7 @@ module "datastore-va_aws-rds-postgresql" {
 | db_username | Username for the PostgreSQL database (must have superuser privileges) | string | (required) |
 | db_password | Password for the PostgreSQL database | string | (required) |
 | sqlguard_username | Username for the Guardium user | string | sqlguard |
-| sqlguard_password | Password for the sqlguard user | string | Guardium123! |
+| sqlguard_password | Password for the sqlguard user | string | (required) |
 | create_ec2_instance | Whether to create an EC2 instance for connecting to the PostgreSQL database | bool | false |
 | ec2_key_name | Name of the key pair to use for the EC2 instance | string | kieran-test-key-pair |
 | ec2_instance_type | Instance type for the EC2 instance | string | t3.micro |
