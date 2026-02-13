@@ -1,9 +1,31 @@
 #
-# Copyright IBM Corp. 2025
+# Copyright IBM Corp. 2026
 # SPDX-License-Identifier: Apache-2.0
 #
 
 # AWS RDS DocumentDB with VA Example - Main Configuration
+
+#------------------------------------------------------------------------------
+# Step 0: VPC Peering (Optional - only if Guardium in different VPC)
+#------------------------------------------------------------------------------
+module "vpc_peering" {
+  source = "../../modules/vpc-peering"
+
+  enable_vpc_peering = var.enable_vpc_peering
+
+  # Only VPC IDs needed - CIDR blocks and route tables auto-discovered
+  requester_vpc_id = var.guardium_vpc_id
+  accepter_vpc_id  = var.vpc_id
+
+  peering_connection_name = "${var.name_prefix}-guardium-to-documentdb"
+  
+  tags = merge(
+    var.tags,
+    {
+      Purpose = "guardium-documentdb-connectivity"
+    }
+  )
+}
 
 #------------------------------------------------------------------------------
 # Step 1: Configure Vulnerability Assessment (VA) on the DocumentDB cluster
@@ -44,6 +66,8 @@ module "documentdb_va_config" {
   aws_region = var.aws_region
   tags       = var.tags
 
+  # Wait for VPC peering to be established (if enabled)
+  depends_on = [module.vpc_peering]
 }
 
 locals {

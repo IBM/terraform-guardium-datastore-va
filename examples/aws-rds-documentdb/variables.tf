@@ -1,5 +1,5 @@
 #
-# Copyright IBM Corp. 2025
+# Copyright IBM Corp. 2026
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -28,6 +28,21 @@ variable "name_prefix" {
   description = "Prefix to use for resource names"
   type        = string
   default     = "rds-documentdb"
+}
+
+#------------------------------------------------------------------------------
+# VPC Peering Configuration (Optional)
+#------------------------------------------------------------------------------
+variable "enable_vpc_peering" {
+  description = "Enable VPC peering between Guardium VPC and DocumentDB VPC. CIDR blocks and route tables will be automatically discovered from VPC IDs."
+  type        = bool
+  default     = false
+}
+
+variable "guardium_vpc_id" {
+  description = "VPC ID where Guardium is deployed (required if enable_vpc_peering is true). CIDR block and route tables will be automatically discovered."
+  type        = string
+  default     = ""
 }
 
 #------------------------------------------------------------------------------

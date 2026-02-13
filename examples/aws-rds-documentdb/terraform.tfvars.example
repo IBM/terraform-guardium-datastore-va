@@ -1,5 +1,5 @@
 #
-# Copyright IBM Corp. 2025
+# Copyright IBM Corp. 2026
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -17,6 +17,17 @@ tags = {
   Purpose     = "guardium-va-config"
   Owner       = "your-email@example.com"
   Project     = "guardium-integration"
+
+#------------------------------------------------------------------------------
+# VPC Peering Configuration (Optional - only if Guardium in different VPC)
+#------------------------------------------------------------------------------
+# Set to true if Guardium is in a different VPC from DocumentDB
+enable_vpc_peering = false
+
+# Guardium VPC ID (required if enable_vpc_peering = true)
+# CIDR block and route tables will be automatically discovered
+# guardium_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
+
 }
 
 #------------------------------------------------------------------------------
