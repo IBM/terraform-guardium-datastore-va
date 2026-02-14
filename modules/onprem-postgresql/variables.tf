@@ -3,48 +3,107 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# On-Premise MySQL VA Config Module Variables
-
-#------------------------------------------------------------------------------
-# Database Connection Details
-#------------------------------------------------------------------------------
+# On-Premise PostgreSQL VA Config Module Variables
 
 variable "db_host" {
-  description = "Hostname or IP address of the on-premise MySQL database (e.g., api.rr1.cp.fyre.ibm.com)"
+  description = "Hostname or IP address of the PostgreSQL database"
   type        = string
+
+  validation {
+    condition     = length(var.db_host) > 0
+    error_message = "Database hostname cannot be empty."
+  }
 }
 
 variable "db_port" {
-  description = "Port for the MySQL database"
+  description = "Port for the PostgreSQL database"
   type        = number
-  default     = 3306
+  default     = 5432
+
+  validation {
+    condition     = var.db_port > 0 && var.db_port <= 65535
+    error_message = "Port must be between 1 and 65535."
+  }
+}
+
+variable "db_name" {
+  description = "Name of the PostgreSQL database to connect to"
+  type        = string
+  default     = "postgres"
+
+  validation {
+    condition     = length(var.db_name) > 0
+    error_message = "Database name cannot be empty."
+  }
 }
 
 variable "db_username" {
-  description = "Username for the MySQL database (must have superuser privileges to create sqlguard user)"
+  description = "Username for the PostgreSQL database (must have superuser privileges to create users and groups)"
   type        = string
+
+  validation {
+    condition     = length(var.db_username) > 0
+    error_message = "Database username cannot be empty."
+  }
 }
 
 variable "db_password" {
-  description = "Password for the MySQL database admin user"
+  description = "Password for the PostgreSQL database admin user"
   type        = string
   sensitive   = true
+
+  validation {
+    condition     = length(var.db_password) > 0
+    error_message = "Database password cannot be empty."
+  }
 }
 
-#------------------------------------------------------------------------------
-# Guardium VA User Configuration
-#------------------------------------------------------------------------------
-
 variable "sqlguard_username" {
-  description = "Username for the Guardium VA user that will be created in MySQL"
+  description = "Username for the Guardium VA user (will be created if it doesn't exist)"
   type        = string
   default     = "sqlguard"
+
+  validation {
+    condition     = can(regex("^[a-z_][a-z0-9_]{0,62}$", var.sqlguard_username))
+    error_message = "PostgreSQL username must start with a lowercase letter or underscore, contain only lowercase letters, numbers, and underscores, and be 1-63 characters long."
+  }
 }
 
 variable "sqlguard_password" {
-  description = "Password for the sqlguard user"
+  description = "Password for the sqlguard user (must meet PostgreSQL security requirements)"
   type        = string
   sensitive   = true
+
+  validation {
+    condition     = length(var.sqlguard_password) >= 8
+    error_message = "Password must be at least 8 characters long."
+  }
+}
+
+variable "use_ssl" {
+  description = "Whether to use SSL for the database connection"
+  type        = bool
+  default     = false
+}
+
+variable "ssl_mode" {
+  description = "SSL mode for PostgreSQL connection (disable, allow, prefer, require, verify-ca, verify-full)"
+  type        = string
+  default     = "disable"
+
+  validation {
+    condition     = contains(["disable", "allow", "prefer", "require", "verify-ca", "verify-full"], var.ssl_mode)
+    error_message = "SSL mode must be one of: disable, allow, prefer, require, verify-ca, verify-full."
+  }
+}
+
+variable "tags" {
+  description = "Tags to apply to resources (for documentation purposes)"
+  type        = map(string)
+  default = {
+    Purpose = "guardium-va-config"
+    Module  = "onprem-postgresql"
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -85,13 +144,13 @@ variable "client_secret" {
 variable "datasource_name" {
   description = "A unique name for the datasource on the Guardium system"
   type        = string
-  default     = "onprem-mysql-va"
+  default     = "onprem-postgresql-va"
 }
 
 variable "datasource_description" {
   description = "Description of the datasource"
   type        = string
-  default     = "On-premise MySQL data source onboarded via Terraform"
+  default     = "On-premise PostgreSQL data source onboarded via Terraform"
 }
 
 variable "application" {
@@ -166,12 +225,6 @@ variable "save_password" {
   default     = true
 }
 
-variable "use_ssl" {
-  description = "Enable to use SSL authentication (set to true for --ssl-mode=REQUIRED)"
-  type        = bool
-  default     = true
-}
-
 variable "import_server_ssl_cert" {
   description = "Whether to import and verify the server SSL certificate. IMPORTANT: For production environments, this should be true when use_ssl is enabled to prevent man-in-the-middle attacks."
   type        = bool
@@ -179,7 +232,7 @@ variable "import_server_ssl_cert" {
 }
 
 variable "service_name" {
-  description = "Service name (not typically used for MySQL)"
+  description = "Service name (not typically used for PostgreSQL)"
   type        = string
   default     = ""
 }
@@ -197,7 +250,7 @@ variable "connection_properties" {
 }
 
 variable "compatibility_mode" {
-  description = "Compatibility mode (not typically used for MySQL)"
+  description = "Compatibility mode (not typically used for PostgreSQL)"
   type        = string
   default     = ""
 }
@@ -322,17 +375,4 @@ variable "db_instance_directory" {
   description = "Directory where database software is installed that will be used by CAS"
   type        = string
   default     = ""
-}
-
-#------------------------------------------------------------------------------
-# Tags
-#------------------------------------------------------------------------------
-
-variable "tags" {
-  description = "Tags to apply to resources"
-  type        = map(string)
-  default     = {
-    Purpose = "guardium-va-onprem-mysql"
-    Owner   = "your-email@example.com"
-  }
 }
