@@ -27,9 +27,9 @@ module "postgresql_va_config" {
   #----------------------------------------
   # lambda configuration
   #----------------------------------------
-  vpc_id              = var.vpc_id
-  subnet_ids = var.subnet_ids
-
+  vpc_id                = var.vpc_id
+  subnet_ids            = var.subnet_ids
+  db_security_group_id  = var.db_security_group_id
 
   #----------------------------------------
   # General Configuration
@@ -48,8 +48,8 @@ locals {
     application                    = var.application
     datasource_description         = var.datasource_description
     datasource_database            = var.db_name
-    connection_username            = var.db_username
-    connection_password            = var.db_password
+    connection_username            = var.sqlguard_username
+    connection_password            = var.sqlguard_password
     severity_level                 = var.severity_level
     service_name                   = var.service_name
     shared_datasource              = var.shared_datasource

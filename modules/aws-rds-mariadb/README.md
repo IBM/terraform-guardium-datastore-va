@@ -50,9 +50,10 @@ module "mariadb_va_config" {
   sqlguard_password = var.sqlguard_password
   
   # Network configuration
-  vpc_id      = "vpc-12345678"
-  subnet_ids  = ["subnet-12345678", "subnet-87654321"]
-  aws_region  = "us-east-1"
+  vpc_id               = "vpc-12345678"
+  subnet_ids           = ["subnet-12345678", "subnet-87654321"]
+  db_security_group_id = "sg-12345678"  # MariaDB security group
+  aws_region           = "us-east-1"
   
   # Guardium Data Protection configuration
   gdp_server   = "your-guardium-server.example.com"
@@ -87,9 +88,10 @@ module "mariadb_va_config" {
   sqlguard_password = "CustomPassword123!"
   
   # Network configuration
-  vpc_id      = "vpc-12345678"
-  subnet_ids  = ["subnet-12345678"]
-  aws_region  = "us-west-2"
+  vpc_id               = "vpc-12345678"
+  subnet_ids           = ["subnet-12345678"]
+  db_security_group_id = "sg-12345678"  # MariaDB security group
+  aws_region           = "us-west-2"
   
   # Guardium Data Protection configuration
   gdp_server   = "your-guardium-server.example.com"
@@ -136,10 +138,12 @@ module "mariadb_va_config" {
 | sqlguard_password | Password for the sqlguard user | `string` |
 | vpc_id | ID of the VPC where the Lambda function will be deployed | `string` |
 | subnet_ids | List of subnet IDs where the Lambda function will be deployed | `list(string)` |
+| db_security_group_id | Security group ID of the RDS MariaDB instance to allow Lambda access | `string` |
 | aws_region | AWS region where resources will be created | `string` |
 | gdp_server | The hostname or IP address of the Guardium server | `string` |
 | gdp_username | The username to login to Guardium | `string` |
 | gdp_password | The password for logging in to Guardium | `string` |
+| client_id | OAuth client ID | `string` | `"client1"` | no |
 | client_secret | The client secret output from grdapi register_oauth_client | `string` |
 
 ## Optional Inputs
@@ -183,6 +187,7 @@ The module performs the following actions:
    - Creates an IAM role and policy for the Lambda function
    - Deploys a Lambda function in the specified VPC and subnets
    - Configures security groups for the Lambda function
+   - Automatically adds a security group rule to the MariaDB security group allowing Lambda access on port 3306
 
 3. **Database Configuration**:
    - The Lambda function connects to the MariaDB database using the provided credentials

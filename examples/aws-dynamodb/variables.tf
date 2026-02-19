@@ -171,6 +171,21 @@ variable "notification_severity" {
 }
 
 #----------------------------------------
+# SSL/TLS Configuration
+#----------------------------------------
+variable "use_ssl" {
+  description = "Enable SSL/TLS for Guardium connections to AWS services"
+  type        = bool
+  default     = true
+}
+
+variable "import_server_ssl_cert" {
+  description = "Import AWS server SSL certificate automatically"
+  type        = bool
+  default     = true
+}
+
+#----------------------------------------
 # Tags
 #----------------------------------------
 variable "tags" {

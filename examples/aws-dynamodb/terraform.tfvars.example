@@ -55,6 +55,12 @@ aws_secrets_manager_region = "us-east-1"         # AWS region where the secret i
 aws_secrets_manager_secret = "dynamodb-credentials"  # Name of the secret in AWS Secrets Manager
 
 #----------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#----------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS certificate automatically (DEFAULT: true)
+
+#----------------------------------------
 # Debug Configuration
 #----------------------------------------
 debug_mode = true  # Set to true for troubleshooting

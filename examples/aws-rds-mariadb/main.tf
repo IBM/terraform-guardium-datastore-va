@@ -26,16 +26,17 @@ module "mariadb_va_config" {
   #----------------------------------------
   # lambda configuration
   #----------------------------------------
-  vpc_id              = var.vpc_id
-  subnet_ids = var.subnet_ids
-
+  vpc_id               = var.vpc_id
+  subnet_ids           = var.subnet_ids
+  db_security_group_id = var.db_security_group_id
 
   #----------------------------------------
   # General Configuration
   #----------------------------------------
   aws_region = var.aws_region
   tags       = var.tags
-
+  
+  client_id     = var.client_id 
   client_secret = var.client_secret
   gdp_password  = var.gdp_password
   gdp_server    = var.gdp_server

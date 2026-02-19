@@ -110,14 +110,18 @@ notification_emails = [
 notification_severity = "HIGH"
 
 #------------------------------------------------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#------------------------------------------------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS RDS CA certificate automatically (DEFAULT: true)
+
+#------------------------------------------------------------------------------
 # Connection Options (Advanced)
 #------------------------------------------------------------------------------
 # Most of these settings can be left as defaults for Redshift
 
 # Authentication options
 save_password = true                # Whether to save and encrypt credentials
-use_ssl = false                     # Whether to use SSL for connection
-import_server_ssl_cert = false      # Whether to import server SSL certificate
 use_kerberos = false                # Whether to use Kerberos authentication
 use_ldap = false                    # Whether to use LDAP
 use_external_password = false       # Whether to use external password management
