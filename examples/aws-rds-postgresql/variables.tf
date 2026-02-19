@@ -70,6 +70,11 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+variable "db_security_group_id" {
+  description = "Security group ID of the PostgreSQL database to allow Lambda access"
+  type        = string
+}
+
 #------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Configuration
 #------------------------------------------------------------------------------

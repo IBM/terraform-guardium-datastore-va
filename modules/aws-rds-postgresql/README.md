@@ -61,13 +61,12 @@ module "datastore-va_aws-rds-postgresql" {
 | db_password | Password for the PostgreSQL database | string | (required) |
 | sqlguard_username | Username for the Guardium user | string | sqlguard |
 | sqlguard_password | Password for the sqlguard user | string | (required) |
-| create_ec2_instance | Whether to create an EC2 instance for connecting to the PostgreSQL database | bool | false |
-| ec2_key_name | Name of the key pair to use for the EC2 instance | string | kieran-test-key-pair |
-| ec2_instance_type | Instance type for the EC2 instance | string | t3.micro |
-| vpc_id | ID of the VPC where the EC2 instance will be created | string | "" |
-| subnet_id | ID of the subnet where the EC2 instance will be created | string | "" |
+| db_security_group_id | Security group ID of the PostgreSQL database to allow Lambda access | string | (required) |
+| vpc_id | ID of the VPC where the Lambda function will be deployed | string | (required) |
+| subnet_ids | List of subnet IDs where the Lambda function will be deployed | list(string) | (required) |
 | aws_region | AWS region where resources will be created | string | us-east-1 |
-| use_local_exec | Whether to use local-exec provisioner (false means EC2 will be used) | bool | true |
+| name_prefix | Prefix to use for resource names | string | (required) |
+| tags | Tags to apply to all resources | map(string) | {} |
 
 ## Outputs
 

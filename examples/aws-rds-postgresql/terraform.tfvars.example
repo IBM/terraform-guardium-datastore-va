@@ -32,6 +32,7 @@ sqlguard_password = "YourStrongPasswordHere"
 # Network Configuration
 #----------------------------------------
 vpc_id = "vpc id where the db is deployed"
+db_security_group_id = "sg-xxxxxxxxx"  # PostgreSQL database security group ID
 
 subnet_ids = [
   "subnet-1",
