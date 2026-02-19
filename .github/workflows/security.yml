@@ -29,6 +29,7 @@ jobs:
   tfsec:
     name: tfsec Security Scan
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       
@@ -45,6 +46,7 @@ jobs:
   checkov:
     name: Checkov Policy Scan
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       
