@@ -3,19 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# On-Premise MySQL with VA Example - Main Configuration
+# On-Premise PostgreSQL with VA Example - Main Configuration
 
 #------------------------------------------------------------------------------
-# Configure Vulnerability Assessment (VA) for On-Premise MySQL
+# Configure Vulnerability Assessment (VA) for On-Premise PostgreSQL
 #------------------------------------------------------------------------------
-module "onprem_mysql_va" {
-  source = "../../modules/onprem-mysql"
+module "onprem_postgresql_va" {
+  source = "../../modules/onprem-postgresql"
 
   #----------------------------------------
   # Database Connection Details
   #----------------------------------------
   db_host     = var.db_host
   db_port     = var.db_port
+  db_name     = var.db_name
   db_username = var.db_username
   db_password = var.db_password
 
@@ -46,6 +47,7 @@ module "onprem_mysql_va" {
   # SSL Configuration
   #----------------------------------------
   use_ssl                = var.use_ssl
+  ssl_mode               = var.ssl_mode
   import_server_ssl_cert = var.import_server_ssl_cert
 
   #----------------------------------------
@@ -74,30 +76,35 @@ module "onprem_mysql_va" {
 #------------------------------------------------------------------------------
 output "datasource_name" {
   description = "Name of the datasource registered in Guardium"
-  value       = module.onprem_mysql_va.datasource_name
+  value       = module.onprem_postgresql_va.datasource_name
 }
 
 output "datasource_host" {
-  description = "Hostname of the on-premise MySQL database"
-  value       = module.onprem_mysql_va.datasource_host
+  description = "Hostname of the on-premise PostgreSQL database"
+  value       = module.onprem_postgresql_va.datasource_host
 }
 
 output "datasource_port" {
-  description = "Port of the on-premise MySQL database"
-  value       = module.onprem_mysql_va.datasource_port
+  description = "Port of the on-premise PostgreSQL database"
+  value       = module.onprem_postgresql_va.datasource_port
 }
 
 output "vulnerability_assessment_enabled" {
   description = "Whether vulnerability assessment is enabled"
-  value       = module.onprem_mysql_va.vulnerability_assessment_enabled
+  value       = module.onprem_postgresql_va.vulnerability_assessment_enabled
 }
 
 output "assessment_schedule" {
   description = "Schedule for vulnerability assessments"
-  value       = module.onprem_mysql_va.assessment_schedule
+  value       = module.onprem_postgresql_va.assessment_schedule
 }
 
 output "ssl_enabled" {
   description = "Whether SSL is enabled for the connection"
-  value       = module.onprem_mysql_va.ssl_enabled
+  value       = module.onprem_postgresql_va.ssl_enabled
+}
+
+output "gdp_connection_status" {
+  description = "Status of the Guardium Data Protection connection"
+  value       = module.onprem_postgresql_va.gdp_connection_status
 }

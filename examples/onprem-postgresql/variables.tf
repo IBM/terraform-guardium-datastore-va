@@ -3,30 +3,36 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# On-Premise MySQL VA Example - Variables
+# On-Premise PostgreSQL VA Example - Variables
 
 #------------------------------------------------------------------------------
 # Database Connection Details
 #------------------------------------------------------------------------------
 
 variable "db_host" {
-  description = "Hostname or IP address of the on-premise MySQL database (e.g., api.rr1.cp.fyre.ibm.com)"
+  description = "Hostname or IP address of the on-premise PostgreSQL database"
   type        = string
 }
 
 variable "db_port" {
-  description = "Port for the MySQL database"
+  description = "Port for the PostgreSQL database"
   type        = number
-  default     = 3306
+  default     = 5432
+}
+
+variable "db_name" {
+  description = "Name of the PostgreSQL database to connect to"
+  type        = string
+  default     = "postgres"
 }
 
 variable "db_username" {
-  description = "Username for the MySQL database (must have superuser privileges)"
+  description = "Username for the PostgreSQL database (must have superuser privileges)"
   type        = string
 }
 
 variable "db_password" {
-  description = "Password for the MySQL database admin user"
+  description = "Password for the PostgreSQL database admin user"
   type        = string
   sensitive   = true
 }
@@ -91,13 +97,13 @@ variable "gdp_port" {
 variable "datasource_name" {
   description = "A unique name for the datasource on the Guardium system"
   type        = string
-  default     = "onprem-mysql-va"
+  default     = "onprem-postgresql-va"
 }
 
 variable "datasource_description" {
   description = "Description of the datasource"
   type        = string
-  default     = "On-premise MySQL data source onboarded via Terraform"
+  default     = "On-premise PostgreSQL data source onboarded via Terraform"
 }
 
 variable "application" {
@@ -117,9 +123,15 @@ variable "severity_level" {
 #------------------------------------------------------------------------------
 
 variable "use_ssl" {
-  description = "Enable to use SSL authentication (set to true for --ssl-mode=REQUIRED)"
+  description = "Whether to use SSL for the database connection"
   type        = bool
-  default     = true
+  default     = false
+}
+
+variable "ssl_mode" {
+  description = "SSL mode for PostgreSQL connection (disable, allow, prefer, require, verify-ca, verify-full)"
+  type        = string
+  default     = "disable"
 }
 
 variable "import_server_ssl_cert" {
@@ -186,7 +198,7 @@ variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
   default     = {
-    Purpose = "guardium-va-onprem-mysql"
+    Purpose = "guardium-va-onprem-postgresql"
     Owner   = "your-email@example.com"
   }
 }
