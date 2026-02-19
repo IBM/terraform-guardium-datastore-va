@@ -8,8 +8,8 @@ locals {
   aws_account_id = data.aws_caller_identity.current.account_id
   # Secret names using the name_prefix for consistency
   secret_name = "${var.name_prefix}-mariadb-rds-va-password"
-  zip_file = "${path.module}/files/lambda_function.zip"
-  zip_hash = filesha256(local.zip_file)
+  zip_file    = "${path.module}/files/lambda_function.zip"
+  zip_hash    = filesha256(local.zip_file)
 }
 
 # Create IAM role for Lambda function
@@ -40,12 +40,12 @@ resource "aws_secretsmanager_secret" "postgres_credentials" {
 
 
 resource "aws_secretsmanager_secret_version" "postgres_credentials_version" {
-  secret_id     = aws_secretsmanager_secret.postgres_credentials.id
+  secret_id = aws_secretsmanager_secret.postgres_credentials.id
   secret_string = jsonencode({
-    username = var.db_username
-    password = var.db_password
-    endpoint = var.db_host
-    port     = var.db_port
+    username          = var.db_username
+    password          = var.db_password
+    endpoint          = var.db_host
+    port              = var.db_port
     sqlguard_username = var.sqlguard_username
     sqlguard_password = var.sqlguard_password
   })
@@ -81,7 +81,7 @@ resource "aws_iam_policy" "lambda_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.postgres_credentials.arn,
         ]
@@ -97,11 +97,11 @@ resource "aws_security_group" "secretsmanager_endpoint_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
     security_groups = [aws_security_group.lambda_sg.id]
-    description = "Allow HTTPS from Lambda security group"
+    description     = "Allow HTTPS from Lambda security group"
   }
 
   tags = var.tags
@@ -109,11 +109,11 @@ resource "aws_security_group" "secretsmanager_endpoint_sg" {
 
 # VPC Endpoint for Secrets Manager to allow Lambda to access it from private VPC
 resource "aws_vpc_endpoint" "secretsmanager" {
-  vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${var.aws_region}.secretsmanager"
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = var.subnet_ids
-  security_group_ids = [aws_security_group.secretsmanager_endpoint_sg.id]
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.subnet_ids
+  security_group_ids  = [aws_security_group.secretsmanager_endpoint_sg.id]
   private_dns_enabled = true
 
   tags = var.tags
@@ -161,19 +161,19 @@ resource "aws_lambda_function" "va_config_lambda" {
   memory_size   = 256
 
   vpc_config {
-    security_group_ids =  [aws_security_group.lambda_sg.id]
-    subnet_ids = var.subnet_ids
+    security_group_ids = [aws_security_group.lambda_sg.id]
+    subnet_ids         = var.subnet_ids
   }
 
   environment {
     variables = {
       SECRETS_MANAGER_SECRET_ID = aws_secretsmanager_secret.postgres_credentials.id
-      SECRETS_REGION          = var.aws_region
+      SECRETS_REGION            = var.aws_region
     }
   }
 
   # Lambda function code with dependencies packaged
-  filename = local.zip_file
+  filename         = local.zip_file
   source_code_hash = local.zip_hash
 
   tags = var.tags
@@ -198,59 +198,59 @@ resource "gdp-middleware-helper_execute_aws_lambda_function" "invoke_lambda" {
 
 locals {
   rds_postgres_config = templatefile("../../modules/aws-rds-mariadb/templates/mariadb_datasource.tpl", {
-    datasource_name                = var.datasource_name
-    datasource_hostname            = var.db_host
-    datasource_port                = var.db_port
-    application                    = var.application
-    datasource_description         = var.datasource_description
-    connection_username            = var.sqlguard_username
-    connection_password            = var.sqlguard_password
-    severity_level                 = var.severity_level
-    service_name                   = var.service_name
-    shared_datasource              = var.shared_datasource
-    connection_properties          = var.connection_properties
-    compatibility_mode             = var.compatibility_mode
-    custom_url                     = var.custom_url
-    kerberos_config_name           = var.kerberos_config_name
-    external_password_type_name    = var.external_password_type_name
-    cyberark_config_name           = var.cyberark_config_name
-    cyberark_object_name           = var.cyberark_object_name
-    hashicorp_config_name          = var.hashicorp_config_name
-    hashicorp_path                 = var.hashicorp_path
-    hashicorp_role                 = var.hashicorp_role
-    hashicorp_child_namespace      = var.hashicorp_child_namespace
+    datasource_name                 = var.datasource_name
+    datasource_hostname             = var.db_host
+    datasource_port                 = var.db_port
+    application                     = var.application
+    datasource_description          = var.datasource_description
+    connection_username             = var.sqlguard_username
+    connection_password             = var.sqlguard_password
+    severity_level                  = var.severity_level
+    service_name                    = var.service_name
+    shared_datasource               = var.shared_datasource
+    connection_properties           = var.connection_properties
+    compatibility_mode              = var.compatibility_mode
+    custom_url                      = var.custom_url
+    kerberos_config_name            = var.kerberos_config_name
+    external_password_type_name     = var.external_password_type_name
+    cyberark_config_name            = var.cyberark_config_name
+    cyberark_object_name            = var.cyberark_object_name
+    hashicorp_config_name           = var.hashicorp_config_name
+    hashicorp_path                  = var.hashicorp_path
+    hashicorp_role                  = var.hashicorp_role
+    hashicorp_child_namespace       = var.hashicorp_child_namespace
     aws_secrets_manager_config_name = var.aws_secrets_manager_config_name
-    region                         = var.region
-    secret_name                    = var.secret_name
-    db_instance_account            = var.db_instance_account
-    db_instance_directory          = var.db_instance_directory
-    save_password                  = var.save_password
-    use_ssl                        = var.use_ssl
-    import_server_ssl_cert         = var.import_server_ssl_cert
-    use_kerberos                   = var.use_kerberos
-    use_ldap                       = var.use_ldap
-    use_external_password          = var.use_external_password
+    region                          = var.region
+    secret_name                     = var.secret_name
+    db_instance_account             = var.db_instance_account
+    db_instance_directory           = var.db_instance_directory
+    save_password                   = var.save_password
+    use_ssl                         = var.use_ssl
+    import_server_ssl_cert          = var.import_server_ssl_cert
+    use_kerberos                    = var.use_kerberos
+    use_ldap                        = var.use_ldap
+    use_external_password           = var.use_external_password
   })
   rds_postgres_config_json_decoded = jsondecode(local.rds_postgres_config)
   rds_postgres_config_json_encoded = jsonencode(local.rds_postgres_config)
 }
 
 module "mariadb_gdp_connection" {
-  count = var.enable_vulnerability_assessment ? 1 : 0
+  count  = var.enable_vulnerability_assessment ? 1 : 0
   source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
 
   datasource_payload = local.rds_postgres_config_json_encoded
 
   client_secret = var.client_secret
-  client_id = var.client_id
-  gdp_password = var.gdp_password
-  gdp_server = var.gdp_server
-  gdp_username = var.gdp_username
+  client_id     = var.client_id
+  gdp_password  = var.gdp_password
+  gdp_server    = var.gdp_server
+  gdp_username  = var.gdp_username
 
   #----------------------------------------
   # Vulnerability Assessment Configuration
   #----------------------------------------
-  datasource_name = var.datasource_name
+  datasource_name                 = var.datasource_name
   enable_vulnerability_assessment = var.enable_vulnerability_assessment
   assessment_schedule             = var.assessment_schedule
   assessment_day                  = var.assessment_day

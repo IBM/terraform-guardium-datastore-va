@@ -96,7 +96,7 @@ variable "severity_level" {
   description = "Severity classification for the datasource (LOW, NONE, MED, HIGH)"
   type        = string
   default     = "MED"
-  
+
   validation {
     condition     = contains(["LOW", "NONE", "MED", "HIGH"], var.severity_level)
     error_message = "The severity_level must be one of: LOW, NONE, MED, HIGH."
@@ -116,7 +116,7 @@ variable "assessment_schedule" {
   description = "Schedule for vulnerability assessments (DAILY, WEEKLY, MONTHLY)"
   type        = string
   default     = "WEEKLY"
-  
+
   validation {
     condition     = contains(["DAILY", "WEEKLY", "MONTHLY"], var.assessment_schedule)
     error_message = "Assessment schedule must be one of: DAILY, WEEKLY, MONTHLY."
@@ -163,7 +163,7 @@ variable "notification_severity" {
   description = "Minimum severity level for notifications (LOW, MEDIUM, HIGH, CRITICAL)"
   type        = string
   default     = "HIGH"
-  
+
   validation {
     condition     = contains(["LOW", "MEDIUM", "HIGH", "CRITICAL"], var.notification_severity)
     error_message = "Notification severity must be one of: LOW, MEDIUM, HIGH, CRITICAL."

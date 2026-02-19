@@ -14,10 +14,10 @@ data "aws_redshift_cluster" "existing" {
 
 # Local variables to store Redshift cluster information
 locals {
-  redshift_endpoint       = data.aws_redshift_cluster.existing.endpoint
-  redshift_hostname       = split(":", local.redshift_endpoint)[0]
-  redshift_port           = try(split(":", local.redshift_endpoint)[1], var.redshift_port)
-  redshift_database_name  = var.redshift_database_name
+  redshift_endpoint        = data.aws_redshift_cluster.existing.endpoint
+  redshift_hostname        = split(":", local.redshift_endpoint)[0]
+  redshift_port            = try(split(":", local.redshift_endpoint)[1], var.redshift_port)
+  redshift_database_name   = var.redshift_database_name
   redshift_master_username = var.redshift_master_username
   redshift_master_password = var.redshift_master_password
 
@@ -26,44 +26,44 @@ locals {
 
   # Generate the Redshift configuration JSON payload for Guardium
   redshift_config = templatefile("${path.module}/templates/redshiftVaConf.tpl", {
-    datasource_name                = var.datasource_name
-    datasource_type                = "Amazon Redshift"
-    datasource_hostname            = local.redshift_hostname
-    datasource_port                = local.redshift_port
-    application                    = var.application
-    datasource_description         = var.datasource_description
-    datasource_database            = local.redshift_database_name
-    connection_username            = var.sqlguard_username
-    connection_password            = var.sqlguard_password
-    severity_level                 = var.severity_level
+    datasource_name        = var.datasource_name
+    datasource_type        = "Amazon Redshift"
+    datasource_hostname    = local.redshift_hostname
+    datasource_port        = local.redshift_port
+    application            = var.application
+    datasource_description = var.datasource_description
+    datasource_database    = local.redshift_database_name
+    connection_username    = var.sqlguard_username
+    connection_password    = var.sqlguard_password
+    severity_level         = var.severity_level
 
     # Optional parameters with empty defaults
-    service_name                   = ""
-    shared_datasource              = "Not Shared"
-    connection_properties          = var.connection_properties
-    compatibility_mode             = var.compatibility_mode
-    custom_url                     = var.custom_url
-    kerberos_config_name           = ""
-    external_password_type_name    = var.external_password_type_name
-    cyberark_config_name           = var.cyberark_config_name
-    cyberark_object_name           = var.cyberark_object_name
-    hashicorp_config_name          = var.hashicorp_config_name
-    hashicorp_path                 = var.hashicorp_path
-    hashicorp_role                 = var.hashicorp_role
-    hashicorp_child_namespace      = var.hashicorp_child_namespace
+    service_name                    = ""
+    shared_datasource               = "Not Shared"
+    connection_properties           = var.connection_properties
+    compatibility_mode              = var.compatibility_mode
+    custom_url                      = var.custom_url
+    kerberos_config_name            = ""
+    external_password_type_name     = var.external_password_type_name
+    cyberark_config_name            = var.cyberark_config_name
+    cyberark_object_name            = var.cyberark_object_name
+    hashicorp_config_name           = var.hashicorp_config_name
+    hashicorp_path                  = var.hashicorp_path
+    hashicorp_role                  = var.hashicorp_role
+    hashicorp_child_namespace       = var.hashicorp_child_namespace
     aws_secrets_manager_config_name = var.aws_secrets_manager_config_name
-    region                         = var.region
-    secret_name                    = var.secret_name
-    db_instance_account            = var.db_instance_account
-    db_instance_directory          = var.db_instance_directory
+    region                          = var.region
+    secret_name                     = var.secret_name
+    db_instance_account             = var.db_instance_account
+    db_instance_directory           = var.db_instance_directory
 
     # Boolean parameters
-    save_password                  = var.save_password
-    use_ssl                        = var.use_ssl
-    import_server_ssl_cert         = var.import_server_ssl_cert
-    use_kerberos                   = var.use_kerberos
-    use_ldap                       = var.use_ldap
-    use_external_password          = var.use_external_password
+    save_password          = var.save_password
+    use_ssl                = var.use_ssl
+    import_server_ssl_cert = var.import_server_ssl_cert
+    use_kerberos           = var.use_kerberos
+    use_ldap               = var.use_ldap
+    use_external_password  = var.use_external_password
   })
 
   # Properly encode the configuration as JSON
@@ -101,8 +101,8 @@ module "redshift_va_config" {
   #----------------------------------------
   # Network Configuration for Lambda
   #----------------------------------------
-  vpc_id                   = var.vpc_id
-  subnet_ids                = var.subnet_ids
+  vpc_id                     = var.vpc_id
+  subnet_ids                 = var.subnet_ids
   allowed_egress_cidr_blocks = var.allowed_egress_cidr_blocks
 }
 
@@ -115,18 +115,18 @@ module "redshift_gdp_connection" {
   #----------------------------------------
   # Guardium Connection Details
   #----------------------------------------
-  gdp_server            = var.gdp_server
-  gdp_port              = var.gdp_port
-  gdp_username          = var.gdp_username
-  gdp_password          = var.gdp_password
-  client_id             = var.client_id
-  client_secret         = var.client_secret
+  gdp_server    = var.gdp_server
+  gdp_port      = var.gdp_port
+  gdp_username  = var.gdp_username
+  gdp_password  = var.gdp_password
+  client_id     = var.client_id
+  client_secret = var.client_secret
 
   #----------------------------------------
   # Data Source Configuration - Using JSON payload
   #----------------------------------------
-  datasource_name        = var.datasource_name
-  datasource_payload     = local.redshift_config_json
+  datasource_name    = var.datasource_name
+  datasource_payload = local.redshift_config_json
 
   #----------------------------------------
   # Vulnerability Assessment Configuration

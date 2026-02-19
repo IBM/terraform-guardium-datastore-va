@@ -14,7 +14,7 @@ resource "aws_iam_role" "guardium_va_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          AWS = "*"  # This will be restricted by external trust relationships in Guardium
+          AWS = "*" # This will be restricted by external trust relationships in Guardium
         }
       }
     ]
@@ -50,7 +50,7 @@ resource "aws_iam_policy" "guardium_va_policy" {
           "dynamodb:GetItem",
           "dynamodb:Query",
           "dynamodb:Scan",
-          
+
           # Read table metadata
           "dynamodb:DescribeTable",
           "dynamodb:DescribeTimeToLive",
@@ -60,27 +60,27 @@ resource "aws_iam_policy" "guardium_va_policy" {
           "dynamodb:DescribeStream",
           "dynamodb:DescribeReservedCapacity",
           "dynamodb:DescribeReservedCapacityOfferings",
-          
+
           # Read table configuration
           "dynamodb:GetResourcePolicy",
           "dynamodb:ListTagsOfResource",
-          
+
           # Read backup and restore configuration
           "dynamodb:DescribeBackup",
           "dynamodb:ListBackups",
-          
+
           # Read global tables configuration
           "dynamodb:DescribeGlobalTable",
           "dynamodb:ListGlobalTables",
-          
+
           # Read table streams
           "dynamodb:DescribeStream",
           "dynamodb:ListStreams",
-          
+
           # Read table metrics
           "cloudwatch:GetMetricStatistics",
           "cloudwatch:ListMetrics",
-          
+
           # Read IAM policies related to DynamoDB
           "iam:GetPolicy",
           "iam:GetPolicyVersion",
@@ -89,12 +89,12 @@ resource "aws_iam_policy" "guardium_va_policy" {
           "iam:ListAttachedRolePolicies",
           "iam:ListRolePolicies",
           "iam:ListRoles",
-          
+
           # Read KMS keys used by DynamoDB
           "kms:DescribeKey",
           "kms:ListAliases",
           "kms:ListKeys",
-          
+
           # Read VPC endpoints for DynamoDB
           "ec2:DescribeVpcEndpoints"
         ]

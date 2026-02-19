@@ -13,7 +13,7 @@ variable "aws_region" {
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {
+  default = {
     Purpose = "guardium-va-config"
     Owner   = "your-email@example.com"
   }
@@ -63,25 +63,25 @@ variable "redshift_port" {
 variable "redshift_cluster_arn" {
   description = "ARN of the existing Redshift cluster (for reference only)"
   type        = string
-  default     = ""  # Empty default since this is for reference only
+  default     = "" # Empty default since this is for reference only
 }
 
 variable "redshift_endpoint" {
   description = "Endpoint of the existing Redshift cluster (for reference only)"
   type        = string
-  default     = ""  # Empty default since this is for reference only
+  default     = "" # Empty default since this is for reference only
 }
 
 variable "redshift_log_bucket" {
   description = "S3 bucket for Redshift logs (for reference only)"
   type        = string
-  default     = ""  # Empty default since this is for reference only
+  default     = "" # Empty default since this is for reference only
 }
 
 variable "security_group_id" {
   description = "Security group ID for the Redshift cluster (for reference only)"
   type        = string
-  default     = ""  # Empty default since this is for reference only
+  default     = "" # Empty default since this is for reference only
 }
 
 variable "subnet_ids" {
@@ -235,7 +235,7 @@ variable "notification_severity" {
 variable "allowed_egress_cidr_blocks" {
   description = "List of CIDR blocks allowed for outbound traffic from the Lambda function"
   type        = list(string)
-  default     = ["0.0.0.0/0"]  # Default is open to all, but users can restrict this
+  default     = ["0.0.0.0/0"] # Default is open to all, but users can restrict this
 }
 
 #------------------------------------------------------------------------------

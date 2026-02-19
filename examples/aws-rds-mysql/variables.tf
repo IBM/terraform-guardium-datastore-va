@@ -18,7 +18,7 @@ variable "aws_region" {
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {
+  default = {
     Purpose = "guardium-va-config"
     Owner   = "your-email@example.com"
   }

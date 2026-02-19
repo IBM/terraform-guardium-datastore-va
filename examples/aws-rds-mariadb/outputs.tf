@@ -46,7 +46,7 @@ output "gdp_datasource_name" {
 
 output "gdp_datasource_type" {
   description = "Type of the registered data source"
-#   value       = module.mariadb_gdp_connection.*.datasource_type
+  #   value       = module.mariadb_gdp_connection.*.datasource_type
   value = var.datasource_type
 }
 
