@@ -79,6 +79,7 @@ This module provides automated configuration of datastores for vulnerability ass
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
 - **Guardium Integration**: Seamlessly registers datasources with Guardium Data Protection
+- **SSL/TLS Encryption**: All AWS database connections enforce SSL/TLS encryption by default for security
 
 ## Getting Started
 

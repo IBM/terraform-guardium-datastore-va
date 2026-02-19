@@ -32,6 +32,7 @@ sqlguard_password = "YourStrongPasswordHere"
 # Network Configuration
 #----------------------------------------
 vpc_id = "vpc id where the db is deployed"
+db_security_group_id = "sg-xxxxxxxxx"  # PostgreSQL database security group ID
 
 subnet_ids = [
   "subnet-1",
@@ -71,3 +72,9 @@ assessment_time                 = "02:00"
 enable_notifications  = true
 notification_emails   = ["security-team@example.com", "dba-team@example.com"]
 notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#------------------------------------------------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS RDS CA certificate automatically (DEFAULT: true)

@@ -65,6 +65,11 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+variable "db_security_group_id" {
+  description = "Security group ID of the RDS MariaDB instance to allow Lambda access"
+  type        = string
+}
+
 #------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Configuration
 #------------------------------------------------------------------------------
@@ -196,13 +201,13 @@ variable "save_password" {
 variable "use_ssl" {
   description = "Enable to use SSL authentication"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "import_server_ssl_cert" {
   description = "Whether to import the server SSL certificate"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "service_name" {

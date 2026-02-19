@@ -54,8 +54,8 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials_version" {
 
 # Create IAM policy for Lambda function
 resource "aws_iam_policy" "lambda_policy" {
-  name        = "${var.name_prefix}-redshift-va-config-lambda-policy"
-  description = "Policy for Redshift VA configuration Lambda function"
+  name        = "${var.name_prefix}-postgres-va-config-lambda-policy"
+  description = "Policy for PostgreSQL VA configuration Lambda function"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -127,8 +127,8 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
 }
 
 resource "aws_security_group" "lambda_sg" {
-  name        = "${var.name_prefix}-redshift-va-config-lambda-sg"
-  description = "Security group for Redshift VA configuration Lambda function"
+  name        = "${var.name_prefix}-postgres-va-config-lambda-sg"
+  description = "Security group for PostgreSQL VA configuration Lambda function"
   vpc_id      = var.vpc_id
 
   egress {
@@ -139,6 +139,17 @@ resource "aws_security_group" "lambda_sg" {
   }
 
   tags = var.tags
+}
+
+# Security group rule to allow Lambda to connect to PostgreSQL
+resource "aws_security_group_rule" "postgres_allow_lambda" {
+  type                     = "ingress"
+  from_port                = var.db_port
+  to_port                  = var.db_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.lambda_sg.id
+  security_group_id        = var.db_security_group_id
+  description              = "Allow Lambda to connect to PostgreSQL for VA configuration"
 }
 
 # Create Lambda function for VA configuration

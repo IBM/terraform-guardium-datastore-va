@@ -85,3 +85,9 @@ notification_emails   = [
   "dba-team@example.com"
 ]
 notification_severity = "HIGH"                      # Minimum severity to trigger notifications (HIGH, MED, LOW, NONE)
+
+#------------------------------------------------------------------------------
+# SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
+#------------------------------------------------------------------------------
+use_ssl = true                    # Enables SSL/TLS for Guardium connections (DEFAULT: true)
+import_server_ssl_cert = true     # Imports AWS RDS CA certificate automatically (DEFAULT: true)

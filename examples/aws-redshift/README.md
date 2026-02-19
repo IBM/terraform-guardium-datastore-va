@@ -9,6 +9,7 @@ This example configures an existing AWS Redshift cluster for vulnerability asses
 1. **Uses Existing AWS Redshift Cluster**: References your existing Redshift cluster
 2. **Vulnerability Assessment Configuration**: Grants necessary permissions for Guardium to perform vulnerability assessments
 3. **Guardium Data Source Registration**: Registers the Redshift cluster as a data source in Guardium Data Protection
+4. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 
 ## Prerequisites
 
@@ -89,6 +90,46 @@ You can customize this example by modifying the following variables:
   vpc_id = "vpc-12345678"
   subnet_ids = ["subnet-12345678", "subnet-87654321"]
   ```
+
+
+## Input Variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aws_region | AWS region where resources will be created | `string` | `"us-west-2"` | no |
+| name_prefix | Prefix for resource names | `string` | `"redshift-monitoring"` | no |
+| redshift_cluster_identifier | Redshift cluster identifier | `string` | n/a | yes |
+| redshift_database_name | Database name | `string` | `"guardiumdb"` | no |
+| redshift_master_username | Master username | `string` | `"guardium_admin"` | no |
+| redshift_master_password | Master password | `string` | n/a | yes |
+| redshift_port | Redshift port | `number` | `5439` | no |
+| redshift_endpoint | Redshift endpoint (for reference) | `string` | n/a | yes |
+| vpc_id | VPC ID where Lambda will be deployed | `string` | n/a | yes |
+| subnet_ids | Subnet IDs for Lambda deployment | `list(string)` | n/a | yes |
+| sqlguard_username | Guardium VA user to be created | `string` | `"sqlguard"` | no |
+| sqlguard_password | Password for sqlguard user | `string` | n/a | yes |
+| allowed_egress_cidr_blocks | CIDR blocks for Lambda egress | `list(string)` | `["0.0.0.0/0"]` | no |
+| gdp_server | Guardium Data Protection server hostname | `string` | n/a | yes |
+| gdp_port | Guardium server port | `string` | `"8443"` | no |
+| gdp_username | Guardium admin username | `string` | n/a | yes |
+| gdp_password | Guardium admin password | `string` | n/a | yes |
+| client_id | OAuth client ID | `string` | `"client1"` | no |
+| client_secret | OAuth client secret | `string` | n/a | yes |
+| datasource_name | Name for datasource in Guardium | `string` | `"aws-redshift-va"` | no |
+| datasource_description | Description for datasource | `string` | `"Redshift data source onboarded via Terraform"` | no |
+| application | Application type | `string` | `"Security Assessment"` | no |
+| severity_level | Severity level (LOW, NONE, MED, HIGH) | `string` | `"MED"` | no |
+| enable_vulnerability_assessment | Enable vulnerability assessment | `bool` | `true` | no |
+| assessment_schedule | Assessment schedule (daily, weekly, monthly) | `string` | `"weekly"` | no |
+| assessment_day | Day to run assessment | `string` | `"Monday"` | no |
+| assessment_time | Time to run assessment (HH:MM) | `string` | `"02:00"` | no |
+| enable_notifications | Enable email notifications | `bool` | `true` | no |
+| notification_emails | Email addresses for notifications | `list(string)` | `[]` | no |
+| notification_severity | Minimum severity for notifications | `string` | `"HIGH"` | no |
+| use_ssl | Enable SSL/TLS for Guardium connections | `bool` | `true` | no |
+| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
+| save_password | Save password in Guardium | `bool` | `true` | no |
+| tags | Tags to apply to resources | `map(string)` | `{}` | no |
 
 ## Cleanup
 

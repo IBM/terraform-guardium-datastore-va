@@ -8,6 +8,7 @@ This example performs two main steps:
 
 1. **Configure Vulnerability Assessment (VA)** on the MariaDB database by creating the necessary users and permissions
 2. **Connect the database to Guardium Data Protection (GDP)** for security monitoring and assessment
+3. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
 
 ## Prerequisites
 
@@ -126,6 +127,8 @@ This example uses two main modules:
 | assessment_time                 | Time to run the assessment in 24-hour format                             | `string`       | `"02:00"`           |    no    |
 | enable_notifications            | Whether to enable notifications for assessment results                   | `bool`         | `true`              |    no    |
 | notification_emails             | List of email addresses to notify about assessment results               | `list(string)` | `[]`                |    no    |
+| use_ssl                         | Enable SSL/TLS for Guardium connections                                  | `bool`         | `true`              |    no    |
+| import_server_ssl_cert          | Import AWS server SSL certificate automatically                          | `bool`         | `true`              |    no    |
 | notification_severity           | Minimum severity level for notifications                                 | `string`       | `"HIGH"`            |    no    |
 
 ## Outputs
