@@ -9,21 +9,6 @@ jobs:
   validate-modules:
     name: Validate Modules
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        module:
-          - modules/aws-aurora-postgresql
-          - modules/aws-dynamodb
-          - modules/aws-neptune
-          - modules/aws-oracle
-          - modules/aws-rds-mariadb
-          - modules/aws-rds-mysql
-          - modules/aws-rds-postgresql
-          - modules/aws-rds-sql-server
-          - modules/aws-redshift
-          - modules/onprem-mysql
-          - modules/onprem-postgresql
     steps:
       - uses: actions/checkout@v4
       
@@ -32,36 +17,33 @@ jobs:
         with:
           terraform_version: ~1.4
       
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
-        working-directory: ${{ matrix.module }}
-      
-      - name: Terraform Init
-        run: terraform init -backend=false
-        working-directory: ${{ matrix.module }}
-      
-      - name: Terraform Validate
-        run: terraform validate
-        working-directory: ${{ matrix.module }}
+      - name: Find and validate all modules
+        run: |
+          echo "Finding all module directories with Terraform files..."
+          for dir in modules/*/; do
+            if [ -f "${dir}main.tf" ] || [ -f "${dir}versions.tf" ]; then
+              echo "Validating module: $dir"
+              cd "$dir"
+              
+              echo "  Running terraform fmt -check..."
+              terraform fmt -check -recursive || exit 1
+              
+              echo "  Running terraform init..."
+              terraform init -backend=false || exit 1
+              
+              echo "  Running terraform validate..."
+              terraform validate || exit 1
+              
+              cd - > /dev/null
+              echo "  ✓ Module $dir validated successfully"
+            else
+              echo "  ⊘ Skipping $dir (no Terraform files found)"
+            fi
+          done
 
   validate-examples:
     name: Validate Examples
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        example:
-          - examples/aws-aurora-postgresql
-          - examples/aws-dynamodb
-          - examples/aws-neptune
-          - examples/aws-oracle
-          - examples/aws-rds-mariadb
-          - examples/aws-rds-mysql
-          - examples/aws-rds-postgresql
-          - examples/aws-rds-sql-server
-          - examples/aws-redshift
-          - examples/onprem-mysql
-          - examples/onprem-postgresql
     steps:
       - uses: actions/checkout@v4
       
@@ -70,16 +52,28 @@ jobs:
         with:
           terraform_version: ~1.4
       
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
-        working-directory: ${{ matrix.example }}
-      
-      - name: Terraform Init
-        run: terraform init -backend=false
-        working-directory: ${{ matrix.example }}
-      
-      - name: Terraform Validate
-        run: terraform validate
-        working-directory: ${{ matrix.example }}
+      - name: Find and validate all examples
+        run: |
+          echo "Finding all example directories with Terraform files..."
+          for dir in examples/*/; do
+            if [ -f "${dir}main.tf" ] || [ -f "${dir}versions.tf" ]; then
+              echo "Validating example: $dir"
+              cd "$dir"
+              
+              echo "  Running terraform fmt -check..."
+              terraform fmt -check -recursive || exit 1
+              
+              echo "  Running terraform init..."
+              terraform init -backend=false || exit 1
+              
+              echo "  Running terraform validate..."
+              terraform validate || exit 1
+              
+              cd - > /dev/null
+              echo "  ✓ Example $dir validated successfully"
+            else
+              echo "  ⊘ Skipping $dir (no Terraform files found)"
+            fi
+          done
 
- 
+# Made with Bob
