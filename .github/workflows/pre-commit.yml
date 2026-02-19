@@ -24,6 +24,12 @@ jobs:
         run: |
           curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
       
-      - uses: pre-commit/action@v3.0.1
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+      
+      - name: Run pre-commit
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
 
- 
+# Made with Bob
