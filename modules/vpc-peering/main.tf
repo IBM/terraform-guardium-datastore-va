@@ -34,9 +34,9 @@ data "aws_route_tables" "accepter" {
 resource "aws_vpc_peering_connection" "this" {
   count = var.enable_vpc_peering ? 1 : 0
 
-  vpc_id        = var.requester_vpc_id
-  peer_vpc_id   = var.accepter_vpc_id
-  auto_accept   = var.auto_accept
+  vpc_id      = var.requester_vpc_id
+  peer_vpc_id = var.accepter_vpc_id
+  auto_accept = var.auto_accept
 
   tags = merge(
     var.tags,
