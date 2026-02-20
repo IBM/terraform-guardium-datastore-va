@@ -13,7 +13,7 @@ variable "aws_region" {
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {
+  default = {
     Purpose = "guardium-va-config"
     Owner   = "your-email@example.com"
   }
@@ -344,7 +344,7 @@ variable "db_instance_directory" {
 # VA Configuration Outputs
 variable "sqlguard_username" {
   description = "Username for the Guardium VA user"
-  default       = "sqlguard"
+  default     = "sqlguard"
 }
 
 # VA Configuration Outputs

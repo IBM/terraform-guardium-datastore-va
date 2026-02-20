@@ -18,7 +18,7 @@ module "mssql_va_config" {
   #----------------------------------------
   db_host       = var.db_host
   db_port       = var.db_port
-  db_username   = var.db_username  
+  db_username   = var.db_username
   db_password   = var.db_password
   database_name = var.database_name
 

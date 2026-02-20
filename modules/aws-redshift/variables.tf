@@ -64,7 +64,7 @@ variable "aws_region" {
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {
+  default = {
     Purpose = "guardium-va-config"
     Owner   = "your-email@example.com"
   }
@@ -73,5 +73,5 @@ variable "tags" {
 variable "allowed_egress_cidr_blocks" {
   description = "List of CIDR blocks allowed for outbound traffic from the Lambda function"
   type        = list(string)
-  default     = ["0.0.0.0/0"]  # Default is open to all, but users can restrict this
+  default     = ["0.0.0.0/0"] # Default is open to all, but users can restrict this
 }

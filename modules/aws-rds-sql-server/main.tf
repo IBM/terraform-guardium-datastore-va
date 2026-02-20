@@ -13,8 +13,8 @@ locals {
   aws_account_id = data.aws_caller_identity.current.account_id
   # Secret name using the name_prefix for consistency
   secret_name = "${var.name_prefix}-mssql-rds-va-credentials"
-  zip_file = "${path.module}/files/lambda_function.zip"
-  zip_hash = filesha256(local.zip_file)
+  zip_file    = "${path.module}/files/lambda_function.zip"
+  zip_hash    = filesha256(local.zip_file)
 }
 
 #------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ resource "aws_iam_policy" "lambda_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.mssql_credentials.arn,
         ]

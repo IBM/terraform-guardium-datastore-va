@@ -13,8 +13,8 @@ terraform {
     local = {
       source = "hashicorp/local"
     }
-    gdp-middleware-helper  = {
-      source = "IBM/gdp-middleware-helper"
+    gdp-middleware-helper = {
+      source  = "IBM/gdp-middleware-helper"
       version = ">=1.0.0"
     }
   }

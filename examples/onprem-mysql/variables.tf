@@ -185,7 +185,7 @@ variable "notification_severity" {
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
-  default     = {
+  default = {
     Purpose = "guardium-va-onprem-mysql"
     Owner   = "your-email@example.com"
   }

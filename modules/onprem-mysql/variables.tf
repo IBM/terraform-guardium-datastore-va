@@ -331,7 +331,7 @@ variable "db_instance_directory" {
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
-  default     = {
+  default = {
     Purpose = "guardium-va-onprem-mysql"
     Owner   = "your-email@example.com"
   }

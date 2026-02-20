@@ -12,9 +12,9 @@ locals {
   # Use provided AWS account ID or get it automatically
   aws_account_id = data.aws_caller_identity.current.account_id
   # Secret names using the name_prefix for consistency
-  secret_name          = "${var.name_prefix}-oracle-va-password"
+  secret_name             = "${var.name_prefix}-oracle-va-password"
   lambda_function_archive = "${path.module}/files/lambda_function.zip"
-  zip_hash             = fileexists(local.lambda_function_archive) ? filesha256(local.lambda_function_archive) : "placeholder"
+  zip_hash                = fileexists(local.lambda_function_archive) ? filesha256(local.lambda_function_archive) : "placeholder"
 }
 
 # Create IAM role for Lambda function

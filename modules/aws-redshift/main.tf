@@ -8,10 +8,10 @@ locals {
   aws_account_id = data.aws_caller_identity.current.account_id
 
   # Secret names using the name_prefix for consistency
-  redshift_secret_name = "${var.name_prefix}-redshift-password"
-  sqlguard_secret_name = "${var.name_prefix}-sqlguard-password"
+  redshift_secret_name    = "${var.name_prefix}-redshift-password"
+  sqlguard_secret_name    = "${var.name_prefix}-sqlguard-password"
   lambda_function_archive = "${path.module}/files/lambda_function.zip"
-  zip_hash = filesha256(local.lambda_function_archive)
+  zip_hash                = filesha256(local.lambda_function_archive)
 }
 
 # Create IAM role for Lambda function
@@ -36,11 +36,11 @@ resource "aws_iam_role" "lambda_role" {
 
 # Create AWS Secrets Manager secrets for passwords
 resource "aws_secretsmanager_secret" "redshift_password" {
-  name                    = local.redshift_secret_name
-  description             = "Password for Redshift admin user"
-  recovery_window_in_days = 0  # Force immediate deletion instead of scheduled deletion
+  name                           = local.redshift_secret_name
+  description                    = "Password for Redshift admin user"
+  recovery_window_in_days        = 0 # Force immediate deletion instead of scheduled deletion
   force_overwrite_replica_secret = true
-  tags                    = var.tags
+  tags                           = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "redshift_password" {
@@ -49,11 +49,11 @@ resource "aws_secretsmanager_secret_version" "redshift_password" {
 }
 
 resource "aws_secretsmanager_secret" "sqlguard_password" {
-  name                    = local.sqlguard_secret_name
-  description             = "Password for Redshift sqlguard user"
-  recovery_window_in_days = 0  # Force immediate deletion instead of scheduled deletion
+  name                           = local.sqlguard_secret_name
+  description                    = "Password for Redshift sqlguard user"
+  recovery_window_in_days        = 0 # Force immediate deletion instead of scheduled deletion
   force_overwrite_replica_secret = true
-  tags                    = var.tags
+  tags                           = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "sqlguard_password" {
@@ -91,7 +91,7 @@ resource "aws_iam_policy" "lambda_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.redshift_password.arn,
           aws_secretsmanager_secret.sqlguard_password.arn
@@ -108,11 +108,11 @@ resource "aws_security_group" "secretsmanager_endpoint_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
     security_groups = [aws_security_group.lambda_sg.id]
-    description = "Allow HTTPS from Lambda security group"
+    description     = "Allow HTTPS from Lambda security group"
   }
 
   tags = var.tags
@@ -120,11 +120,11 @@ resource "aws_security_group" "secretsmanager_endpoint_sg" {
 
 # VPC Endpoint for Secrets Manager to allow Lambda to access it from private VPC
 resource "aws_vpc_endpoint" "secretsmanager" {
-  vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${var.aws_region}.secretsmanager"
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = var.subnet_ids
-  security_group_ids = [aws_security_group.secretsmanager_endpoint_sg.id]
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.subnet_ids
+  security_group_ids  = [aws_security_group.secretsmanager_endpoint_sg.id]
   private_dns_enabled = true
 
   tags = var.tags
@@ -172,24 +172,24 @@ resource "aws_lambda_function" "va_config_lambda" {
   # VPC configuration is optional - only apply if vpc_id and subnet_id are provided
   vpc_config {
     subnet_ids         = var.subnet_ids
-    security_group_ids =  [aws_security_group.lambda_sg.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
   environment {
     variables = {
-      REDSHIFT_HOST           = var.redshift_host
-      REDSHIFT_PORT           = var.redshift_port
-      REDSHIFT_DATABASE       = var.redshift_database
-      REDSHIFT_USERNAME       = var.redshift_username
-      REDSHIFT_SECRET_NAME    = aws_secretsmanager_secret.redshift_password.name
-      SQLGUARD_USERNAME       = var.sqlguard_username
-      SQLGUARD_SECRET_NAME    = aws_secretsmanager_secret.sqlguard_password.name
-      SECRETS_REGION          = var.aws_region
+      REDSHIFT_HOST        = var.redshift_host
+      REDSHIFT_PORT        = var.redshift_port
+      REDSHIFT_DATABASE    = var.redshift_database
+      REDSHIFT_USERNAME    = var.redshift_username
+      REDSHIFT_SECRET_NAME = aws_secretsmanager_secret.redshift_password.name
+      SQLGUARD_USERNAME    = var.sqlguard_username
+      SQLGUARD_SECRET_NAME = aws_secretsmanager_secret.sqlguard_password.name
+      SECRETS_REGION       = var.aws_region
     }
   }
 
   # Lambda function code with dependencies packaged
-  filename = local.lambda_function_archive
+  filename         = local.lambda_function_archive
   source_code_hash = local.zip_hash
 
   tags = var.tags
