@@ -203,10 +203,10 @@ resource "null_resource" "create_sqlguard_user" {
             --connect-timeout=30 \
             -e "${local.create_user_sql}"
     EOT
-    
+
     on_failure = continue
   }
-  
+
   # Verification step to check if user was created successfully
   provisioner "local-exec" {
     when    = create

@@ -11,21 +11,21 @@ locals {
   secret_name = "${var.dynamodb_datasource_name}-dynamo-credentials"
 
   dynamodb_config_tpl = templatefile("${path.module}/templates/dynamodb_datasource.tpl", {
-    datasource_name = var.dynamodb_datasource_name
-    datasource_hostname = "dynamodb.${var.aws_region}.amazonaws.com"
-    datasource_port = 5432
-    application = "Security Assessment"
-    datasource_description = var.dynamodb_description
-    datasource_database = "default"
-    severity_level = "MED"
-    use_ssl = var.use_ssl
-    import_server_ssl_cert = var.import_server_ssl_cert
-    use_kerberos = false
-    use_ldap = false
-    external_password_type_name = "AWS SECRETS MANAGER"
+    datasource_name                 = var.dynamodb_datasource_name
+    datasource_hostname             = "dynamodb.${var.aws_region}.amazonaws.com"
+    datasource_port                 = 5432
+    application                     = "Security Assessment"
+    datasource_description          = var.dynamodb_description
+    datasource_database             = "default"
+    severity_level                  = "MED"
+    use_ssl                         = var.use_ssl
+    import_server_ssl_cert          = var.import_server_ssl_cert
+    use_kerberos                    = false
+    use_ldap                        = false
+    external_password_type_name     = "AWS SECRETS MANAGER"
     aws_secrets_manager_config_name = var.aws_secrets_manager_name
-    region = var.aws_secrets_manager_region
-    secret_name = var.aws_secrets_manager_secret != null ? var.aws_secrets_manager_secret : local.secret_name
+    region                          = var.aws_secrets_manager_region
+    secret_name                     = var.aws_secrets_manager_secret != null ? var.aws_secrets_manager_secret : local.secret_name
   })
   dynamodb_config_json_decoded = jsondecode(local.dynamodb_config_tpl)
   dynamodb_config_json_encoded = jsonencode(local.dynamodb_config_json_decoded)
@@ -54,20 +54,20 @@ module "dynamodb_gdp_connection" {
   #----------------------------------------
   # Guardium Connection Details
   #----------------------------------------
-  gdp_server            = var.gdp_server
-  gdp_port              = var.gdp_port
-  gdp_username          = var.guardium_username
-  gdp_password          = var.guardium_password
-  client_id             = var.client_id
-  client_secret         = var.client_secret
+  gdp_server    = var.gdp_server
+  gdp_port      = var.gdp_port
+  gdp_username  = var.guardium_username
+  gdp_password  = var.guardium_password
+  client_id     = var.client_id
+  client_secret = var.client_secret
 
   #----------------------------------------
   # Datasource Information
   #----------------------------------------
-  datasource_name        = var.dynamodb_datasource_name
+  datasource_name = var.dynamodb_datasource_name
 
   # Use the encoded JSON payload
-  datasource_payload = "${local.dynamodb_config_json_encoded}"
+  datasource_payload = local.dynamodb_config_json_encoded
 
   #----------------------------------------
   # Vulnerability Assessment Configuration

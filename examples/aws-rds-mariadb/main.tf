@@ -35,8 +35,8 @@ module "mariadb_va_config" {
   #----------------------------------------
   aws_region = var.aws_region
   tags       = var.tags
-  
-  client_id     = var.client_id 
+
+  client_id     = var.client_id
   client_secret = var.client_secret
   gdp_password  = var.gdp_password
   gdp_server    = var.gdp_server
@@ -47,34 +47,34 @@ module "mariadb_va_config" {
   # Vulnerability Assessment Configuration
   #----------------------------------------
 
-  datasource_name                = var.datasource_name
-  application                    = var.application
-  datasource_description         = var.datasource_description
-  severity_level                 = var.severity_level
-  service_name                   = var.service_name
-  shared_datasource              = var.shared_datasource
-  connection_properties          = var.connection_properties
-  compatibility_mode             = var.compatibility_mode
-  custom_url                     = var.custom_url
-  kerberos_config_name           = var.kerberos_config_name
-  external_password_type_name    = var.external_password_type_name
-  cyberark_config_name           = var.cyberark_config_name
-  cyberark_object_name           = var.cyberark_object_name
-  hashicorp_config_name          = var.hashicorp_config_name
-  hashicorp_path                 = var.hashicorp_path
-  hashicorp_role                 = var.hashicorp_role
-  hashicorp_child_namespace      = var.hashicorp_child_namespace
+  datasource_name                 = var.datasource_name
+  application                     = var.application
+  datasource_description          = var.datasource_description
+  severity_level                  = var.severity_level
+  service_name                    = var.service_name
+  shared_datasource               = var.shared_datasource
+  connection_properties           = var.connection_properties
+  compatibility_mode              = var.compatibility_mode
+  custom_url                      = var.custom_url
+  kerberos_config_name            = var.kerberos_config_name
+  external_password_type_name     = var.external_password_type_name
+  cyberark_config_name            = var.cyberark_config_name
+  cyberark_object_name            = var.cyberark_object_name
+  hashicorp_config_name           = var.hashicorp_config_name
+  hashicorp_path                  = var.hashicorp_path
+  hashicorp_role                  = var.hashicorp_role
+  hashicorp_child_namespace       = var.hashicorp_child_namespace
   aws_secrets_manager_config_name = var.aws_secrets_manager_config_name
-  region                         = var.region
-  secret_name                    = var.secret_name
-  db_instance_account            = var.db_instance_account
-  db_instance_directory          = var.db_instance_directory
-  save_password                  = var.save_password
-  use_ssl                        = var.use_ssl
-  import_server_ssl_cert         = var.import_server_ssl_cert
-  use_kerberos                   = var.use_kerberos
-  use_ldap                       = var.use_ldap
-  use_external_password          = var.use_external_password
+  region                          = var.region
+  secret_name                     = var.secret_name
+  db_instance_account             = var.db_instance_account
+  db_instance_directory           = var.db_instance_directory
+  save_password                   = var.save_password
+  use_ssl                         = var.use_ssl
+  import_server_ssl_cert          = var.import_server_ssl_cert
+  use_kerberos                    = var.use_kerberos
+  use_ldap                        = var.use_ldap
+  use_external_password           = var.use_external_password
 
   enable_vulnerability_assessment = var.enable_vulnerability_assessment
   assessment_schedule             = var.assessment_schedule

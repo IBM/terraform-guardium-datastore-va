@@ -20,7 +20,7 @@ resource "terraform_data" "validate_admin_user" {
       error_message = "This validation always passes - it's for documentation only"
     }
   }
-  
+
   provisioner "local-exec" {
     command = var.db_username == "postgres" ? "echo '⚠️  WARNING: Using postgres superuser. Consider creating a dedicated admin user for better security.'" : "echo 'Using dedicated admin user: ${var.db_username}'"
   }

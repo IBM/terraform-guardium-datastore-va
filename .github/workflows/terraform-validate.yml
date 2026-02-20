@@ -1,0 +1,79 @@
+name: Terraform Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  validate-modules:
+    name: Validate Modules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.4
+      
+      - name: Find and validate all modules
+        run: |
+          echo "Finding all module directories with Terraform files..."
+          for dir in modules/*/; do
+            if [ -f "${dir}main.tf" ] || [ -f "${dir}versions.tf" ]; then
+              echo "Validating module: $dir"
+              cd "$dir"
+              
+              echo "  Running terraform fmt -check..."
+              terraform fmt -check -recursive || exit 1
+              
+              echo "  Running terraform init..."
+              terraform init -backend=false || exit 1
+              
+              echo "  Running terraform validate..."
+              terraform validate || exit 1
+              
+              cd - > /dev/null
+              echo "  ✓ Module $dir validated successfully"
+            else
+              echo "  ⊘ Skipping $dir (no Terraform files found)"
+            fi
+          done
+
+  validate-examples:
+    name: Validate Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.4
+      
+      - name: Find and validate all examples
+        run: |
+          echo "Finding all example directories with Terraform files..."
+          for dir in examples/*/; do
+            if [ -f "${dir}main.tf" ] || [ -f "${dir}versions.tf" ]; then
+              echo "Validating example: $dir"
+              cd "$dir"
+              
+              echo "  Running terraform fmt -check..."
+              terraform fmt -check -recursive || exit 1
+              
+              echo "  Running terraform init..."
+              terraform init -backend=false || exit 1
+              
+              echo "  Running terraform validate..."
+              terraform validate || exit 1
+              
+              cd - > /dev/null
+              echo "  ✓ Example $dir validated successfully"
+            else
+              echo "  ⊘ Skipping $dir (no Terraform files found)"
+            fi
+          done
+
+# Made with Bob

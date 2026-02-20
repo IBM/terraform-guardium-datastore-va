@@ -1,0 +1,67 @@
+name: Security Scanning
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly Monday
+
+jobs:
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install Gitleaks
+        run: |
+          wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz
+          tar -xzf gitleaks_8.18.0_linux_x64.tar.gz
+          chmod +x gitleaks
+      
+      - name: Run Gitleaks Scan
+        run: |
+          ./gitleaks detect --source . --verbose --exit-code 1
+
+  tfsec:
+    name: tfsec Security Scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install tfsec
+        run: |
+          wget -q https://github.com/aquasecurity/tfsec/releases/download/v1.28.1/tfsec-linux-amd64
+          chmod +x tfsec-linux-amd64
+          sudo mv tfsec-linux-amd64 /usr/local/bin/tfsec
+      
+      - name: Run tfsec
+        continue-on-error: true
+        run: |
+          tfsec . --minimum-severity MEDIUM --format default || true
+  
+  checkov:
+    name: Checkov Policy Scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Checkov
+        run: |
+          pip install checkov
+      
+      - name: Run Checkov
+        continue-on-error: true
+        run: |
+          checkov --directory . --framework terraform --quiet --compact || true
+
+# Made with Bob

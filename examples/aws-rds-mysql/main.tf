@@ -32,9 +32,9 @@ module "mysql_va_config" {
   #----------------------------------------
   # lambda configuration
   #----------------------------------------
-  vpc_id                = var.vpc_id
-  subnet_ids            = var.subnet_ids
-  db_security_group_id  = var.db_security_group_id
+  vpc_id               = var.vpc_id
+  subnet_ids           = var.subnet_ids
+  db_security_group_id = var.db_security_group_id
 
   #----------------------------------------
   # General Configuration
@@ -46,38 +46,38 @@ module "mysql_va_config" {
 
 locals {
   rds_mysql_config = templatefile("${path.module}/templates/mysql_datasource.tpl", {
-    datasource_name                = var.datasource_name
-    datasource_hostname            = var.db_host
-    datasource_port                = var.db_port
-    application                    = var.application
-    datasource_description         = var.datasource_description
-    sqlguard_username              = var.sqlguard_username
-    sqlguard_password              = var.sqlguard_password
-    severity_level                 = var.severity_level
-    service_name                   = var.service_name
-    shared_datasource              = var.shared_datasource
-    connection_properties          = var.connection_properties
-    compatibility_mode             = var.compatibility_mode
-    custom_url                     = var.custom_url
-    kerberos_config_name           = var.kerberos_config_name
-    external_password_type_name    = var.external_password_type_name
-    cyberark_config_name           = var.cyberark_config_name
-    cyberark_object_name           = var.cyberark_object_name
-    hashicorp_config_name          = var.hashicorp_config_name
-    hashicorp_path                 = var.hashicorp_path
-    hashicorp_role                 = var.hashicorp_role
-    hashicorp_child_namespace      = var.hashicorp_child_namespace
+    datasource_name                 = var.datasource_name
+    datasource_hostname             = var.db_host
+    datasource_port                 = var.db_port
+    application                     = var.application
+    datasource_description          = var.datasource_description
+    sqlguard_username               = var.sqlguard_username
+    sqlguard_password               = var.sqlguard_password
+    severity_level                  = var.severity_level
+    service_name                    = var.service_name
+    shared_datasource               = var.shared_datasource
+    connection_properties           = var.connection_properties
+    compatibility_mode              = var.compatibility_mode
+    custom_url                      = var.custom_url
+    kerberos_config_name            = var.kerberos_config_name
+    external_password_type_name     = var.external_password_type_name
+    cyberark_config_name            = var.cyberark_config_name
+    cyberark_object_name            = var.cyberark_object_name
+    hashicorp_config_name           = var.hashicorp_config_name
+    hashicorp_path                  = var.hashicorp_path
+    hashicorp_role                  = var.hashicorp_role
+    hashicorp_child_namespace       = var.hashicorp_child_namespace
     aws_secrets_manager_config_name = var.aws_secrets_manager_config_name
-    region                         = var.region
-    secret_name                    = var.secret_name
-    db_instance_account            = var.db_instance_account
-    db_instance_directory          = var.db_instance_directory
-    save_password                  = var.save_password
-    use_ssl                        = var.use_ssl
-    import_server_ssl_cert         = var.import_server_ssl_cert
-    use_kerberos                   = var.use_kerberos
-    use_ldap                       = var.use_ldap
-    use_external_password          = var.use_external_password
+    region                          = var.region
+    secret_name                     = var.secret_name
+    db_instance_account             = var.db_instance_account
+    db_instance_directory           = var.db_instance_directory
+    save_password                   = var.save_password
+    use_ssl                         = var.use_ssl
+    import_server_ssl_cert          = var.import_server_ssl_cert
+    use_kerberos                    = var.use_kerberos
+    use_ldap                        = var.use_ldap
+    use_external_password           = var.use_external_password
   })
   rds_mysql_config_json_decoded = jsondecode(local.rds_mysql_config)
   rds_mysql_config_json_encoded = jsonencode(local.rds_mysql_config)
