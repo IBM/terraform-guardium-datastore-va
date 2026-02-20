@@ -13,8 +13,8 @@ locals {
   aws_account_id = data.aws_caller_identity.current.account_id
   # Secret names using the name_prefix for consistency
   secret_name = "${var.name_prefix}-documentdb-va-password"
-  zip_file = "${path.module}/files/lambda_function.zip"
-  zip_hash = filesha256(local.zip_file)
+  zip_file    = "${path.module}/files/lambda_function.zip"
+  zip_hash    = filesha256(local.zip_file)
 }
 
 # Create IAM role for Lambda function
@@ -46,9 +46,9 @@ resource "aws_secretsmanager_secret" "documentdb_credentials" {
 
 
 resource "aws_secretsmanager_secret_version" "documentdb_credentials_version" {
-  secret_id     = aws_secretsmanager_secret.documentdb_credentials.id
+  secret_id = aws_secretsmanager_secret.documentdb_credentials.id
   secret_string = jsonencode({
-    username = var.sqlguard_username  # GDP expects VA user credentials at top level
+    username = var.sqlguard_username # GDP expects VA user credentials at top level
     password = var.sqlguard_password
     endpoint = var.db_host
     port     = var.db_port
@@ -89,7 +89,7 @@ resource "aws_iam_policy" "lambda_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.documentdb_credentials.arn,
         ]
@@ -105,11 +105,11 @@ resource "aws_security_group" "secretsmanager_endpoint_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
     security_groups = [aws_security_group.lambda_sg.id]
-    description = "Allow HTTPS from Lambda security group"
+    description     = "Allow HTTPS from Lambda security group"
   }
 
   tags = var.tags
@@ -118,12 +118,12 @@ resource "aws_security_group" "secretsmanager_endpoint_sg" {
 # VPC Endpoint for Secrets Manager to allow Lambda to access it from private VPC
 # Always create a new VPC endpoint for this deployment
 resource "aws_vpc_endpoint" "secretsmanager" {
-  vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${var.aws_region}.secretsmanager"
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = var.subnet_ids
-  security_group_ids = [aws_security_group.secretsmanager_endpoint_sg.id]
-  private_dns_enabled = true  # Enable private DNS so Lambda can resolve secretsmanager.us-east-1.amazonaws.com
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = var.subnet_ids
+  security_group_ids  = [aws_security_group.secretsmanager_endpoint_sg.id]
+  private_dns_enabled = true # Enable private DNS so Lambda can resolve secretsmanager.us-east-1.amazonaws.com
 
   tags = merge(
     var.tags,
@@ -186,8 +186,8 @@ resource "aws_lambda_function" "va_config_lambda" {
   memory_size   = var.lambda_memory_size
 
   vpc_config {
-    security_group_ids =  [aws_security_group.lambda_sg.id]
-    subnet_ids = var.subnet_ids
+    security_group_ids = [aws_security_group.lambda_sg.id]
+    subnet_ids         = var.subnet_ids
   }
 
   environment {
@@ -199,7 +199,7 @@ resource "aws_lambda_function" "va_config_lambda" {
   }
 
   # Lambda function code with dependencies packaged
-  filename = local.zip_file
+  filename         = local.zip_file
   source_code_hash = local.zip_hash
 
   tags = var.tags

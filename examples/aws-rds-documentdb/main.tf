@@ -18,7 +18,7 @@ module "vpc_peering" {
   accepter_vpc_id  = var.vpc_id
 
   peering_connection_name = "${var.name_prefix}-guardium-to-documentdb"
-  
+
   tags = merge(
     var.tags,
     {
@@ -56,9 +56,9 @@ module "documentdb_va_config" {
   #----------------------------------------
   # lambda configuration
   #----------------------------------------
-  vpc_id                = var.vpc_id
-  subnet_ids            = var.subnet_ids
-  db_security_group_id  = var.db_security_group_id
+  vpc_id               = var.vpc_id
+  subnet_ids           = var.subnet_ids
+  db_security_group_id = var.db_security_group_id
 
   #----------------------------------------
   # General Configuration
