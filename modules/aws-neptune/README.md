@@ -85,6 +85,197 @@ module "neptune_va_config" {
 - The VA user (sqlguard) is created with read-only permissions for vulnerability assessment
 - Neptune uses Gremlin/SPARQL query languages, not SQL
 
+---
+
+## 🔧 Terraform Import Guide & Troubleshooting
+
+### Common Terraform Import Scenarios
+
+#### 1. VPC Endpoint for Secrets Manager Already Exists
+
+**Issue**: VPC endpoint already existed with `private_dns_enabled = true`, causing a conflict.
+
+**Error Message**:
+```
+Error: creating EC2 VPC Endpoint (com.amazonaws.us-west-2.secretsmanager):
+operation error EC2: CreateVpcEndpoint, https response error StatusCode: 400,
+api error InvalidParameter: private-dns-enabled cannot be set because there is
+already a conflicting DNS domain for secretsmanager.us-west-2.amazonaws.com
+in the VPC vpc-xxxxx
+```
+
+**Solution**: Import the existing VPC endpoint instead of creating a new one.
+
+```bash
+# Step 1: Find the existing VPC endpoint ID
+aws ec2 describe-vpc-endpoints \
+  --region us-west-2 \
+  --filters "Name=vpc-id,Values=vpc-xxxxx" \
+            "Name=service-name,Values=com.amazonaws.us-west-2.secretsmanager" \
+  --query 'VpcEndpoints[0].VpcEndpointId' \
+  --output text
+
+# Output example: vpce-03cc86d3c12bc7cc1
+
+# Step 2: Import the VPC endpoint into Terraform state
+terraform import module.neptune_va_config.aws_vpc_endpoint.secretsmanager vpce-03cc86d3c12bc7cc1
+```
+
+---
+
+#### 2. AWS Secrets Manager Secret Scheduled for Deletion
+
+**Issue**: Secret was scheduled for deletion, preventing creation of a new secret with the same name.
+
+**Error Message**:
+```
+Error: creating Secrets Manager Secret (guardium-neptune-va-password):
+operation error Secrets Manager: CreateSecret, https response error StatusCode: 400,
+InvalidRequestException: You can't create this secret because a secret with this
+name is already scheduled for deletion.
+```
+
+**Solution**: Restore the secret and import it into Terraform state.
+
+```bash
+# Step 1: Find the secret ARN (including those scheduled for deletion)
+aws secretsmanager list-secrets \
+  --region us-west-2 \
+  --include-planned-deletion \
+  --filters Key=name,Values=guardium-neptune-va-password \
+  --query 'SecretList[0].[ARN,DeletedDate]' \
+  --output text
+
+# Output example:
+# arn:aws:secretsmanager:us-west-2:123456789:secret:guardium-neptune-va-password-ABC123
+# 2026-02-24T15:59:07.752000-05:00
+
+# Step 2: Restore the secret
+aws secretsmanager restore-secret \
+  --secret-id arn:aws:secretsmanager:us-west-2:123456789:secret:guardium-neptune-va-password-ABC123 \
+  --region us-west-2
+
+# Step 3: Import the secret into Terraform state
+terraform import module.neptune_va_config.aws_secretsmanager_secret.neptune_credentials \
+  arn:aws:secretsmanager:us-west-2:123456789:secret:guardium-neptune-va-password-ABC123
+```
+
+---
+
+### 📋 Configuration Issues & Solutions
+
+#### Issue 1: "Value not in constant list" Error
+
+**Error from Guardium API**:
+```json
+{
+  "ErrorCode": "23",
+  "ErrorMessage": "create_datasource: Wrong value: 'awsSecretsManagerConfigName' must be one of possible values. Value not in constant list.",
+  "ValidParameterValues": ["your-config-name"]
+}
+```
+
+**Cause**: The `aws_secrets_manager_config_name` value doesn't match any AWS Secrets Manager configuration in Guardium Data Protection (GDP).
+
+**Solution**:
+
+1. **Verify the configuration exists in GDP**:
+   - Log into Guardium UI
+   - Navigate to: **Setup** → **Tools and Views** → **Secrets Management**
+   - Look for AWS Secrets Manager configurations
+   - Note the exact configuration name (case-sensitive)
+
+2. **Update your terraform.tfvars**:
+   ```hcl
+   # ❌ WRONG - Using encrypted or invalid name
+   aws_secrets_manager_config_name = "xGRCCZy9DZPH+vFo6Wk8Apc1KpnCqM5sRCd23yrk"
+   
+   # ✅ CORRECT - Using actual config name from GDP
+   aws_secrets_manager_config_name = "aws-prod-config"
+   ```
+
+3. **If no configuration exists, create one in GDP first**:
+   - In Guardium UI: **Setup** → **Tools and Views** → **Secrets Management**
+   - Click **Add** → **AWS Secrets Manager**
+   - Configure with your AWS credentials and region
+   - Save with a memorable name (e.g., "aws-prod", "aws-dev")
+
+**⚠️ Important**: The AWS Secrets Manager configuration **MUST be created in Guardium Data Protection BEFORE** running Terraform.
+
+---
+
+#### Issue 2: "Cannot set external password type" Error
+
+**Error from Guardium API**:
+```json
+{
+  "ErrorCode": "113",
+  "ErrorMessage": "create_datasource: Cannot set external password type. The datasource neptune-va is not using external password. Could not complete the operation"
+}
+```
+
+**Cause**: You're providing external password configuration (AWS Secrets Manager, CyberArk, HashiCorp Vault) but `use_external_password = false`.
+
+**Solution**: When using AWS Secrets Manager or any external password manager, you **MUST** set `use_external_password = true`.
+
+**✅ Correct Configuration**:
+```hcl
+# When using AWS Secrets Manager
+use_external_password           = true  # MUST be true
+aws_secrets_manager_config_name = "aws-prod-config"
+region                          = "us-east-1"
+secret_name                     = "guardium/neptune/credentials"
+```
+
+**❌ Incorrect Configuration**:
+```hcl
+# This will cause error 113
+use_external_password           = false  # Wrong!
+aws_secrets_manager_config_name = "aws-prod-config"  # Conflict!
+```
+
+**Key Rule**: If you set ANY external password configuration (AWS Secrets Manager, CyberArk, HashiCorp Vault), you **MUST** set `use_external_password = true`.
+
+### 🐛 Debugging & Verification
+
+#### Verify Datasource Registration
+
+1. **Check Terraform state**:
+   ```bash
+   terraform state show 'module.neptune_gdp_connection[0].guardium-data-protection_register_va_datasource.register_va_datasource'
+   ```
+
+2. **Check Guardium UI**:
+   - Navigate to Data Sources or Vulnerability Assessment section
+   - Look for your datasource name
+
+3. **Enable debug logging**:
+   ```bash
+   TF_LOG=DEBUG terraform apply -auto-approve 2>&1 | tee terraform-debug.log
+   grep "register data source response" terraform-debug.log
+   ```
+
+#### Common Issues Quick Reference
+
+| Issue | Quick Fix |
+|-------|-----------|
+| "Value not in constant list" | Verify AWS Secrets Manager config exists in GDP UI |
+| "Cannot set external password type" | Set `use_external_password = true` |
+| VPC endpoint conflict | Import existing endpoint with `terraform import` |
+| Secret scheduled for deletion | Restore secret with `aws secretsmanager restore-secret` |
+| Datasource already exists | Use different name or delete existing datasource |
+
+---
+
+### 📚 Additional Resources
+
+- [Terraform Import Documentation](https://www.terraform.io/docs/cli/import/index.html)
+- [AWS VPC Endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints.html)
+- [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/)
+- [Guardium Data Protection API](https://www.ibm.com/docs/en/guardium)
+
+---
+
 ## License
 
 Copyright IBM Corp. 2025
