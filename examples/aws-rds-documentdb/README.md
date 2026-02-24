@@ -10,14 +10,16 @@ This example demonstrates how to configure an AWS RDS DocumentDB cluster for Gua
 ## Overview
 
 This example will:
-1. Deploy a Lambda function to configure the DocumentDB cluster with a `sqlguard` user
-2. Grant necessary permissions for Guardium VA
-3. Register the DocumentDB cluster as a data source in Guardium Data Protection
-4. Configure scheduled vulnerability assessments
-5. Set up notifications for assessment results
+1. (Optional) Set up VPC peering if Guardium is in a different VPC
+2. Deploy a Lambda function to configure the DocumentDB cluster with a `sqlguard` user
+3. Grant necessary permissions for Guardium VA
+4. Register the DocumentDB cluster as a data source in Guardium Data Protection
+5. Configure scheduled vulnerability assessments
+6. Set up notifications for assessment results
 
 ## Architecture
 
+### Same VPC Deployment
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                          AWS VPC                                 │
@@ -45,6 +47,31 @@ This example will:
                                     │  - VA Scans      │
                                     │  - Monitoring    │
                                     └──────────────────┘
+```
+
+### Cross-VPC Deployment (with VPC Peering)
+```
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│      Guardium VPC               │    │      DocumentDB VPC              │
+│                                 │    │                                  │
+│  ┌──────────────────┐           │    │  ┌──────────────────┐           │
+│  │  Guardium Data   │           │    │  │  Lambda Function │           │
+│  │  Protection      │           │    │  │  (VA Config)     │           │
+│  │  - VA Scans      │◀──────────┼────┼─▶│                  │           │
+│  │  - Monitoring    │  Peering  │    │  └────────┬─────────┘           │
+│  └──────────────────┘  Connection    │           │                      │
+│                                 │    │           ▼                      │
+└─────────────────────────────────┘    │  ┌──────────────────┐           │
+                                       │  │  Secrets Manager │           │
+         Port 27017 (SSL/TLS)          │  └──────────────────┘           │
+                 │                     │           │                      │
+                 │                     │           ▼                      │
+                 │                     │  ┌─────────────────────────┐    │
+                 └─────────────────────┼─▶│  DocumentDB Cluster     │    │
+                                       │  │  - sqlguard user        │    │
+                                       │  └─────────────────────────┘    │
+                                       │                                  │
+                                       └──────────────────────────────────┘
 ```
 
 ## Prerequisites
@@ -107,6 +134,10 @@ cp terraform.tfvars.example terraform.tfvars
 Edit `terraform.tfvars` with your values:
 
 ```hcl
+# VPC Peering Configuration (Optional - only if Guardium in different VPC)
+enable_vpc_peering = false  # Set to true if Guardium is in a different VPC
+# guardium_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"  # Uncomment and set if enable_vpc_peering = true
+
 # DocumentDB Configuration
 db_host     = "your-cluster.cluster-xxxxxx.us-east-1.docdb.amazonaws.com"
 db_username = "admin"
@@ -204,26 +235,32 @@ If successful, you should see the MongoDB shell prompt.
 
 ### AWS Resources
 
-1. **Lambda Function**
+1. **VPC Peering (Optional)**
+   - VPC peering connection between Guardium VPC and DocumentDB VPC
+   - Automatic route creation in all route tables of both VPCs
+   - Bidirectional traffic enabled
+   - Only created if `enable_vpc_peering = true`
+
+2. **Lambda Function**
    - Name: `{name_prefix}-documentdb-va-config`
    - Runtime: Python 3.9
    - VPC: Deployed in your specified VPC and subnets
    - Purpose: Configures DocumentDB with sqlguard user
 
-2. **IAM Role and Policy**
+3. **IAM Role and Policy**
    - Lambda execution role with permissions for:
      - CloudWatch Logs
      - VPC networking
      - Secrets Manager access
 
-3. **Security Groups**
+4. **Security Groups**
    - Lambda security group
    - Secrets Manager VPC endpoint security group
 
-4. **VPC Endpoint**
+5. **VPC Endpoint**
    - Secrets Manager endpoint for secure credential access
 
-5. **Secrets Manager Secret**
+6. **Secrets Manager Secret**
    - Stores DocumentDB admin and sqlguard credentials
 
 ### DocumentDB Configuration
