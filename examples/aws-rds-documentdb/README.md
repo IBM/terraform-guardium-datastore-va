@@ -59,7 +59,7 @@ This example will:
 ### 2. DocumentDB Configuration
 - Admin user credentials with privileges to create users and grant roles
 - Cluster must be accessible from the Lambda function's VPC/subnets
-- SSL/TLS enabled (enforced by default )
+- SSL/TLS enabled (enforced by default)
 
 ### 3. Guardium Data Protection
 - Access to a Guardium Data Protection instance
@@ -71,6 +71,21 @@ This example will:
   - DocumentDB cluster (port 27017)
   - AWS Secrets Manager (via VPC endpoint or internet)
 - Guardium server must be able to reach DocumentDB cluster (port 27017)
+
+### 5. VPC Peering (Optional - Cross-VPC Connectivity)
+**Required only if Guardium is in a different VPC from DocumentDB**
+
+- VPC ID where Guardium is deployed
+- Both VPCs must be in the same AWS account
+- Non-overlapping CIDR blocks between VPCs
+
+**What gets automated:**
+- VPC peering connection creation
+- Automatic CIDR block discovery from VPC IDs
+- Automatic route table discovery in both VPCs
+- Route creation in all route tables for bidirectional traffic
+
+**Note**: If Guardium and DocumentDB are in the same VPC, VPC peering is not needed.
 
 ## Usage
 
