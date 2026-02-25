@@ -86,12 +86,23 @@ This example will:
 ### 2. DocumentDB Configuration
 - Admin user credentials with privileges to create users and grant roles
 - Cluster must be accessible from the Lambda function's VPC/subnets
-- SSL/TLS enabled (enforced by default)
+- **SSL/TLS MUST be enabled on the DocumentDB cluster** (enabled by default, but verify before proceeding)
 
 ### 3. Guardium Data Protection
+
+**IMPORTANT: Guardium must be hosted in the same AWS account as DocumentDB** 
+
 - Access to a Guardium Data Protection instance
 - Admin credentials for Guardium
 - OAuth client credentials (generate using `grdapi register_oauth_client`)
+
+**Supported Deployment Scenarios:**
+- Guardium in same VPC as DocumentDB (no VPC peering needed)
+- Guardium in different VPC within same AWS account (use VPC peering)
+- Guardium in different AWS account (requires manual Transit Gateway/VPN setup)
+- Guardium on-premises (requires manual VPN/Direct Connect setup)
+
+**Note:** This module's VPC peering feature only works when Guardium is deployed in the same AWS account. For cross-account or on-premises deployments, you must manually configure network connectivity (Transit Gateway, VPN, or Direct Connect) and set `enable_vpc_peering = false`.
 
 ### 4. Network Access
 - Lambda function must be able to reach:
