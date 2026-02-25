@@ -46,10 +46,10 @@ module "neptune_va_config" {
   #----------------------------------------
   # Lambda configuration
   #----------------------------------------
-  vpc_id     = var.vpc_id
-  neptune_security_group_id  = var.neptune_security_group_id
-  neptune_port               = var.neptune_port
-  subnet_ids = var.subnet_ids
+  vpc_id                    = var.vpc_id
+  neptune_security_group_id = var.neptune_security_group_id
+  neptune_port              = var.neptune_port
+  subnet_ids                = var.subnet_ids
 
   #----------------------------------------
   # General Configuration
@@ -71,7 +71,7 @@ data "guardium-data-protection_authentication" "auth" {
 locals {
   # Use the existing AWS Secrets Manager config name "matt"
   aws_secrets_config_name = var.enable_vulnerability_assessment ? var.aws_secrets_manager_config_name : ""
-  
+
   neptune_config = templatefile("${path.module}/templates/neptuneVaConf.tpl", {
     datasource_name                 = var.datasource_name
     datasource_type                 = "Amazon Neptune"
