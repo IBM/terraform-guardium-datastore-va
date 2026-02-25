@@ -29,10 +29,10 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
 │   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
-│   ┌──────────────┐  ┌──────────┐                                            │
-│   │  Aurora      │  │   RDS    │                                            │
-│   │  PostgreSQL  │  │SQL Server│                                            │
-│   └──────────────┘  └──────────┘                                            │
+│   ┌──────────────┐  ┌──────────┐  ┌──────────┐                              │
+│   │  Aurora      │  │   RDS    │  │ Neptune  │                              │
+│   │  PostgreSQL  │  │SQL Server│  │          │                              │
+│   └──────────────┘  └──────────┘  └──────────┘                              │
 │   ┌──────────┐  ┌──────────────┐  ┌──────────────┐                          │
 │   │   RDS    │  │  On-Prem     │  │  On-Prem     │                          │
 │   │  Oracle  │  │  MySQL       │  │  PostgreSQL  │                          │
@@ -67,6 +67,7 @@ This module provides automated configuration of datastores for vulnerability ass
    - For Aurora PostgreSQL: Creates sqlguard user and gdmmonitor group via Lambda
    - For RDS SQL Server: Creates sqlguard user and gdmmonitor group via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
+   - For Neptune: Creates sqlguard user and configures permissions via Lambda
    - For Redshift: Creates VA users and grants system table access
    - For On-Premises databases (MySQL, PostgreSQL): Creates dedicated VA users with appropriate permissions
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
@@ -74,7 +75,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, RDS SQL Server, Redshift) and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, RDS SQL Server, Neptune, Redshift) and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -91,7 +92,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-redshift, aws-rds-sql-server
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
    ```
 
 3. **Configure variables**:
@@ -576,6 +577,7 @@ Complete working examples are provided for each supported datastore:
 - [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
 - [AWS RDS SQL Server with VA](./examples/aws-rds-sql-server) - SQL Server vulnerability assessment configuration
 - [AWS RDS Oracle with VA](./examples/aws-oracle) - Oracle (RDS/Autonomous) vulnerability assessment configuration
+- [AWS Neptune with VA](./examples/aws-neptune) - Neptune graph database vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
 
 Each example includes:
@@ -655,7 +657,6 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 ## Authors
 
 Module is maintained by IBM with help from [these awesome contributors](https://github.com/IBM/terraform-guardium-datastore-va/graphs/contributors).
-
 ## Additional Resources
 
 - [IBM Guardium Data Protection Documentation](https://www.ibm.com/docs/en/guardium)
