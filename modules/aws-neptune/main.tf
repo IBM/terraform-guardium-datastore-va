@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # Neptune VA Config Module - Main Configuration
 
 # Get AWS account ID automatically if not provided

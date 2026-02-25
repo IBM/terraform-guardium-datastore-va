@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # AWS Neptune VA Config Module Variables
 
 variable "neptune_cluster_endpoint" {

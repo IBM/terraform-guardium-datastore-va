@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # AWS Neptune with VA Example - Outputs
 
 output "neptune_cluster_endpoint" {
