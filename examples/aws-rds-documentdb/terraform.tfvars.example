@@ -17,6 +17,7 @@ tags = {
   Purpose     = "guardium-va-config"
   Owner       = "your-email@example.com"
   Project     = "guardium-integration"
+}
 
 #------------------------------------------------------------------------------
 # VPC Peering Configuration (Optional - only if Guardium in different VPC)
@@ -28,7 +29,6 @@ enable_vpc_peering = false
 # CIDR block and route tables will be automatically discovered
 # guardium_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
 
-}
 
 #------------------------------------------------------------------------------
 # DocumentDB Cluster Configuration

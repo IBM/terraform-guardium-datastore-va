@@ -67,7 +67,7 @@ resource "aws_vpc_peering_connection_accepter" "this" {
 # Routes in Requester VPC (Guardium VPC)
 #------------------------------------------------------------------------------
 resource "aws_route" "requester_to_accepter" {
-  for_each = var.enable_vpc_peering ? toset(data.aws_route_tables.requester[0].ids) : []
+  for_each = var.enable_vpc_peering ? toset(data.aws_route_tables.requester[0].ids) : toset([])
 
   route_table_id            = each.value
   destination_cidr_block    = data.aws_vpc.accepter[0].cidr_block
@@ -78,7 +78,7 @@ resource "aws_route" "requester_to_accepter" {
 # Routes in Accepter VPC (Database VPC)
 #------------------------------------------------------------------------------
 resource "aws_route" "accepter_to_requester" {
-  for_each = var.enable_vpc_peering ? toset(data.aws_route_tables.accepter[0].ids) : []
+  for_each = var.enable_vpc_peering ? toset(data.aws_route_tables.accepter[0].ids) : toset([])
 
   route_table_id            = each.value
   destination_cidr_block    = data.aws_vpc.requester[0].cidr_block
