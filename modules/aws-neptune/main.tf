@@ -151,7 +151,7 @@ resource "aws_security_group" "lambda_sg" {
 # Security group rule to allow Lambda to connect to Neptune
 resource "aws_security_group_rule" "neptune_ingress_from_lambda" {
   count = var.neptune_security_group_id != "" ? 1 : 0
-  
+
   type                     = "ingress"
   from_port                = var.neptune_port
   to_port                  = var.neptune_port
