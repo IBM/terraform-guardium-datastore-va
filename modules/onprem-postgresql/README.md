@@ -424,10 +424,14 @@ See the [examples/onprem-postgresql](../../examples/onprem-postgresql) directory
 ```text
 #
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Copyright IBM Corp. 2025
 =======
 # Copyright IBM Corp. 2026
 >>>>>>> ea7b84d (feat: Add on-premise PostgreSQL VA module with full GDP integration (#22))
+=======
+# Copyright IBM Corp. 2026
+>>>>>>> origin/main
 # SPDX-License-Identifier: Apache-2.0
 #
 ```
