@@ -33,6 +33,12 @@ terraform.rc
 # *.zip
 # .tox
 
+# SSL/TLS Certificate files
+*.pem
+
 # Local editors/macos files
 .DS_Store
 .idea
+examples/aws-rds-documentdb/terraform-apply-output.log
+examples/aws-rds-documentdb/terraform-debug.log
+examples/aws-rds-documentdb/terraform-trace.log

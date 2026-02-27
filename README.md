@@ -29,10 +29,10 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
 │   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
-│   ┌──────────────┐  ┌──────────┐  ┌──────────┐                              │
-│   │  Aurora      │  │   RDS    │  │ Neptune  │                              │
-│   │  PostgreSQL  │  │SQL Server│  │          │                              │
-│   └──────────────┘  └──────────┘  └──────────┘                              │
+│   ┌──────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐                │
+│   │  Aurora      │  │   RDS    │  │   RDS    │  │ Neptune  │                │
+│   │  PostgreSQL  │  │SQL Server│  │DocumentDB│  │          │                │
+│   └──────────────┘  └──────────┘  └──────────┘  └──────────┘                │
 │   ┌──────────┐  ┌──────────────┐  ┌──────────────┐                          │
 │   │   RDS    │  │  On-Prem     │  │  On-Prem     │                          │
 │   │  Oracle  │  │  MySQL       │  │  PostgreSQL  │                          │
@@ -66,6 +66,7 @@ This module provides automated configuration of datastores for vulnerability ass
    - For RDS databases (PostgreSQL, MariaDB, MySQL, Oracle): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
    - For Aurora PostgreSQL: Creates sqlguard user and gdmmonitor group via Lambda
    - For RDS SQL Server: Creates sqlguard user and gdmmonitor group via Lambda
+   - For RDS DocumentDB: Creates sqlguard user via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Neptune: Creates sqlguard user and configures permissions via Lambda
    - For Redshift: Creates VA users and grants system table access
@@ -75,7 +76,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, RDS SQL Server, Neptune, Redshift) and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift) and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -92,7 +93,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb,aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
    ```
 
 3. **Configure variables**:

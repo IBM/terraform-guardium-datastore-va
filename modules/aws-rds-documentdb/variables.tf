@@ -1,0 +1,334 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# RDS DocumentDB VA Config Module Variables
+
+variable "db_host" {
+  description = "Hostname or IP address of the DocumentDB cluster"
+  type        = string
+}
+
+variable "db_port" {
+  description = "Port for the DocumentDB cluster"
+  type        = number
+  default     = 27017
+}
+
+variable "db_username" {
+  description = "Username for the DocumentDB cluster (must have admin privileges)"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Password for the DocumentDB cluster"
+  type        = string
+  sensitive   = true
+}
+
+variable "sqlguard_username" {
+  description = "Username for the Guardium VA user"
+  type        = string
+  default     = "sqlguard"
+}
+
+variable "sqlguard_password" {
+  description = "Password for the sqlguard user"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_name" {
+  description = "Database name to connect to (typically 'admin' for DocumentDB)"
+  type        = string
+  default     = "admin"
+}
+
+variable "lambda_log_level" {
+  description = "Log level for Lambda function (INFO or DEBUG)"
+  type        = string
+  default     = "INFO"
+  validation {
+    condition     = contains(["INFO", "DEBUG"], var.lambda_log_level)
+    error_message = "Lambda log level must be either INFO or DEBUG."
+  }
+}
+
+
+variable "lambda_timeout" {
+  description = "Timeout for the Lambda function in seconds"
+  type        = number
+  default     = 300
+}
+
+variable "lambda_memory_size" {
+  description = "Memory size for the Lambda function in MB"
+  type        = number
+  default     = 256
+}
+
+variable "log_retention_days" {
+  description = "Number of days to retain Lambda logs in CloudWatch"
+  type        = number
+  default     = 14
+}
+
+variable "vpc_id" {
+  description = "ID of the VPC where the Lambda function will be created"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "List of IDs of the subnets where the Lambda function will be created"
+  type        = list(string)
+}
+
+variable "aws_region" {
+  description = "AWS region where resources will be created"
+  type        = string
+}
+
+variable "tags" {
+  description = "Tags to apply to all resources"
+  type        = map(string)
+  default = {
+    Purpose = "guardium-va-config"
+    Owner   = "your-email@example.com"
+  }
+}
+
+variable "name_prefix" {
+  description = "Prefix to use for resource names"
+  type        = string
+}
+
+variable "db_security_group_id" {
+  description = "Security group ID of the DocumentDB cluster to allow Lambda access"
+  type        = string
+}
+
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule Configuration
+#------------------------------------------------------------------------------
+
+variable "datasource_name" {
+  description = "A unique name for the datasource on the Guardium system"
+  type        = string
+  default     = "rds-documentdb-va"
+}
+
+variable "datasource_description" {
+  description = "Description of the datasource"
+  type        = string
+  default     = "DocumentDB data source onboarded via Terraform"
+}
+
+variable "application" {
+  description = "Application type for the datasource"
+  type        = string
+  default     = "Security Assessment"
+}
+
+variable "severity_level" {
+  description = "Severity classification for the datasource (LOW, NONE, MED, HIGH)"
+  type        = string
+  default     = "MED"
+}
+
+variable "enable_vulnerability_assessment" {
+  description = "Whether to enable vulnerability assessment for the data source"
+  type        = bool
+  default     = true
+}
+
+variable "assessment_schedule" {
+  description = "Schedule for vulnerability assessments (e.g., daily, weekly, monthly)"
+  type        = string
+  default     = "weekly"
+}
+
+variable "assessment_day" {
+  description = "Day to run the assessment (e.g., Monday, 1)"
+  type        = string
+  default     = "Monday"
+}
+
+variable "assessment_time" {
+  description = "Time to run the assessment in 24-hour format (e.g., 02:00)"
+  type        = string
+  default     = "02:00"
+}
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+
+variable "enable_notifications" {
+  description = "Whether to enable notifications for assessment results"
+  type        = bool
+  default     = true
+}
+
+variable "notification_emails" {
+  description = "List of email addresses to notify about assessment results"
+  type        = list(string)
+  default     = []
+}
+
+variable "notification_severity" {
+  description = "Minimum severity level for notifications (HIGH, MED, LOW, NONE)"
+  type        = string
+  default     = "HIGH"
+}
+
+variable "datasource_type" {
+  description = "Required. The type of datasource. For valid values, call create_datasource from the command line with --help=true"
+  type        = string
+  default     = ""
+}
+
+variable "save_password" {
+  description = "Save and encrypt database authentication credentials on the Guardium system. Default = 1 (true)"
+  type        = bool
+  default     = true
+}
+
+variable "use_ssl" {
+  description = "Enable to use SSL authentication"
+  type        = bool
+  default     = true
+}
+
+variable "import_server_ssl_cert" {
+  description = "Whether to import the server SSL certificate"
+  type        = bool
+  default     = true
+}
+
+variable "service_name" {
+  description = "Service name or database name for the datasource"
+  type        = string
+  default     = ""
+}
+
+variable "shared_datasource" {
+  description = "Valid values: Shared (share with other applications), Not Shared, true (share with other applications), false"
+  type        = string
+  default     = "Not Shared"
+}
+
+variable "connection_properties" {
+  description = "Define conProperty if additional connection properties are needed on the JDBC URL to establish a JDBC connection with this datasource"
+  type        = string
+  default     = ""
+}
+
+variable "compatibility_mode" {
+  description = "Valid values: Default, MSSQL 2000. Set the compatibility mode to use when sql a table"
+  type        = string
+  default     = ""
+}
+
+variable "custom_url" {
+  description = "Define the connection string to the datasource. By default, the connection is made using host, port, instance, and other defined datasource parameters"
+  type        = string
+  default     = ""
+}
+
+variable "use_kerberos" {
+  description = "Enable to use Kerberos authentication. If enabled, KerberosConfigName is required"
+  type        = bool
+  default     = false
+}
+
+variable "kerberos_config_name" {
+  description = "Name of the Kerberos configuration already defined in the Guardium system"
+  type        = string
+  default     = ""
+}
+
+variable "use_ldap" {
+  description = "Enable to use LDAP"
+  type        = bool
+  default     = false
+}
+
+variable "use_external_password" {
+  description = "Enable to use external password management"
+  type        = bool
+  default     = false
+}
+
+variable "external_password_type_name" {
+  description = "For valid values, call create_datasource from the command line with --help=true"
+  type        = string
+  default     = ""
+}
+
+variable "cyberark_config_name" {
+  description = "The name of the CyberArk configuration on your Guardium system. For valid values, call create_datasource from the command line with --help=true"
+  type        = string
+  default     = ""
+}
+
+variable "cyberark_object_name" {
+  description = "The CyberArk object name for the Guardium datasource"
+  type        = string
+  default     = ""
+}
+
+variable "hashicorp_config_name" {
+  description = "The name of the HashiCorp configuration on your Guardium system. For valid values, call create_datasource from the command line with --help=true"
+  type        = string
+  default     = ""
+}
+
+variable "hashicorp_path" {
+  description = "The custom path to access the datasource credentials"
+  type        = string
+  default     = ""
+}
+
+variable "hashicorp_role" {
+  description = "The role name for the datasource"
+  type        = string
+  default     = ""
+}
+
+variable "hashicorp_child_namespace" {
+  description = "HashiCorp child namespace"
+  type        = string
+  default     = ""
+}
+
+variable "aws_secrets_manager_config_name" {
+  description = "For Amazon Web Services (AWS) systems only. This parameter is needed when authentication is externally managed by the AWS secrets manager"
+  type        = string
+  default     = ""
+}
+
+variable "region" {
+  description = "For AWS only. For valid values, call create_datasource from the command line with --help=true"
+  type        = string
+  default     = ""
+}
+
+variable "secret_name" {
+  description = "Secret name for external password management"
+  type        = string
+  default     = ""
+}
+
+variable "db_instance_account" {
+  description = "Database account login name used by CAS"
+  type        = string
+  default     = ""
+}
+
+variable "db_instance_directory" {
+  description = "Directory where database software is installed that will be used by CAS"
+  type        = string
+  default     = ""
+}
