@@ -69,22 +69,9 @@ application            = "Security Assessment"      # Application type
 severity_level         = "MED"                      # Severity classification (LOW, NONE, MED, HIGH)
 
 #------------------------------------------------------------------------------
-# Vulnerability Assessment Schedule Configuration
+# Vulnerability Assessment Configuration
 #------------------------------------------------------------------------------
 enable_vulnerability_assessment = true              # Set to false to disable VA
-assessment_schedule             = "weekly"          # Options: daily, weekly, monthly
-assessment_day                  = "Monday"          # Day of week for weekly assessments
-assessment_time                 = "02:00"           # Time in 24-hour format (HH:MM)
-
-#------------------------------------------------------------------------------
-# Notification Configuration
-#------------------------------------------------------------------------------
-enable_notifications  = true                        # Set to false to disable notifications
-notification_emails   = [
-  "security-team@example.com",
-  "dba-team@example.com"
-]
-notification_severity = "HIGH"                      # Minimum severity to trigger notifications (HIGH, MED, LOW, NONE)
 
 #------------------------------------------------------------------------------
 # SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)

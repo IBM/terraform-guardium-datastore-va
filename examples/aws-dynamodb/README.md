@@ -12,7 +12,6 @@ This Terraform configuration:
 - **Creates IAM roles and policies** that allow Guardium to securely access your DynamoDB tables
 - **Registers DynamoDB as a datasource** in Guardium Data Protection
 - **Configures vulnerability assessment** to automatically scan for security issues
-- **Sets up notifications** to alert your team about security findings
 
 ### Architecture Overview
 
@@ -48,7 +47,7 @@ This Terraform configuration:
 1. **Terraform creates IAM resources** - Sets up the necessary permissions for Guardium
 2. **Guardium connects to DynamoDB** - Uses the IAM role to securely access your tables
 3. **Automated security scans** - Guardium performs vulnerability assessments on your schedule
-4. **Results and alerts** - Findings are stored in Guardium and notifications are sent to your team
+4. **Results and alerts** - Findings are stored in Guardium for review
 5. **Review and remediate** - Security teams can review findings and take action
 
 ### What Gets Scanned?
@@ -87,13 +86,11 @@ This example uses two Terraform modules:
 **What it does:**
 - Registers DynamoDB as a datasource in Guardium
 - Configures vulnerability assessment schedule
-- Sets up email notifications
 - Manages Guardium API authentication
 
 **Resources created:**
 - Guardium datasource registration
 - Vulnerability assessment configuration
-- Notification rules
 
 ---
 
@@ -130,41 +127,18 @@ aws configure
 
 ### Step 2: Set Up AWS Secrets Manager (REQUIRED)
 
-DynamoDB requires AWS Secrets Manager for authentication. Follow these steps:
+DynamoDB requires AWS Secrets Manager for authentication.
 
-#### 2.1 Create a Secret in AWS Secrets Manager
-
-Run this command (replace with your actual AWS credentials):
-
-```bash
-aws secretsmanager create-secret \
-  --name dynamodb-credentials \
-  --description "AWS credentials for Guardium DynamoDB VA" \
-  --secret-string '{"accessKeyId":"YOUR_ACCESS_KEY_ID","secretAccessKey":"YOUR_SECRET_ACCESS_KEY"}' \
-  --region us-east-1
-```
-
-**Important:** The secret must be in this exact format:
-```json
-{
-  "accessKeyId": "YOUR_ACCESS_KEY_ID",
-  "secretAccessKey": "YOUR_SECRET_ACCESS_KEY"
-}
-```
-
-#### 2.2 Register AWS Authentication in Guardium UI
+#### Find AWS Secrets Manager Configuration in Guardium UI
 
 1. Log into your Guardium Data Protection web interface
 2. Navigate to: **Setup → Tools and Views → Secrets Management**
-3. Click **Add → AWS Secrets Manager**
-4. Fill in:
-   - **Configuration Name:** `guardium-aws` (remember this name!)
-   - **AWS Access Key ID:** Your AWS access key
-   - **AWS Secret Access Key:** Your AWS secret key
-   - **Region:** `us-east-1` (or your region)
-5. Click **Save**
+3. Look for an existing **AWS Secrets Manager** configuration
+4. Note the **Configuration Name** (e.g., `guardium-aws`) - you'll need this in Step 3
 
-> 💡 **Remember:** The configuration name you enter here (`guardium-aws`) will be used in Step 4.
+> 💡 **If you don't see an AWS Secrets Manager configuration:** Contact your Guardium administrator to set one up. The configuration should include your AWS credentials and the region where your DynamoDB tables are located.
+
+> 💡 **Remember:** The configuration name you find here will be used in Step 3 as `aws_secrets_manager_name`.
 
 ---
 
@@ -174,7 +148,7 @@ You need OAuth credentials to connect Terraform to Guardium:
 
 1. SSH into your Guardium server:
    ```bash
-   ssh root@your-guardium-server.com
+   ssh cli@your-guardium-server.com
    ```
 
 2. Run this command to generate OAuth credentials:
@@ -209,12 +183,9 @@ client_id         = "client1"                    # ← From Step 3
 client_secret     = "your-client-secret"         # ← From Step 3 output
 
 # AWS Secrets Manager (from Step 2)
-aws_secrets_manager_name   = "guardium-aws"              # ← Name from Step 2.2
+aws_secrets_manager_name   = "guardium-aws"              # ← Name from Step 2
 aws_secrets_manager_region = "us-east-1"                 # ← Your AWS region
-aws_secrets_manager_secret = "dynamodb-credentials"      # ← Name from Step 2.1
-
-# Notification emails
-notification_emails = ["your-email@example.com"]  # ← Your email for alerts
+aws_secrets_manager_secret = "dynamodb-credentials"      # ← Secret name in AWS
 ```
 
 #### ⚙️ Optional Settings (You can customize these)
@@ -237,13 +208,6 @@ severity_level = "MED"
 
 # Vulnerability Assessment Schedule
 enable_vulnerability_assessment = true
-assessment_schedule             = "WEEKLY"  # Options: DAILY, WEEKLY, MONTHLY
-assessment_day                  = "Monday"  # Day of week (for WEEKLY)
-assessment_time                 = "02:00"   # Time in 24-hour format (HH:MM)
-
-# Notification Settings
-enable_notifications  = true
-notification_severity = "HIGH"  # Only notify for HIGH severity findings
 
 # SSL/TLS (Recommended: keep these as true)
 use_ssl                = true
@@ -287,7 +251,6 @@ This Terraform configuration will:
 1. **Create IAM Role & Policy** - Allows Guardium to access your DynamoDB tables
 2. **Register Datasource in Guardium** - Adds DynamoDB as a monitored datasource
 3. **Configure Vulnerability Assessment** - Sets up automated security scans
-4. **Enable Notifications** - Sends email alerts for security findings
 
 ---
 
@@ -298,7 +261,6 @@ After successful deployment:
 1. Log into your Guardium Data Protection console
 2. Navigate to **Data Sources** to see your registered DynamoDB datasource
 3. Go to **Vulnerability Assessment** to view scan results
-4. Check your email for notification alerts (if enabled)
 
 ---
 
@@ -315,19 +277,6 @@ This indicates how critical this datasource is:
 - **"LOW"** - Development/test environments
 - **"MED"** - Staging or non-critical production
 - **"HIGH"** - Critical production systems
-
-### What is `assessment_schedule`?
-How often to run vulnerability scans:
-- **"DAILY"** - Every day at the specified time
-- **"WEEKLY"** - Once per week on the specified day
-- **"MONTHLY"** - Once per month on the specified day (1-31)
-
-### What is `notification_severity`?
-Minimum severity level to trigger email notifications:
-- **"LOW"** - Get notified for all findings
-- **"MEDIUM"** - Only medium and high severity findings
-- **"HIGH"** - Only high and critical findings
-- **"CRITICAL"** - Only critical findings
 
 ---
 
@@ -407,12 +356,6 @@ Then run `terraform apply` again to see detailed API responses.
 | `application` | No | `Security Assessment` | Datasource category |
 | `severity_level` | No | `MED` | Criticality level (LOW/MED/HIGH) |
 | `enable_vulnerability_assessment` | No | `true` | Enable VA scans |
-| `assessment_schedule` | No | `WEEKLY` | Scan frequency (DAILY/WEEKLY/MONTHLY) |
-| `assessment_day` | No | `Monday` | Day to run scans |
-| `assessment_time` | No | `02:00` | Time to run scans (24-hour format) |
-| `enable_notifications` | No | `true` | Send email notifications |
-| `notification_emails` | No | `[]` | Email addresses for alerts |
-| `notification_severity` | No | `HIGH` | Minimum severity for notifications |
 | `use_ssl` | No | `true` | Enable SSL/TLS encryption |
 | `import_server_ssl_cert` | No | `true` | Auto-import AWS SSL certificate |
 | `debug_mode` | No | `false` | Enable detailed logging |

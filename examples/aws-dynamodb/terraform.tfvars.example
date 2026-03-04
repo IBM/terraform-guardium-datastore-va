@@ -24,16 +24,6 @@ severity_level           = "MED"
 # Vulnerability Assessment Configuration
 #----------------------------------------
 enable_vulnerability_assessment = true
-assessment_schedule             = "WEEKLY"
-assessment_day                  = "Monday"
-assessment_time                 = "02:00"
-
-#----------------------------------------
-# Notification Configuration
-#----------------------------------------
-enable_notifications  = true
-notification_emails   = ["your-email@example.com"]
-notification_severity = "HIGH"
 
 #----------------------------------------
 # Guardium Connection Details
