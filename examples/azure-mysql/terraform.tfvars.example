@@ -1,0 +1,86 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Azure MySQL with VA Example - Example Variables
+# Copy this file to terraform.tfvars and fill in your values
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+location        = "canadacentral"
+name_prefix     = "azure-mysql-monitoring"
+resource_group_name = "guardium-mysql-rg-1u40jd"  # From deployment script output
+
+#------------------------------------------------------------------------------
+# Azure MySQL Configuration
+#------------------------------------------------------------------------------
+db_host     = "guardium-mysql-1u40jd.mysql.database.azure.com"  # From deployment script output
+db_port     = 3306
+db_name     = "testdb"
+db_username = "mysqladmin"
+db_password = "YourSecurePassword123!"  # Change this!
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"
+sqlguard_password = "YourSqlGuardPassword123!"  # Change this!
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection Configuration
+#------------------------------------------------------------------------------
+gdp_server   = "your-guardium-server.example.com"
+gdp_port     = "8443"
+gdp_username = "admin"
+gdp_password = "YourGuardiumPassword!"  # Change this!
+client_id    = "client1"
+client_secret = "your-oauth-client-secret"  # From Guardium OAuth setup
+
+#------------------------------------------------------------------------------
+# Data Source Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "azure-mysql-va"
+datasource_description = "Azure MySQL data source onboarded via Terraform"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# SSL Configuration
+#------------------------------------------------------------------------------
+use_ssl                = true
+import_server_ssl_cert = true
+
+#------------------------------------------------------------------------------
+# External Password Management (Optional)
+#------------------------------------------------------------------------------
+use_external_password       = false
+external_password_type_name = ""
+azure_key_vault_config_name = ""
+key_vault_name              = ""
+secret_name                 = ""
+
+#------------------------------------------------------------------------------
+# Tags
+#------------------------------------------------------------------------------
+tags = {
+  Purpose     = "guardium-va-config"
+  Environment = "development"
+  Owner       = "your-email@example.com"
+}
