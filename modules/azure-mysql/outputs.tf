@@ -39,3 +39,13 @@ output "va_config_completed" {
   description = "Indicates that VA configuration infrastructure is deployed"
   value       = "Azure Function infrastructure created. Function code deployment required."
 }
+
+output "guardium_resolved_ip" {
+  description = "Resolved IP address of the Guardium server (added to MySQL firewall)"
+  value       = var.enable_public_access ? data.dns_a_record_set.guardium_ip[0].addrs[0] : "N/A - Public access disabled"
+}
+
+output "firewall_rules_created" {
+  description = "Indicates that firewall rules have been created for Guardium access"
+  value       = var.enable_public_access ? "Firewall rule created for Guardium IP: ${data.dns_a_record_set.guardium_ip[0].addrs[0]}" : "Public access disabled - Guardium must connect via Private Link/VPN"
+}

@@ -67,3 +67,31 @@ variable "name_prefix" {
   description = "Prefix to use for resource names"
   type        = string
 }
+
+variable "vnet_name" {
+  description = "Name of the existing VNet where MySQL server is deployed"
+  type        = string
+}
+
+variable "function_subnet_address_prefix" {
+  description = "Address prefix for the Function App subnet (e.g., 10.0.2.0/24)"
+  type        = string
+}
+
+variable "guardium_hostname" {
+  description = "Hostname or IP address of the Guardium server (will be resolved to IP for firewall rules). Required only if enable_public_access = true"
+  type        = string
+  default     = ""
+}
+
+variable "mysql_server_name" {
+  description = "Name of the Azure MySQL Flexible Server (for adding firewall rules). Required only if enable_public_access = true"
+  type        = string
+  default     = ""
+}
+
+variable "enable_public_access" {
+  description = "Enable public network access firewall rules. Set to false for production (use Private Link/VPN instead)"
+  type        = bool
+  default     = false
+}

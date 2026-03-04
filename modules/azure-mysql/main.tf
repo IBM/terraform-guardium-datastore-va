@@ -13,6 +13,15 @@ locals {
   kv_name = substr("${replace(var.name_prefix, "_", "-")}-kv", 0, 24)
   # Storage Account: lowercase alphanumeric only, 3-24 chars
   storage_name = substr(replace(lower("${var.name_prefix}mysqlva"), "/[^a-z0-9]/", ""), 0, 24)
+  # Function package
+  zip_file = "${path.module}/files/function.zip"
+  zip_hash = filesha256(local.zip_file)
+}
+
+# Resolve Guardium hostname to IP address using DNS lookup (only if public access enabled)
+data "dns_a_record_set" "guardium_ip" {
+  count = var.enable_public_access ? 1 : 0
+  host  = var.guardium_hostname
 }
 
 # Create Azure Key Vault for storing credentials
@@ -73,13 +82,13 @@ resource "azurerm_storage_account" "function_storage" {
   tags = var.tags
 }
 
-# Create App Service Plan for Azure Function
+# Create App Service Plan for Azure Function (Premium EP1 for VNet integration)
 resource "azurerm_service_plan" "function_plan" {
   name                = "${var.name_prefix}-mysql-va-plan"
   location            = var.location
   resource_group_name = var.resource_group_name
   os_type             = "Linux"
-  sku_name            = "Y1" # Consumption plan
+  sku_name            = "EP1" # Elastic Premium plan (supports VNet integration)
 
   tags = var.tags
 }
@@ -113,6 +122,32 @@ resource "azurerm_linux_function_app" "va_config_function" {
 
   tags = var.tags
 }
+# Create subnet for Function App VNet integration
+resource "azurerm_subnet" "function_subnet" {
+  name                 = "${var.name_prefix}-function-subnet"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = var.vnet_name
+  address_prefixes     = [var.function_subnet_address_prefix]
+
+  delegation {
+    name = "function-delegation"
+    service_delegation {
+      name = "Microsoft.Web/serverFarms"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/action"
+      ]
+    }
+  }
+}
+
+# Configure VNet integration for Function App
+resource "azurerm_app_service_virtual_network_swift_connection" "function_vnet_integration" {
+  app_service_id = azurerm_linux_function_app.va_config_function.id
+  subnet_id      = azurerm_subnet.function_subnet.id
+
+  depends_on = [azurerm_linux_function_app.va_config_function]
+}
+
 
 # Grant Function App access to Key Vault
 resource "azurerm_key_vault_access_policy" "function_access" {
@@ -128,11 +163,49 @@ resource "azurerm_key_vault_access_policy" "function_access" {
   depends_on = [azurerm_linux_function_app.va_config_function]
 }
 
-# Note: In a production environment, you would deploy the actual function code
-# For now, this creates the infrastructure. The function code would need to:
-# 1. Connect to the MySQL server using credentials from Key Vault
-# 2. Create the sqlguard user with appropriate permissions
-# 3. Configure the database for vulnerability assessment
+# Deploy function code using null_resource and Azure CLI with remote build
+resource "null_resource" "deploy_function" {
+  triggers = {
+    function_code_hash = local.zip_hash
+    function_app_id    = azurerm_linux_function_app.va_config_function.id
+  }
 
-# Placeholder for function deployment
-# In practice, you would use azurerm_function_app_function or deploy via Azure CLI/GitHub Actions
+  provisioner "local-exec" {
+    command = <<-EOT
+      az functionapp deployment source config-zip \
+        --resource-group ${var.resource_group_name} \
+        --name ${azurerm_linux_function_app.va_config_function.name} \
+        --src ${local.zip_file} \
+        --build-remote true
+    EOT
+  }
+
+  depends_on = [
+    azurerm_linux_function_app.va_config_function,
+    azurerm_key_vault_access_policy.function_access
+  ]
+}
+
+# Note: Function invocation should be done manually after verifying the function is deployed
+# To invoke the function manually:
+# 1. Wait for the function to appear in Azure Portal (may take 5-10 minutes)
+# 2. Get the function key: az functionapp keys list --resource-group <rg> --name <func-name> --query "functionKeys.default" -o tsv
+# 3. Invoke: curl -X POST "https://<func-name>.azurewebsites.net/api/MySQLVAConfig?code=<key>" -H "Content-Type: application/json" -d '{}'
+# Create firewall rule to allow Guardium server access (only if public access enabled)
+resource "azurerm_mysql_flexible_server_firewall_rule" "guardium_access" {
+  count               = var.enable_public_access ? 1 : 0
+  name                = "AllowGuardiumServer"
+  resource_group_name = var.resource_group_name
+  server_name         = var.mysql_server_name
+  start_ip_address    = data.dns_a_record_set.guardium_ip[0].addrs[0]
+  end_ip_address      = data.dns_a_record_set.guardium_ip[0].addrs[0]
+}
+
+# Create firewall rule to allow Azure services (for Function App)
+resource "azurerm_mysql_flexible_server_firewall_rule" "allow_azure_services" {
+  name                = "AllowAzureServices"
+  resource_group_name = var.resource_group_name
+  server_name         = var.mysql_server_name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
