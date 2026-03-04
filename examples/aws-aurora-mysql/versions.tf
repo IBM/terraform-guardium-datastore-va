@@ -11,10 +11,10 @@ terraform {
       version = ">= 5.0"
     }
     guardium-data-protection = {
-      source  = "IBM/guardium-data-protection"
+      source = "IBM/guardium-data-protection"
     }
     gdp-middleware-helper = {
-      source  = "IBM/gdp-middleware-helper"
+      source = "IBM/gdp-middleware-helper"
     }
   }
 }
