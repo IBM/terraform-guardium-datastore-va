@@ -14,10 +14,10 @@ locals {
     datasource_name                 = var.dynamodb_datasource_name
     datasource_hostname             = "dynamodb.${var.aws_region}.amazonaws.com"
     datasource_port                 = 5432
-    application                     = "Security Assessment"
+    application                     = var.application
     datasource_description          = var.dynamodb_description
     datasource_database             = "default"
-    severity_level                  = "MED"
+    severity_level                  = var.severity_level
     use_ssl                         = var.use_ssl
     import_server_ssl_cert          = var.import_server_ssl_cert
     use_kerberos                    = false
@@ -80,9 +80,9 @@ module "dynamodb_gdp_connection" {
   #----------------------------------------
   # Notification Configuration
   #----------------------------------------
-  enable_notifications  = false
-  notification_emails   = []
-  notification_severity = "HIGH"
+  enable_notifications  = var.enable_notifications
+  notification_emails   = var.notification_emails
+  notification_severity = var.notification_severity
 
   # Tags
   tags = var.tags
