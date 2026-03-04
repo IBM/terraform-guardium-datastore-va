@@ -20,33 +20,117 @@ This example:
 
 ## Usage
 
+### Step 1: Find Required AWS Resource IDs
+
+Before configuring variables, you need to gather information about your Aurora MySQL cluster's network configuration.
+
+#### Find VPC ID, Subnets, and Security Group
+
+Use the following AWS CLI commands to retrieve the required information from your Aurora MySQL cluster:
+
+```bash
+# Set your Aurora cluster identifier and region
+CLUSTER_ID="your-aurora-cluster-name"
+REGION="us-east-1"
+
+# Get the DB subnet group name
+SUBNET_GROUP=$(aws rds describe-db-clusters \
+  --db-cluster-identifier $CLUSTER_ID \
+  --region $REGION \
+  --query 'DBClusters[0].DBSubnetGroup' \
+  --output text)
+
+# Get VPC ID and Subnet IDs
+aws rds describe-db-subnet-groups \
+  --db-subnet-group-name $SUBNET_GROUP \
+  --region $REGION \
+  --query 'DBSubnetGroups[0].{VpcId:VpcId,Subnets:Subnets[*].SubnetIdentifier}' \
+  --output json
+
+# Get Security Group ID
+aws rds describe-db-clusters \
+  --db-cluster-identifier $CLUSTER_ID \
+  --region $REGION \
+  --query 'DBClusters[0].VpcSecurityGroups[*].VpcSecurityGroupId' \
+  --output text
+```
+
+**Example output:**
+```json
+{
+    "VpcId": "vpc-95525af1",
+    "Subnets": [
+        "subnet-ed97e39b",
+        "subnet-fac680c7"
+    ]
+}
+Security Group ID: sg-e415589c
+```
+
+#### Alternative: Using AWS Console
+
+1. **VPC and Subnets**:
+   - Go to RDS Console → Databases → Select your Aurora cluster
+   - Under "Connectivity & security" tab, note the VPC ID
+   - Click on the subnet group name to see the subnet IDs
+
+2. **Security Group**:
+   - In the same "Connectivity & security" tab
+   - Note the security group ID under "VPC security groups"
+
+### Step 2: Configure Variables
+
 1. Copy the example variables file:
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-2. Edit `terraform.tfvars` and fill in your values:
+2. Edit `terraform.tfvars` and fill in your values (use values from Step 1):
    - AWS region and resource names
    - Aurora MySQL cluster connection details
-   - VPC and networking configuration
+   - **Network Configuration** (use values from Step 1):
+     ```hcl
+     vpc_id               = "vpc-95525af1"      # From Step 1
+     subnet_ids           = ["subnet-ed97e39b", "subnet-fac680c7"]  # From Step 1
+     db_security_group_id = "sg-e415589c"      # From Step 1
+     ```
    - Guardium server details and credentials
    - VA user credentials
    - Assessment schedule and notification preferences
 
-3. Initialize Terraform:
-   ```bash
-   terraform init
-   ```
+**Important Notes:**
+- The `db_security_group_id` is required so Terraform can automatically add an ingress rule allowing the Lambda function to connect to Aurora MySQL on port 3306
+- Ensure you have the correct master username and password for your Aurora cluster
 
-4. Review the planned changes:
-   ```bash
-   terraform plan
-   ```
+### Step 3: Initialize Terraform
 
-5. Apply the configuration:
-   ```bash
-   terraform apply
+```bash
+terraform init
+```
+
+### Step 4: Review the Planned Changes
+
+```bash
+terraform plan
+```
+
+### Step 5: Apply the Configuration
+
+```bash
+terraform apply
+```
+
+### Step 6: Verify the Configuration
+
+After successful deployment, verify:
+
+1. **Lambda Function**: Check that the Lambda function executed successfully in AWS CloudWatch Logs
+2. **Aurora MySQL User**: Connect to Aurora MySQL and verify the `sqlguard` user exists:
+   ```sql
+   SELECT User FROM mysql.user WHERE User = 'sqlguard';
    ```
+3. **Guardium Registration**: Log into Guardium and verify the datasource appears in the datasource list
+4. **VA Schedule**: Check that the vulnerability assessment schedule is configured
 
 ## What Gets Created
 
