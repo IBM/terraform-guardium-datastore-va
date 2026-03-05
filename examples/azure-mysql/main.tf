@@ -18,8 +18,8 @@ module "azure_mysql_va_config" {
   #----------------------------------------
   # Network Configuration
   #----------------------------------------
-  vnet_name                        = var.vnet_name
-  function_subnet_address_prefix   = var.function_subnet_address_prefix
+  vnet_name                      = var.vnet_name
+  function_subnet_address_prefix = var.function_subnet_address_prefix
 
   #----------------------------------------
   # Database Connection Details
