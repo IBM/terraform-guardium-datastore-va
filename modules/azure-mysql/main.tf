@@ -209,3 +209,13 @@ resource "azurerm_mysql_flexible_server_firewall_rule" "allow_azure_services" {
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
 }
+
+# Create additional firewall rules for custom IP ranges
+resource "azurerm_mysql_flexible_server_firewall_rule" "additional_rules" {
+  for_each            = var.additional_firewall_rules
+  name                = each.key
+  resource_group_name = var.resource_group_name
+  server_name         = var.mysql_server_name
+  start_ip_address    = each.value.start_ip
+  end_ip_address      = each.value.end_ip
+}

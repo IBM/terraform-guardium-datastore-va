@@ -36,8 +36,48 @@ variable "resource_group_name" {
 }
 
 #------------------------------------------------------------------------------
+# Network Configuration
+#------------------------------------------------------------------------------
+variable "vnet_name" {
+  description = "Name of the existing VNet where MySQL server is deployed"
+  type        = string
+}
+
+variable "function_subnet_address_prefix" {
+  description = "Address prefix for the Function App subnet"
+  type        = string
+  default     = "10.0.2.0/24"
+}
+
+variable "enable_public_access" {
+  description = "Enable public network access firewall rules. Set to false for production (use Private Link/VPN instead)"
+  type        = bool
+  default     = true
+}
+
+variable "guardium_hostname" {
+  description = "Hostname or IP address of the Guardium server (will be resolved to IP for firewall rules)"
+  type        = string
+  default     = ""
+}
+
+variable "additional_firewall_rules" {
+  description = "Additional firewall rules to allow access from specific IP ranges"
+  type = map(object({
+    start_ip = string
+    end_ip   = string
+  }))
+  default = {}
+}
+
+#------------------------------------------------------------------------------
 # Azure MySQL Configuration
 #------------------------------------------------------------------------------
+variable "mysql_server_name" {
+  description = "Name of the Azure MySQL Flexible Server"
+  type        = string
+}
+
 variable "db_host" {
   description = "FQDN of the Azure MySQL Flexible Server"
   type        = string

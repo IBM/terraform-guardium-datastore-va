@@ -16,19 +16,33 @@ module "azure_mysql_va_config" {
   location            = var.location
 
   #----------------------------------------
+  # Network Configuration
+  #----------------------------------------
+  vnet_name                        = var.vnet_name
+  function_subnet_address_prefix   = var.function_subnet_address_prefix
+
+  #----------------------------------------
   # Database Connection Details
   #----------------------------------------
-  db_host     = var.db_host
-  db_port     = var.db_port
-  db_name     = var.db_name
-  db_username = var.db_username
-  db_password = var.db_password
+  mysql_server_name = var.mysql_server_name
+  db_host           = var.db_host
+  db_port           = var.db_port
+  db_name           = var.db_name
+  db_username       = var.db_username
+  db_password       = var.db_password
 
   #----------------------------------------
   # VA User Configuration
   #----------------------------------------
   sqlguard_username = var.sqlguard_username
   sqlguard_password = var.sqlguard_password
+
+  #----------------------------------------
+  # Firewall Configuration
+  #----------------------------------------
+  enable_public_access      = var.enable_public_access
+  guardium_hostname         = var.guardium_hostname
+  additional_firewall_rules = var.additional_firewall_rules
 
   #----------------------------------------
   # General Configuration

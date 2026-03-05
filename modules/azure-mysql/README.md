@@ -256,3 +256,220 @@ See the [examples/azure-mysql](../../examples/azure-mysql) directory for a compl
 
 Copyright IBM Corp. 2026
 SPDX-License-Identifier: Apache-2.0
+# Azure MySQL Flexible Server VA Configuration Module
+
+This Terraform module configures Vulnerability Assessment (VA) for Azure MySQL Flexible Server by creating the necessary Azure infrastructure.
+
+## Overview
+
+This module creates:
+- Azure Key Vault for storing database credentials
+- Azure Function App infrastructure for VA configuration
+- Storage Account for Azure Function
+- App Service Plan (Consumption tier)
+- Managed Identity for secure access
+- Firewall rules for Guardium connectivity
+
+## Prerequisites
+
+- Azure MySQL Flexible Server already deployed
+- Azure CLI authenticated
+- Terraform >= 1.0
+- Appropriate Azure permissions to create resources
+
+## Usage
+
+```hcl
+module "azure_mysql_va_config" {
+  source = "../../modules/azure-mysql"
+
+  name_prefix         = "my-app"
+  resource_group_name = "my-resource-group"
+  location            = "canadacentral"
+
+  # Database Connection Details
+  db_host     = "my-mysql-server.mysql.database.azure.com"
+  db_port     = 3306
+  db_name     = "mydatabase"
+  db_username = "mysqladmin"
+  db_password = var.db_password
+
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+
+  # Guardium Server Configuration (for automatic firewall rules)
+  guardium_hostname    = "guardium.example.com"  # Will be resolved to IP
+  mysql_server_name    = "my-mysql-server"
+  enable_public_access = true  # Enable public access for Guardium connectivity
+
+  # Additional firewall rules for corporate networks
+  additional_firewall_rules = {
+    "AllowCorporateNetwork" = {
+      start_ip = "10.0.0.0"
+      end_ip   = "10.255.255.255"
+    }
+  }
+
+  # VNet Configuration (for Function App)
+  vnet_name                      = "my-vnet"
+  function_subnet_address_prefix = "10.0.2.0/24"
+
+## Troubleshooting
+
+### Connection Test Hangs in Guardium UI
+
+**Symptom**: When testing the connection in Guardium UI, the test hangs indefinitely without completing.
+
+**Common Causes**:
+
+1. **Corporate Network/Firewall Blocking Outbound MySQL Connections**
+   - Many corporate networks block outbound connections on port 3306
+   - The Guardium server may be behind a corporate proxy or firewall
+   
+   **Solution**: Add additional firewall rules for your corporate network range:
+   ```hcl
+   additional_firewall_rules = {
+     "AllowCorporateNetwork" = {
+       start_ip = "10.0.0.0"
+       end_ip   = "10.255.255.255"
+     }
+   }
+   ```
+
+2. **Guardium Server Uses Different Outbound IP**
+   - The `guardium_hostname` resolves to an internal IP (e.g., 9.46.196.79)
+   - But the server uses a NAT gateway with a different public IP for outbound connections
+   
+   **Solution**: Find the actual outbound IP and add it:
+   ```hcl
+   additional_firewall_rules = {
+     "AllowGuardiumNATGateway" = {
+       start_ip = "203.0.113.10"  # Replace with actual outbound IP
+       end_ip   = "203.0.113.10"
+     }
+   }
+   ```
+
+3. **DNS Resolution Issues**
+   - The Guardium server cannot resolve the Azure MySQL FQDN
+   
+   **Solution**: Verify DNS resolution from Guardium server:
+   ```bash
+   nslookup your-mysql-server.mysql.database.azure.com
+   ```
+
+4. **Temporary Workaround: Allow All IPs (Testing Only)**
+   - **⚠️ WARNING**: This is insecure and should only be used temporarily for diagnosis
+   
+   ```hcl
+   additional_firewall_rules = {
+     "TemporaryAllowAll" = {
+       start_ip = "0.0.0.1"
+       end_ip   = "255.255.255.255"
+     }
+   }
+   ```
+   
+   If this works, the issue is firewall-related. Find the correct IP range and restrict access.
+
+### Function App Permission Errors
+
+**Symptom**: Function execution fails with "does not have secrets get permission on key vault"
+
+**Solution**: The module automatically creates the Key Vault access policy, but if you see this error:
+
+1. Verify the Function App's Managed Identity is enabled:
+   ```bash
+   az functionapp identity show --name <function-app-name> --resource-group <rg-name>
+   ```
+
+2. Manually grant permissions if needed:
+   ```bash
+   az keyvault set-policy --name <key-vault-name> \
+     --object-id <function-app-principal-id> \
+     --secret-permissions get list
+   ```
+
+### Import Errors During Terraform Apply
+
+**Symptom**: "A resource with the ID ... already exists - to be managed via Terraform this resource needs to be imported"
+
+**Cause**: Resources were created manually or by another process before running Terraform.
+
+**Solution**: Import the existing resources:
+```bash
+# Import firewall rule
+terraform import 'module.azure_mysql_va_config.azurerm_mysql_flexible_server_firewall_rule.guardium_access[0]' \
+  '/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.DBforMySQL/flexibleServers/<server>/firewallRules/<rule-name>'
+
+# Import additional firewall rules
+terraform import 'module.azure_mysql_va_config.azurerm_mysql_flexible_server_firewall_rule.additional_rules["RuleName"]' \
+  '/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.DBforMySQL/flexibleServers/<server>/firewallRules/RuleName'
+```
+
+### Testing Connection from Command Line
+
+To test MySQL connectivity from your local machine or Guardium server:
+
+```bash
+# Test basic connectivity
+mysql -h your-server.mysql.database.azure.com \
+  -u sqlguard \
+  -p'YourPassword' \
+  --ssl-mode=REQUIRED \
+  -e "SELECT 1 as test;"
+
+# Test with timeout
+timeout 10 mysql -h your-server.mysql.database.azure.com \
+  -u sqlguard \
+  -p'YourPassword' \
+  --ssl-mode=REQUIRED \
+  -e "SELECT 1 as test;"
+```
+
+If this hangs, the issue is network connectivity, not authentication.
+
+### Verifying Firewall Rules
+
+Check current firewall rules:
+```bash
+az mysql flexible-server firewall-rule list \
+  --resource-group <rg-name> \
+  --name <server-name> \
+  --output table
+```
+
+### Function Invocation for Testing
+
+Manually invoke the Azure Function to test sqlguard user creation:
+
+```bash
+# Get function key
+FUNCTION_KEY=$(az functionapp function keys list \
+  --resource-group <rg-name> \
+  --name <function-app-name> \
+  --function-name MySQLVAConfig \
+  --query "default" -o tsv)
+
+# Invoke function
+curl -X POST \
+  "https://<function-app-name>.azurewebsites.net/api/MySQLVAConfig?code=$FUNCTION_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Expected successful response:
+```json
+{
+  "success": true,
+  "message": "VA configuration completed successfully",
+  "operations": [
+    {"operation": "create_sqlguard_user", "status": "success"},
+    {"operation": "grant_select_mysql_user", "status": "success"},
+    {"operation": "grant_select_mysql_db", "status": "success"},
+    {"operation": "grant_show_databases", "status": "success"},
+    {"operation": "flush_privileges", "status": "success"}
+  ]
+}
+```

@@ -95,3 +95,12 @@ variable "enable_public_access" {
   type        = bool
   default     = false
 }
+
+variable "additional_firewall_rules" {
+  description = "Additional firewall rules to allow access from specific IP ranges. Map of rule names to objects with start_ip and end_ip"
+  type = map(object({
+    start_ip = string
+    end_ip   = string
+  }))
+  default = {}
+}
