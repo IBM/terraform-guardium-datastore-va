@@ -15,22 +15,14 @@ The Azure Function performs the following tasks:
 
 ## Files
 
-- `function.zip` - Pre-built function package ready for deployment
-- `build_function.sh` - Script to rebuild the function package
-- `../function/__init__.py` - Main function code
-- `../function/function.json` - Function configuration
-- `../function/requirements.txt` - Python dependencies
-- `../function/host.json` - Function app host configuration
+- `function.zip` - Pre-built Azure Function package ready for deployment
+- `README.md` - This documentation file
 
-## Building the Function
-
-To rebuild the function package after making changes:
-
-```bash
-./build_function.sh
-```
-
-This will create a new `function.zip` file with the latest code.
+The function package contains:
+- `MySQLVAConfig/__init__.py` - Main function code
+- `MySQLVAConfig/function.json` - Function binding configuration
+- `requirements.txt` - Python dependencies (PyMySQL, azure-identity, azure-keyvault-secrets)
+- `host.json` - Function app host configuration
 
 ## Deployment
 
