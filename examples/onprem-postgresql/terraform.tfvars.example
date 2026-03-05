@@ -13,13 +13,13 @@ db_host     = "your-postgresql-host.example.com"
 db_port     = 5432
 db_name     = "postgres"
 db_username = "terraform_admin"  # Use dedicated admin user, NOT postgres
-db_password = "your-terraform-admin-password"
+db_password = "your-terraform-admin-password"  # Must be 8+ characters with uppercase, lowercase, numbers, and special characters
 
 #------------------------------------------------------------------------------
 # Guardium VA User Configuration
 #------------------------------------------------------------------------------
 sqlguard_username = "sqlguard"
-sqlguard_password = "your-sqlguard-password"
+sqlguard_password = "your-sqlguard-password"  # Must be 8+ characters with uppercase, lowercase, numbers, and special characters
 
 #------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Details
