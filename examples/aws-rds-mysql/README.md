@@ -1,21 +1,20 @@
-<!--
-Copyright IBM Corp. 2026
-SPDX-License-Identifier: Apache-2.0
--->
+# AWS RDS MySQL with Vulnerability Assessment - Quick Start Guide
 
-# AWS RDS MySQL with Guardium Vulnerability Assessment Example
+This guide helps you set up vulnerability assessment for AWS RDS MySQL using IBM Guardium Data Protection. Follow the steps in order for a smooth setup.
 
-This example demonstrates how to configure an existing AWS RDS MySQL instance for Guardium Vulnerability Assessment (VA) and connect it to Guardium Data Protection (GDP).
+> **🔒 Security Note:** SSL/TLS encryption is enabled by default for all database connections (Lambda and Guardium).
 
-## Overview
+---
 
-This example performs the following steps:
+## 🏗️ What This Example Does
 
-1. **Configure VA on RDS MySQL**: Creates the necessary `sqlguard` user and grants required permissions for Guardium VA using a Lambda function
-2. **Register with Guardium**: Connects the RDS MySQL instance to Guardium Data Protection and configures vulnerability assessment schedules
-3. **SSL/TLS encryption is enabled by default** for all database connections (Lambda and Guardium)
+This Terraform configuration:
+- **Creates a Lambda function** that configures your MySQL database for vulnerability scanning
+- **Creates a dedicated `sqlguard` user** with read-only permissions for security assessments
+- **Registers MySQL as a datasource** in Guardium Data Protection
+- **Configures vulnerability assessment** to automatically scan for security issues
 
-## Architecture
+### Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -48,45 +47,118 @@ This example performs the following steps:
                     └──────────────────┘
 ```
 
-## Prerequisites
+### How It Works (Data Flow)
 
-Before using this example, ensure you have:
+1. **Lambda configures MySQL** - Creates the `sqlguard` user with appropriate permissions
+2. **Guardium connects to MySQL** - Uses the `sqlguard` user to securely access your database
+3. **Automated security scans** - Guardium performs vulnerability assessments on your schedule
+4. **Results and alerts** - Findings are stored in Guardium for review
+5. **Review and remediate** - Security teams can review findings and take action
 
-1. **Existing RDS MySQL Instance**:
-   - MySQL version 5.7 or above
-   - Instance endpoint accessible from the VPC subnets
-   - Master user credentials with superuser privileges
+### What Gets Scanned?
 
-2. **AWS Infrastructure**:
-   - VPC with private subnets
-   - Subnets with connectivity to the RDS instance
-   - Security groups allowing Lambda to connect to MySQL (port 3306)
-   - Security groups allowing Guardium server to connect to MySQL (port 3306)
+Guardium vulnerability assessment checks for:
+- ✅ **Security configuration** - Weak passwords, excessive privileges, authentication methods
+- ✅ **Database configuration** - MySQL version, deprecated features, insecure parameters
+- ✅ **Access control** - Overprivileged users, unused accounts, missing RBAC
+- ✅ **Encryption settings** - Unencrypted connections, missing SSL/TLS
+- ✅ **Compliance violations** - CIS MySQL Benchmark, PCI-DSS, HIPAA, GDPR, SOC 2
+- ✅ **Audit logging** - Missing or inadequate audit configurations
 
-3. **Guardium Data Protection**:
-   - Guardium server accessible from your network
-   - Admin credentials for Guardium
-   - OAuth client credentials (generated using `grdapi register_oauth_client`)
+---
 
-4. **Terraform**:
-   - Terraform >= 1.0.0
-   - AWS provider >= 5.0
-   - Appropriate AWS credentials configured
+## 📦 Modules Used
 
-## Usage
+This example uses two Terraform modules:
 
-### Step 1: Find Required AWS Resource IDs
+### 1. `aws-rds-mysql` Module (Local)
+**Location:** `../../modules/aws-rds-mysql`
 
-Before configuring variables, you need to gather information about your RDS MySQL instance's network configuration.
+**What it does:**
+- Deploys a Lambda function in your VPC
+- Creates the `sqlguard` user in MySQL
+- Configures database permissions for VA
+- Sets up security groups for Lambda access
+- Stores credentials in AWS Secrets Manager
+- Creates VPC endpoint for Secrets Manager
 
-#### Find VPC ID, Subnets, and Security Group
+**Resources created:**
+- `aws_lambda_function` - Lambda for database configuration
+- `aws_iam_role` - IAM role for Lambda execution
+- `aws_iam_policy` - Policies for Lambda permissions
+- `aws_security_group` - Security group for Lambda
+- `aws_secretsmanager_secret` - Stores sqlguard credentials
+- `aws_vpc_endpoint` - VPC endpoint for Secrets Manager
 
-Use the following AWS CLI commands to retrieve the required information from your RDS instance:
+### 2. `connect-datasource-to-va` Module (Remote)
+**Location:** `IBM/gdp/guardium//modules/connect-datasource-to-va`
+
+**What it does:**
+- Registers MySQL as a datasource in Guardium
+- Configures vulnerability assessment schedule
+- Manages SSL certificate import
+- Handles OAuth authentication
+
+**Resources created:**
+- Guardium datasource registration
+- Vulnerability assessment configuration
+- SSL certificate import
+
+---
+
+
+## 📋 What You'll Need (Prerequisites)
+
+Before starting, make sure you have:
+
+- ✅ An existing AWS RDS MySQL database (version 5.7 or above)
+- ✅ VPC with private subnets
+- ✅ Subnets with connectivity to the RDS instance
+- ✅ Security groups allowing Lambda to connect to MySQL (port 3306)
+- ✅ Master user credentials with superuser privileges
+- ✅ A running Guardium Data Protection instance
+- ✅ Admin credentials for Guardium
+- ✅ OAuth client credentials (generated using `grdapi register_oauth_client`)
+- ✅ Terraform installed (version >= 1.0.0)
+- ✅ AWS CLI configured
+
+---
+
+## 🚀 Step-by-Step Setup
+
+### Step 1: Verify Your AWS Access
+
+First, make sure your AWS credentials are working:
+
+```bash
+aws sts get-caller-identity
+```
+
+You should see your AWS account ID and user information. If not, configure your credentials:
+
+```bash
+aws configure
+```
+
+---
+
+### Step 2: Gather AWS Information
+
+You'll need several pieces of information from your AWS environment.
+
+#### 2.1 Get Your RDS Endpoint and Master Username
 
 ```bash
 # Set your RDS instance identifier and region
 INSTANCE_ID="your-mysql-instance-name"
 REGION="us-east-1"
+
+# Get the RDS endpoint
+aws rds describe-db-instances \
+  --db-instance-identifier $INSTANCE_ID \
+  --region $REGION \
+  --query 'DBInstances[0].Endpoint.Address' \
+  --output text
 
 # Get the master username
 aws rds describe-db-instances \
@@ -94,7 +166,11 @@ aws rds describe-db-instances \
   --region $REGION \
   --query 'DBInstances[0].MasterUsername' \
   --output text
+```
 
+#### 2.2 Get Your VPC and Subnet Information
+
+```bash
 # Get the DB subnet group name
 SUBNET_GROUP=$(aws rds describe-db-instances \
   --db-instance-identifier $INSTANCE_ID \
@@ -108,8 +184,11 @@ aws rds describe-db-subnet-groups \
   --region $REGION \
   --query 'DBSubnetGroups[0].{VpcId:VpcId,Subnets:Subnets[*].SubnetIdentifier}' \
   --output json
+```
 
-# Get Security Group ID
+#### 2.3 Get Your Database Security Group
+
+```bash
 aws rds describe-db-instances \
   --db-instance-identifier $INSTANCE_ID \
   --region $REGION \
@@ -117,113 +196,153 @@ aws rds describe-db-instances \
   --output text
 ```
 
-**Example output:**
-```
-Master Username: admin
-{
-    "VpcId": "vpc-xxxxxx",
-    "Subnets": [
-        "subnet-xxxxxxx",
-        "subnet-xxxxxxx"
-    ]
-}
-Security Group ID: sg-xxxxxx
-```
+---
 
-#### Alternative: Using AWS Console
+### Step 3: Get Your Guardium OAuth Credentials
 
-1. **Master Username**:
-   - Go to RDS Console → Databases → Select your MySQL instance
-   - Under "Configuration" tab, note the "Master username"
+You need OAuth credentials to connect Terraform to Guardium:
 
-2. **VPC and Subnets**:
-   - In the same instance details page
-   - Under "Connectivity & security" tab, note the VPC ID
-   - Click on the subnet group name to see the subnet IDs
+1. SSH into your Guardium server:
+   ```bash
+   ssh cli@your-guardium-server.com
+   ```
 
-3. **Security Group**:
-   - In the same "Connectivity & security" tab
-   - Note the security group ID under "VPC security groups"
+2. Run this command to generate OAuth credentials:
+   ```bash
+   grdapi register_oauth_client client_id=client1 grant_types=password
+   ```
 
-### Step 2: Configure Variables
+3. **Save the output** - you'll need the `client_secret` value in the next step
 
-Copy the example tfvars file and customize it:
+---
+
+### Step 4: Configure Your Variables
+
+Copy the example file and edit it with your values:
 
 ```bash
+cd examples/aws-rds-mysql
 cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars  # or use your preferred editor
 ```
 
-Edit `terraform.tfvars` with your specific values (use values from Step 1):
+Now fill in these values:
+
+#### 🔧 Required Settings (You MUST change these)
 
 ```hcl
-# RDS MySQL Configuration
-db_host     = "your-mysql-instance.xxxxx.us-east-1.rds.amazonaws.com"
-db_username = "admin"  # Use the master username from Step 1
-db_password = "your-secure-password"
+# AWS Configuration
+aws_region = "us-west-2"  # Your AWS region
 
-# Network Configuration (use values from Step 1)
-vpc_id                = "vpc-xxxxxxx"
-subnet_ids            = ["subnet-xxxxxxx", "subnet-xxxxxx"]
-db_security_group_id  = "sg-xxxxxx"
+# Database Connection
+db_host     = "your-mysql-instance.region.rds.amazonaws.com"  # ← From Step 2.1
+db_username = "admin"                                          # ← From Step 2.1
+db_password = "YourStrongPasswordHere"                         # ← Master password
 
-# Guardium Configuration
-gdp_server    = "guardium.example.com"
-gdp_username  = "admin"
-gdp_password  = "your-guardium-password"
-client_secret = "your-client-secret"
+# VA User Credentials
+sqlguard_username = "sqlguard"                                 # ← VA user to create
+sqlguard_password = "StrongPasswordForVAUser"                  # ← Create a strong password
 
-# VA User Configuration
-sqlguard_password = "your-sqlguard-password"
+# Network Configuration
+vpc_id               = "vpc-xxxxxxxxxxxxxxxxx"                 # ← From Step 2.2
+subnet_ids           = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-xxxxxxxxxxxxxxxxx"]  # ← From Step 2.2
+db_security_group_id = "sg-xxxxxxxxxxxxxxxxx"                  # ← From Step 2.3
+
+# Guardium Server Details
+gdp_server   = "your-guardium-server.example.com"  # ← Your Guardium hostname
+gdp_port     = "8443"                               # ← Guardium API port
+gdp_username = "admin"                              # ← Your Guardium username
+gdp_password = "YourGuardiumPassword"               # ← Your Guardium password
+client_id    = "client1"                            # ← From Step 3
+client_secret = "YourClientSecret"                  # ← From Step 3 output
 ```
 
-**Important Notes:**
-- The `db_security_group_id` is required so Terraform can automatically add an ingress rule allowing the Lambda function to connect to MySQL on port 3306
-- Use the actual master username from your RDS instance (found in Step 1)
-- Ensure you have the correct master password for your RDS instance
+#### ⚙️ Optional Settings (You can customize these)
 
-### Step 3: Initialize Terraform
+```hcl
+# Resource Naming
+name_prefix = "mysql-va"  # Prefix for AWS resource names
 
+# Database Port (only change if you modified the default)
+db_port = 3306
+
+# MySQL Datasource Details
+datasource_name        = "rds-mysql-va"  # Name shown in Guardium
+datasource_description = "MySQL data source onboarded via Terraform"
+
+# Application Type (what this datasource is used for)
+# Options: "Security Assessment", "Audit Task", "Compliance"
+application = "Security Assessment"
+
+# Severity Level (how critical is this datasource)
+# Options: "LOW", "NONE", "MED", "HIGH"
+severity_level = "MED"
+
+# Vulnerability Assessment
+enable_vulnerability_assessment = true
+
+# SSL/TLS (Recommended: keep these as true)
+use_ssl                = true
+import_server_ssl_cert = true
+
+# AWS Resource Tags
+tags = {
+  Purpose     = "guardium-va-config"
+  Owner       = "your-email@example.com"
+  Environment = "dev"
+  Project     = "guardium-terraform"
+}
+```
+
+---
+
+### Step 5: Run Terraform
+
+Now you're ready to deploy!
+
+#### 5.1 Initialize Terraform
 ```bash
 terraform init
 ```
 
-### Step 4: Review the Plan
-
+#### 5.2 Preview What Will Be Created
 ```bash
 terraform plan
 ```
 
-### Step 5: Apply the Configuration
+Review the output to see what resources will be created.
 
+#### 5.3 Apply the Configuration
 ```bash
 terraform apply
 ```
 
-### Step 6: Verify the Configuration
+Type `yes` when prompted to confirm.
 
-After successful deployment, verify:
+---
 
-1. **Lambda Function**: Check that the Lambda function executed successfully in AWS CloudWatch Logs
-2. **MySQL User**: Connect to MySQL and verify the `sqlguard` user exists:
-   ```sql
-   SELECT User FROM mysql.user WHERE User = 'sqlguard';
-   ```
-3. **Guardium Registration**: Log into Guardium and verify the datasource appears in the datasource list
-4. **VA Schedule**: Check that the vulnerability assessment schedule is configured
+## ✅ What Gets Created
 
-## Configuring Network Access for Guardium
+This Terraform configuration will:
 
-After deploying this module, you must configure your RDS MySQL security group to allow connections from the Guardium server. Without this configuration, Guardium will not be able to connect to your database to perform vulnerability assessments.
+1. **Create Lambda Function** - Deploys a Lambda in your VPC to configure MySQL
+2. **Create IAM Role & Policies** - Allows Lambda to access MySQL and Secrets Manager
+3. **Create Security Group Rules** - Allows Lambda to connect to MySQL on port 3306
+4. **Create `sqlguard` User** - Lambda creates this user in MySQL with read-only permissions
+5. **Store Credentials** - Saves sqlguard credentials in AWS Secrets Manager
+6. **Create VPC Endpoint** - Allows Lambda to access Secrets Manager from private subnets
+7. **Register Datasource in Guardium** - Adds MySQL as a monitored datasource
+8. **Configure Vulnerability Assessment** - Sets up automated security scans
+
+---
+
+## 🔐 Configuring Network Access for Guardium
+
+**IMPORTANT:** After deploying this module, you must configure your RDS MySQL security group to allow connections from the Guardium server.
 
 ### Why This Is Required
 
-Guardium Data Protection needs direct network access to your MySQL database to:
-- Perform vulnerability assessments
-- Execute security scans
-- Generate compliance reports
-- Monitor database activity
-
-The Lambda function (configured by this module) only sets up the `sqlguard` database user. **Network connectivity must be configured separately.**
+Guardium Data Protection needs direct network access to your MySQL database to perform vulnerability assessments. The Lambda function only sets up the `sqlguard` database user. **Network connectivity must be configured separately.**
 
 ### Step 1: Find Guardium's Public IP Address
 
@@ -235,34 +354,13 @@ curl ifconfig.me
 
 This will return Guardium's public IP address (e.g., `xxx.xxx.xxx.xxx`).
 
-**Important**: Do not use internal IP addresses or hostnames - you need the actual public IP that AWS will see when Guardium connects.
-
-### Step 2: Find Your MySQL Security Group
-
-Use the AWS CLI to find the security group attached to your RDS instance:
-
-```bash
-# Set your variables
-INSTANCE_ID="your-mysql-instance-name"
-REGION="us-east-1"
-
-# Get the security group ID
-aws rds describe-db-instances \
-  --db-instance-identifier $INSTANCE_ID \
-  --region $REGION \
-  --query 'DBInstances[0].VpcSecurityGroups[0].VpcSecurityGroupId' \
-  --output text
-```
-
-Example output: `sg-xxxxxxxxxxxxxxxxx`
-
-### Step 3: Add Security Group Rule
+### Step 2: Add Security Group Rule
 
 Add an ingress rule allowing Guardium's IP to connect on port 3306:
 
 ```bash
 # Set your variables
-SECURITY_GROUP_ID="sg-xxxxxxxxxxxxxxxxx"  # From Step 2
+SECURITY_GROUP_ID="sg-xxxxxxxxxxxxxxxxx"  # From Step 2.3 above
 GUARDIUM_IP="xxx.xxx.xxx.xxx"             # From Step 1
 REGION="us-east-1"
 
@@ -276,7 +374,7 @@ aws ec2 authorize-security-group-ingress \
   --description "Guardium VA access"
 ```
 
-### Step 4: Verify the Rule
+### Step 3: Verify the Rule
 
 Confirm the rule was added successfully:
 
@@ -288,9 +386,7 @@ aws ec2 describe-security-groups \
   --output table
 ```
 
-You should see your Guardium IP address in the output.
-
-### Step 5: Test Connection from Guardium
+### Step 4: Test Connection from Guardium
 
 From your Guardium server, test the connection:
 
@@ -302,194 +398,71 @@ nc -zv your-mysql-instance.rds.amazonaws.com 3306
 mysql -h your-mysql-instance.rds.amazonaws.com -P 3306 -u sqlguard -p -e "SELECT 1;"
 ```
 
-### Common Issues
+---
 
-**Connection Timeout Error**:
-```
-Could not connect to: 'MYSQL rds-mysql-va x.x.x.x:3306' for user: 'sqlguard'
-within timeout period of: 60 seconds
-```
+## 📊 View Your Results
 
-**Cause**: The security group doesn't allow Guardium's IP address.
+After successful deployment:
 
-**Solution**: Follow the steps above to add the correct IP address to the security group.
+1. Log into your Guardium Data Protection console
+2. Navigate to **Data Sources** to see your registered MySQL datasource
+3. Verify the status shows "Connected"
+4. Go to **Vulnerability Assessment** to view scan results
 
-**Wrong IP Address**:
--  Don't use Guardium's internal/management IP
--  Don't use DNS-resolved IPs from error messages
--  Don't use your laptop's IP (unless testing)
-- Use the IP from `curl ifconfig.me` run on the Guardium server
+---
 
-**Multiple Databases in Different Regions**:
-Each RDS instance has its own security group. You must add the Guardium IP to each security group separately:
+## 🔍 Understanding the Variables
 
-```bash
-# For database in us-east-1
-aws ec2 authorize-security-group-ingress \
-  --group-id sg-xxxxx \
-  --protocol tcp --port 3306 \
-  --cidr ${GUARDIUM_IP}/32 \
-  --region us-east-1 \
-  --description "Guardium VA"
+### What is `application`?
+This categorizes what the datasource is used for:
+- **"Security Assessment"** - For vulnerability scanning (most common)
+- **"Audit Task"** - For compliance auditing
+- **"Compliance"** - For regulatory compliance monitoring
 
-# For database in us-east-2
-aws ec2 authorize-security-group-ingress \
-  --group-id sg-yyyyy \
-  --protocol tcp --port 3306 \
-  --cidr ${GUARDIUM_IP}/32 \
-  --region us-east-2 \
-  --description "Guardium VA"
-```
+### What is `severity_level`?
+This indicates how critical this datasource is:
+- **"LOW"** - Development/test environments
+- **"NONE"** - Non-sensitive data
+- **"MED"** - Staging or non-critical production
+- **"HIGH"** - Critical production systems with sensitive data
 
-### Security Best Practices
+### Why do I need two passwords?
+- **`db_password`** - Master password for your RDS database. Lambda uses this to create the sqlguard user.
+- **`sqlguard_password`** - Password for the VA user. Guardium uses this for scanning.
 
-1. **Use /32 CIDR**: Always use `/32` to allow only the specific Guardium IP
-2. **Add Description**: Include a clear description for the rule (e.g., "Guardium VA access")
-3. **Document the IP**: Keep a record of Guardium's IP address for future reference
-4. **Regular Audits**: Periodically review security group rules
-5. **Separate Rules**: Keep Guardium access rules separate from other application rules
+This separation follows security best practices - Guardium never needs your master credentials.
 
-### Alternative: Using AWS Console
+---
 
-If you prefer using the AWS Console:
+## 🛠️ Troubleshooting
 
-1. Go to **EC2 Console** → **Security Groups**
-2. Find and select your RDS security group
-3. Click **Edit inbound rules**
-4. Click **Add rule**
-5. Configure:
-   - **Type**: MySQL/Aurora (port 3306)
-   - **Source**: Custom, enter `<guardium-ip>/32`
-   - **Description**: "Guardium VA access"
-6. Click **Save rules**
+### Problem: "Lambda cannot connect to database"
+**Solution:** 
+- Check security group rules: `aws ec2 describe-security-groups --group-ids sg-xxxxx`
+- Ensure inbound rule allows traffic from Lambda security group on port 3306
+- Verify Lambda subnets have route to database subnets
+- Check that subnets have route to NAT Gateway or VPC endpoints
 
-## What Gets Created
+### Problem: "Authentication failed for user"
+**Solution:**
+- Verify db_username and db_password in terraform.tfvars
+- Check for typos or extra spaces
+- Verify RDS master user: `aws rds describe-db-instances --db-instance-identifier your-db-name --query 'DBInstances[0].MasterUsername'`
+- Ensure master user has superuser privileges
 
-This example creates the following resources:
+### Problem: "Guardium connection failed"
+**Solution:**
+- Test network connectivity: `curl -k https://your-guardium-server:8443`
+- Verify OAuth credentials: SSH to Guardium and run `grdapi list_oauth_clients`
+- Check gdp_username and gdp_password are correct
+- Ensure Guardium user has admin privileges
+- Verify you added Guardium IP to MySQL security group (see "Configuring Network Access" section)
 
-### AWS Resources
+### Problem: "VPC Endpoint Already Exists"
+**Solution:**
+If you see: `VpcEndpointAlreadyExists: VpcEndpoint already exists in this VPC`
 
-1. **Lambda Function**: Executes SQL commands to configure VA user on MySQL
-2. **IAM Role & Policy**: Permissions for Lambda to access Secrets Manager and create network interfaces
-3. **Security Groups**: 
-   - Lambda security group (allows outbound to MySQL)
-   - Secrets Manager VPC endpoint security group
-4. **Security Group Rule**: Automatically adds ingress rule to RDS security group allowing Lambda access on port 3306
-5. **Secrets Manager Secret**: Stores MySQL and sqlguard credentials securely
-6. **VPC Endpoint**: Allows Lambda to access Secrets Manager from private subnets
-
-### Guardium Configuration
-
-1. **Datasource Registration**: Registers MySQL instance in Guardium
-2. **VA Schedule**: Configures vulnerability assessment schedule
-3. **Notifications**: Sets up email notifications for assessment results
-
-## Input Variables
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| aws_region | AWS region where resources will be created | `string` | `"us-west-2"` | no |
-| name_prefix | Prefix for resource names | `string` | `"mysql-va"` | no |
-| db_host | RDS MySQL endpoint | `string` | n/a | yes |
-| db_username | Database admin username | `string` | `"admin"` | no |
-| db_password | Database admin password | `string` | n/a | yes |
-| db_port | Database port | `number` | `3306` | no |
-| vpc_id | VPC ID where Lambda will be deployed | `string` | n/a | yes |
-| subnet_ids | Subnet IDs for Lambda deployment | `list(string)` | n/a | yes |
-| db_security_group_id | Security group ID of RDS MySQL instance | `string` | n/a | yes |
-| sqlguard_username | Guardium VA user to be created | `string` | `"sqlguard"` | no |
-| sqlguard_password | Password for sqlguard user | `string` | n/a | yes |
-| gdp_server | Guardium Data Protection server hostname | `string` | n/a | yes |
-| gdp_port | Guardium server port | `string` | `"8443"` | no |
-| gdp_username | Guardium admin username | `string` | n/a | yes |
-| gdp_password | Guardium admin password | `string` | n/a | yes |
-| client_id | OAuth client ID | `string` | `"client1"` | no |
-| client_secret | OAuth client secret | `string` | n/a | yes |
-| datasource_name | Name for datasource in Guardium | `string` | `"rds-mysql-va"` | no |
-| datasource_description | Description for datasource | `string` | `"MySQL data source onboarded via Terraform"` | no |
-| application | Application type | `string` | `"Security Assessment"` | no |
-| severity_level | Severity level (LOW, NONE, MED, HIGH) | `string` | `"MED"` | no |
-| enable_vulnerability_assessment | Enable vulnerability assessment | `bool` | `true` | no |
-| assessment_schedule | Assessment schedule (daily, weekly, monthly) | `string` | `"weekly"` | no |
-| assessment_day | Day to run assessment | `string` | `"Monday"` | no |
-| assessment_time | Time to run assessment (HH:MM) | `string` | `"02:00"` | no |
-| enable_notifications | Enable email notifications | `bool` | `true` | no |
-| notification_emails | Email addresses for notifications | `list(string)` | `[]` | no |
-| notification_severity | Minimum severity for notifications | `string` | `"HIGH"` | no |
-| use_ssl | Enable SSL/TLS for Guardium connections | `bool` | `true` | no |
-| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
-| tags | Tags to apply to resources | `map(string)` | `{}` | no |
-
-## Outputs
-
-After successful deployment, the following outputs are available:
-
-```hcl
-sqlguard_username          # Username for the Guardium VA user
-lambda_function_arn        # ARN of the Lambda function
-lambda_function_name       # Name of the Lambda function
-security_group_id          # Security group ID for Lambda
-va_config_completed        # VA configuration status
-secrets_manager_secret_arn # ARN of the Secrets Manager secret
-datasource_name            # Name of the datasource in Guardium
-gdp_connection_status      # Connection status to Guardium
-```
-
-## Important Notes
-
-### MySQL-Specific Considerations
-
-1. **Instance Endpoint**: Use the instance endpoint for the `db_host` variable
-2. **Parameter Group**: Ensure the MySQL parameter group allows user creation
-3. **Multi-AZ**: The Lambda function should be deployed in subnets that can reach the RDS instance
-
-### Security Best Practices
-
-1. **Credentials Management**:
-   - Never commit `terraform.tfvars` to version control
-   - Use environment variables or AWS Secrets Manager for sensitive values
-   - Rotate passwords regularly
-
-2. **Network Security**:
-   - The module automatically adds a security group rule allowing Lambda to connect to MySQL
-   - MySQL security group only allows connections from Lambda security group (port 3306)
-   - Use private subnets for Lambda deployment
-   - Enable VPC Flow Logs for network monitoring
-
-3. **IAM Permissions**:
-   - Follow principle of least privilege
-   - Review and audit IAM policies regularly
-
-### Troubleshooting
-
-#### Lambda Function Fails
-
-1. Check CloudWatch Logs for the Lambda function:
-   ```bash
-   aws logs tail /aws/lambda/<function-name> --follow
-   ```
-
-2. Verify network connectivity:
-   - Lambda security group allows outbound to MySQL port (3306)
-   - MySQL security group allows inbound from Lambda security group (automatically configured by Terraform)
-   - Subnets have route to NAT Gateway or VPC endpoints
-
-#### Guardium Connection Fails
-
-1. Verify Guardium server is accessible from your network
-2. Check OAuth client credentials are correct
-3. Verify Guardium user has appropriate permissions
-
-#### VPC Endpoint Already Exists Error
-
-If you encounter an error like:
-```
-Error: creating VPC Endpoint (com.amazonaws.us-east-xx.secretsmanager): VpcEndpointAlreadyExists: VpcEndpoint already exists in this VPC
-```
-
-This means a Secrets Manager VPC endpoint already exists in your VPC. To resolve this:
-
-1. **Find the existing VPC endpoint ID**:
+1. Find the existing VPC endpoint ID:
    ```bash
    aws ec2 describe-vpc-endpoints \
      --filters Name=vpc-id,Values=<your-vpc-id> \
@@ -499,148 +472,118 @@ This means a Secrets Manager VPC endpoint already exists in your VPC. To resolve
      --output text
    ```
 
-   Example:
-   ```bash
-   aws ec2 describe-vpc-endpoints \
-     --filters Name=vpc-id,Values=vpc-xxxxxxxx \
-              Name=service-name,Values=com.amazonaws.us-east-2.secretsmanager \
-     --region us-east-2 \
-     --query 'VpcEndpoints[].VpcEndpointId' \
-     --output text
-   ```
-
-2. **Import the existing endpoint into Terraform state**:
+2. Import the existing endpoint into Terraform state:
    ```bash
    terraform import \
      'module.mysql_va_config.aws_vpc_endpoint.secretsmanager' \
      <vpc-endpoint-id>
    ```
 
-   Example:
-   ```bash
-   terraform import \
-     'module.mysql_va_config.aws_vpc_endpoint.secretsmanager' \
-     vpce-xxxxxxxxx
-   ```
-
-3. **Re-run terraform apply**:
+3. Re-run terraform apply:
    ```bash
    terraform apply
    ```
 
-#### Secrets Manager Secret Already Scheduled for Deletion
+### Problem: "Secrets Manager Secret Already Scheduled for Deletion"
+**Solution:**
+If you see: `You can't create this secret because a secret with this name is already scheduled for deletion`
 
-If you encounter an error like:
-```
-Error: creating Secrets Manager Secret (guardium-mysql-va-xxx-xxxx-xxx-xx-password): operation error Secrets Manager: CreateSecret, https response error StatusCode: 400, RequestID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, InvalidRequestException: You can't create this secret because a secret with this name is already scheduled for deletion.
-```
-
-This means a secret with the same name exists but is scheduled for deletion. The secret name is shown in the error message (in this example: `guardium-mysql-va-xxx-xxxx-xxx-xx-password`).
-
-**To resolve this:**
-
-1. **Find the secret ARN** (use the secret name from your error message):
-   ```bash
-   # Replace SECRET_NAME with the name from your error message
-   SECRET_NAME="guardium-mysql-va-xxx-xxxx-xxx-xx-password"
-   REGION="us-east-1"
-   
-   # Include deleted secrets in the search
-   aws secretsmanager list-secrets \
-     --include-planned-deletion \
-     --filters Key=name,Values=$SECRET_NAME \
-     --region $REGION \
-     --query 'SecretList[0].ARN' \
-     --output text
-   ```
-   
-   **Note**: The `--include-planned-deletion` flag is required to find secrets scheduled for deletion.
-
-2. **Choose one of the following options:**
-
-   **Option A: Restore and reuse the secret**:
-   ```bash
-   # Use the ARN from step 1
-   SECRET_ARN="arn:aws:secretsmanager:us-east-1:123456789012:secret:guardium-mysql-va-test-mysql-rds-va-password-AbCdEf"
-   
-   # Restore the secret
-   aws secretsmanager restore-secret \
-     --secret-id $SECRET_ARN \
-     --region $REGION
-   
-   # Import into Terraform state (single line to avoid spacing issues)
-   terraform import 'module.mysql_va_config.aws_secretsmanager_secret.mysql_credentials' $SECRET_ARN
-   
-   # Re-run apply
-   terraform apply
-   ```
-
-   **Option B: Force delete and create new** (recommended for clean start):
-   ```bash
-   # Use the ARN from step 1
-   SECRET_ARN="arn:aws:secretsmanager:us-east-1:123456789012:secret:guardium-mysql-va-test-mysql-rds-va-password-AbCdEf"
-   
-   # Force delete immediately (bypasses 30-day recovery window)
-   aws secretsmanager delete-secret \
-     --secret-id $SECRET_ARN \
-     --force-delete-without-recovery \
-     --region $REGION
-   
-   # Wait a few seconds, then re-run
-   terraform apply
-   ```
-
-   **Option C: Use a different secret name**:
-   - Update the `prefix` variable in your `terraform.tfvars` to use a different value
-   - This will create a secret with a different name, avoiding the conflict
-
-**Note**: By default, AWS Secrets Manager has a 30-day recovery window before permanent deletion. The `force-delete-without-recovery` flag bypasses this for immediate deletion.
-
-#### VA User Creation Fails
-
-1. Ensure master user has superuser privileges
-2. Check MySQL parameter group allows user creation
-3. Verify RDS instance is not in maintenance mode
-
-## Cleanup
-
-To remove all resources created by this example:
-
+**Option A: Force delete and create new** (recommended):
 ```bash
-terraform destroy
+# Find the secret ARN
+SECRET_NAME="guardium-mysql-va-xxx-xxxx-xxx-xx-password"  # From error message
+REGION="us-east-1"
+
+aws secretsmanager list-secrets \
+  --include-planned-deletion \
+  --filters Key=name,Values=$SECRET_NAME \
+  --region $REGION \
+  --query 'SecretList[0].ARN' \
+  --output text
+
+# Force delete immediately
+SECRET_ARN="<arn-from-above>"
+aws secretsmanager delete-secret \
+  --secret-id $SECRET_ARN \
+  --force-delete-without-recovery \
+  --region $REGION
+
+# Re-run terraform apply
+terraform apply
 ```
 
-**Note**: This will:
-- Delete the Lambda function and associated resources
-- Remove the Secrets Manager secret (immediate deletion)
-- Remove the security group rule from the RDS security group
-- Unregister the datasource from Guardium
-- **NOT** delete the RDS MySQL instance itself (it's managed separately)
-- **NOT** delete the `sqlguard` user from MySQL (manual cleanup required)
+**Option B: Use a different secret name**:
+- Update the `name_prefix` variable in your `terraform.tfvars` to use a different value
 
-To manually remove the `sqlguard` user from MySQL:
+### Problem: "Assessment not running"
+**Solution:**
+- Check data source status in Guardium console (should show "Connected")
+- Run manual assessment: Guardium → Vulnerability Assessment → Run Assessment Now
+- Check Lambda CloudWatch logs: `aws logs tail /aws/lambda/your-function-name --follow`
 
-```sql
-DROP USER IF EXISTS 'sqlguard'@'%';
-```
+---
 
-## Cost Considerations
+## 🔐 Security Best Practices
 
-This example incurs the following AWS costs:
+1. **Never commit `terraform.tfvars` to version control** - It contains sensitive passwords
+2. **Use strong passwords** - Minimum 12 characters with mixed case, numbers, and symbols
+3. **Rotate credentials regularly** - Change passwords every 90 days
+4. **Use least privilege** - Only grant necessary IAM permissions
+5. **Enable SSL/TLS** - Keep `use_ssl = true` (default)
+6. **Deploy Lambda in private subnets** - Never use public subnets
+7. **Use /32 CIDR for Guardium** - Only allow the specific Guardium IP address
+8. **Review findings regularly** - Check vulnerability assessment reports weekly
+9. **Enable CloudWatch alarms** - Monitor Lambda errors and failures
+10. **Use separate passwords** - Never reuse passwords across environments
 
-- **Lambda**: Pay per invocation (one-time setup cost, minimal)
-- **Secrets Manager**: ~$0.40/month per secret
-- **VPC Endpoint**: ~$7.20/month for Secrets Manager endpoint
-- **CloudWatch Logs**: Based on log retention and volume
+---
 
-## Support
+## 📚 Additional Resources
 
-For issues or questions:
+- [Guardium Data Protection Documentation](https://www.ibm.com/docs/en/guardium)
+- [AWS RDS MySQL Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)
+- [MySQL Security Best Practices](https://dev.mysql.com/doc/refman/8.0/en/security.html)
+- [Terraform AWS Provider Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 
-1. Check the [main README](../../README.md) for general information
-2. Review the [module documentation](../../modules/aws-rds-mysql/README.md)
-3. Open an issue in the GitHub repository
+---
 
-## License
+## 🆘 Need Help?
 
-This example is provided under the same license as the main module.
+- Check the [Troubleshooting](#-troubleshooting) section above
+- Review Terraform logs: `terraform apply` output
+- Check Lambda CloudWatch logs for detailed error messages
+- Review module documentation: `../../modules/aws-rds-mysql/README.md`
+- Contact your Guardium administrator
+- Open an issue in the GitHub repository
+
+---
+
+## 📝 Quick Reference: All Variables
+
+| Variable | Required? | Default | Description |
+|----------|-----------|---------|-------------|
+| `aws_region` | No | `us-east-1` | AWS region where resources will be created |
+| `name_prefix` | No | `rds-mysql-sql` | Prefix for AWS resource names |
+| `db_host` | **Yes** | - | RDS MySQL endpoint |
+| `db_port` | No | `3306` | MySQL port |
+| `db_username` | No | `guardium_admin` | Master username for database |
+| `db_password` | **Yes** | - | Master password for database |
+| `sqlguard_username` | No | `sqlguard` | Username for VA user |
+| `sqlguard_password` | **Yes** | - | Password for VA user |
+| `vpc_id` | **Yes** | - | VPC ID where database is deployed |
+| `subnet_ids` | **Yes** | - | List of subnet IDs for Lambda |
+| `db_security_group_id` | **Yes** | - | Security group ID of MySQL database |
+| `gdp_server` | **Yes** | - | Guardium server hostname or IP |
+| `gdp_port` | No | `8443` | Guardium API port |
+| `gdp_username` | **Yes** | - | Guardium admin username |
+| `gdp_password` | **Yes** | - | Guardium admin password |
+| `client_id` | No | `client1` | OAuth client ID |
+| `client_secret` | **Yes** | - | OAuth client secret from grdapi command |
+| `datasource_name` | No | `rds-mysql-va` | Display name in Guardium |
+| `datasource_description` | No | `MySQL data source...` | Description in Guardium |
+| `application` | No | `Security Assessment` | Datasource category |
+| `severity_level` | No | `MED` | Criticality level (LOW/NONE/MED/HIGH) |
+| `enable_vulnerability_assessment` | No | `true` | Enable VA scans |
+| `use_ssl` | No | `true` | Enable SSL/TLS encryption |
+| `import_server_ssl_cert` | No | `true` | Auto-import AWS RDS CA certificate |
+| `tags` | No | `{}` | AWS resource tags |
