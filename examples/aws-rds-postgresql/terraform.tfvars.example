@@ -42,7 +42,7 @@ subnet_ids = [
 #------------------------------------------------------------------------------
 # Guardium Data Protection (GDP) Connection Configuration
 #------------------------------------------------------------------------------
-gdp_server = "test.dev.fyre.ibm.com"
+gdp_server = "your-guardium-server.example.com"
 gdp_port              = "8443"
 gdp_username          = "admin"              # Replace with your Guardium admin username
 gdp_password = "password"       # Replace with your Guardium admin password
@@ -59,19 +59,9 @@ application            = "Security Assessment"
 severity_level         = "MED"
 
 #------------------------------------------------------------------------------
-# Vulnerability Assessment Schedule Configuration
+# Vulnerability Assessment Configuration
 #------------------------------------------------------------------------------
 enable_vulnerability_assessment = true
-assessment_schedule             = "weekly"
-assessment_day                  = "Monday"
-assessment_time                 = "02:00"
-
-#------------------------------------------------------------------------------
-# Notification Configuration
-#------------------------------------------------------------------------------
-enable_notifications  = true
-notification_emails   = ["security-team@example.com", "dba-team@example.com"]
-notification_severity = "HIGH"
 
 #------------------------------------------------------------------------------
 # SSL/TLS Configuration (ENABLED BY DEFAULT FOR SECURITY)
