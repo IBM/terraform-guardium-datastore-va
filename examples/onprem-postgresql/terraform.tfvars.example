@@ -3,33 +3,58 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# On-Premise PostgreSQL VA Configuration Example
-# Copy this file to terraform.tfvars and update with your values
+# On-Premise PostgreSQL VA Example - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
 
-# PostgreSQL Database Connection
-db_host     = "api.rr1.cp.fyre.ibm.com"
+#------------------------------------------------------------------------------
+# Database Connection Details
+#------------------------------------------------------------------------------
+db_host     = "your-postgresql-host.example.com"
 db_port     = 5432
 db_name     = "postgres"
-db_username = "postgres"  # ⚠️ Consider creating a dedicated admin user instead
-db_password = "Vancouver1213412@@@@"
+db_username = "terraform_admin"  # Use dedicated admin user, NOT postgres
+db_password = "your-terraform-admin-password"  # Must be 8+ characters with uppercase, lowercase, numbers, and special characters
 
+#------------------------------------------------------------------------------
 # Guardium VA User Configuration
+#------------------------------------------------------------------------------
 sqlguard_username = "sqlguard"
-sqlguard_password = "SqlGuard@2024!Strong"  # Must meet password requirements
+sqlguard_password = "your-sqlguard-password"  # Must be 8+ characters with uppercase, lowercase, numbers, and special characters
 
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Connection Details
+#------------------------------------------------------------------------------
+gdp_server    = "your-guardium-server.example.com"
+gdp_username  = "your-guardium-username"
+gdp_password  = "your-guardium-password"
+client_id     = "your-oauth-client-id"
+client_secret = "your-oauth-client-secret"
+
+#------------------------------------------------------------------------------
+# Datasource Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "onprem-postgresql-va"
+datasource_description = "On-premise PostgreSQL database"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
 # SSL Configuration
-# For development/testing without SSL:
-use_ssl  = false
-ssl_mode = "disable"
+#------------------------------------------------------------------------------
+use_ssl  = true
+ssl_mode = "require"  # Options: disable, allow, prefer, require, verify-ca, verify-full
+import_server_ssl_cert = false
 
-# For production with SSL (recommended):
-# use_ssl  = true
-# ssl_mode = "require"  # or "verify-ca" or "verify-full"
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Configuration
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
 
+#------------------------------------------------------------------------------
 # Tags
+#------------------------------------------------------------------------------
 tags = {
-  Environment = "Development"
-  Owner       = "Security Team"
-  Purpose     = "Guardium VA Configuration"
-  ManagedBy   = "Terraform"
+  Purpose     = "guardium-va-onprem-postgresql"
+  Owner       = "security-team@example.com"
+  Environment = "production"
 }

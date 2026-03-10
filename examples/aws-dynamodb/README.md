@@ -1,10 +1,19 @@
-# AWS DynamoDB with Vulnerability Assessment
+# AWS DynamoDB with Vulnerability Assessment - Quick Start Guide
 
+This guide helps you set up vulnerability assessment for AWS DynamoDB using IBM Guardium Data Protection. Follow the steps in order for a smooth setup.
 
-**SSL/TLS encryption is enabled by default** for all Guardium connections to AWS services.
-This example demonstrates how to configure vulnerability assessment for AWS DynamoDB using Guardium Data Protection. It sets up the necessary IAM roles and policies for Guardium to perform security assessments on your DynamoDB tables and connects the datasource to Guardium for ongoing vulnerability monitoring.
+> **🔒 Security Note:** SSL/TLS encryption is enabled by default for all Guardium connections to AWS services.
 
-## Architecture
+---
+
+## 🏗️ What This Example Does
+
+This Terraform configuration:
+- **Creates IAM roles and policies** that allow Guardium to securely access your DynamoDB tables
+- **Registers DynamoDB as a datasource** in Guardium Data Protection
+- **Configures vulnerability assessment** to automatically scan for security issues
+
+### Architecture Overview
 
 ```
 ┌───────────────────┐     ┌───────────────────┐     ┌───────────────────┐
@@ -33,211 +42,321 @@ This example demonstrates how to configure vulnerability assessment for AWS Dyna
                                                     └───────────────────┘
 ```
 
-## Data Flow
+### How It Works (Data Flow)
 
-1. Guardium Data Protection uses the configured IAM role to access DynamoDB
-2. Guardium performs vulnerability assessments according to the configured schedule
-3. Assessment results are stored in Guardium and notifications are sent based on configuration
-4. Security teams can review findings and take remediation actions
+1. **Terraform creates IAM resources** - Sets up the necessary permissions for Guardium
+2. **Guardium connects to DynamoDB** - Uses the IAM role to securely access your tables
+3. **Automated security scans** - Guardium performs vulnerability assessments on your schedule
+4. **Results and alerts** - Findings are stored in Guardium for review
+5. **Review and remediate** - Security teams can review findings and take action
 
-## Prerequisites
+### What Gets Scanned?
 
-- AWS account with DynamoDB tables
-- Guardium Data Protection instance
-- AWS credentials with permissions to create IAM roles and policies
-- Terraform >= 1.0.0
-- AWS provider >= 4.0.0
-- Guardium provider >= 1.0.0
+Guardium vulnerability assessment checks for:
+- ✅ **Access control issues** - Overly permissive IAM policies
+- ✅ **Encryption settings** - Tables without encryption at rest
+- ✅ **Backup configurations** - Missing or inadequate backup policies
+- ✅ **Network security** - VPC endpoint configurations
+- ✅ **Compliance violations** - Deviations from security best practices
+- ✅ **Configuration weaknesses** - Insecure DynamoDB settings
 
-### AWS Authentication Setup
+---
 
-Before running Terraform, ensure you have valid AWS credentials configured:
+## 📦 Modules Used
 
-1. Validate your AWS authentication by running:
+This example uses two Terraform modules:
+
+### 1. `aws-dynamodb` Module (Local)
+**Location:** `../../modules/aws-dynamodb`
+
+**What it does:**
+- Creates IAM role for Guardium to assume
+- Creates IAM policy with DynamoDB read permissions
+- Attaches policy to role
+- Outputs role ARN for Guardium configuration
+
+**Resources created:**
+- `aws_iam_role` - Role for Guardium
+- `aws_iam_policy` - Policy with DynamoDB permissions
+- `aws_iam_role_policy_attachment` - Links policy to role
+
+### 2. `connect-datasource-to-va` Module (Remote)
+**Location:** `IBM/gdp/guardium//modules/connect-datasource-to-va`
+
+**What it does:**
+- Registers DynamoDB as a datasource in Guardium
+- Configures vulnerability assessment schedule
+- Manages Guardium API authentication
+
+**Resources created:**
+- Guardium datasource registration
+- Vulnerability assessment configuration
+
+---
+
+
+## 📋 What You'll Need (Prerequisites)
+
+Before starting, make sure you have:
+
+- ✅ An AWS account with DynamoDB tables
+- ✅ A running Guardium Data Protection instance
+- ✅ AWS credentials with permissions to create IAM roles
+- ✅ Terraform installed (version 1.0.0 or higher)
+- ✅ AWS CLI installed and configured
+
+---
+
+## 🚀 Step-by-Step Setup
+
+### Step 1: Verify Your AWS Access
+
+First, make sure your AWS credentials are working:
+
+```bash
+aws sts get-caller-identity
+```
+
+You should see your AWS account ID and user information. If not, configure your credentials:
+
+```bash
+aws configure
+```
+
+---
+
+### Step 2: Set Up AWS Secrets Manager (REQUIRED)
+
+DynamoDB requires AWS Secrets Manager for authentication.
+
+#### Find AWS Secrets Manager Configuration in Guardium UI
+
+1. Log into your Guardium Data Protection web interface
+2. Navigate to: **Setup → Tools and Views → Secrets Management**
+3. Look for an existing **AWS Secrets Manager** configuration
+4. Note the **Configuration Name** (e.g., `guardium-aws`) - you'll need this in Step 3
+
+> 💡 **If you don't see an AWS Secrets Manager configuration:** Contact your Guardium administrator to set one up. The configuration should include your AWS credentials and the region where your DynamoDB tables are located.
+
+> 💡 **Remember:** The configuration name you find here will be used in Step 3 as `aws_secrets_manager_name`.
+
+---
+
+### Step 3: Get Your Guardium OAuth Credentials
+
+You need OAuth credentials to connect Terraform to Guardium:
+
+1. SSH into your Guardium server:
    ```bash
-   aws sts get-caller-identity
-   ```
-   This should return your AWS account ID, user ID, and ARN.
-
-2. If needed, configure your AWS credentials by editing `~/.aws/credentials`:
-   ```
-   [default]
-   aws_access_key_id = YOUR_ACCESS_KEY
-   aws_secret_access_key = YOUR_SECRET_KEY
+   ssh cli@your-guardium-server.com
    ```
 
-## Usage
+2. Run this command to generate OAuth credentials:
+   ```bash
+   grdapi register_oauth_client client_id=client1 grant_types=password
+   ```
 
-### 1. Configure the variables
+3. **Save the output** - you'll need the `client_secret` value in the next step
 
-Create a `terraform.tfvars` file with your specific configuration:
+---
+
+### Step 4: Configure Your Variables
+
+Copy the example file and edit it with your values:
+
+```bash
+cd examples/aws-dynamodb
+cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars  # or use your preferred editor
+```
+
+Now fill in these values:
+
+#### 🔧 Required Settings (You MUST change these)
+
+```hcl
+# Your Guardium server details
+gdp_server        = "guardium.example.com"      # ← Your Guardium hostname
+guardium_username = "admin"                      # ← Your Guardium username
+guardium_password = "your-password"              # ← Your Guardium password
+client_id         = "client1"                    # ← From Step 3
+client_secret     = "your-client-secret"         # ← From Step 3 output
+
+# AWS Secrets Manager (from Step 2)
+aws_secrets_manager_name   = "guardium-aws"              # ← Name from Step 2
+aws_secrets_manager_region = "us-east-1"                 # ← Your AWS region
+aws_secrets_manager_secret = "dynamodb-credentials"      # ← Secret name in AWS
+```
+
+#### ⚙️ Optional Settings (You can customize these)
 
 ```hcl
 # AWS Configuration
-aws_region  = "us-east-1"
-aws_profile = "default"
+aws_region = "us-east-1"  # Change if your DynamoDB is in a different region
 
-# Guardium Data Protection Connection
-gdp_server = "guardium.example.com"
-gdp_port   = 8443
-guardium_username = "apiuser"
-guardium_password = "password"
-client_id = "client1"
-client_secret = "client_secret123"
-gdp_ssh_username = "root"
-gdp_ssh_privatekeypath = "~/.ssh/id_rsa"
+# DynamoDB Datasource Details
+dynamodb_datasource_name = "aws-dynamodb-va-example"  # Name shown in Guardium
+dynamodb_description     = "AWS DynamoDB with Vulnerability Assessment"
 
+# Application Type (what this datasource is used for)
+# Options: "Security Assessment", "Audit Task", "Compliance"
+application = "Security Assessment"
 
-# DynamoDB uses AWS Secrets Manager for authentication
-# These are required for DynamoDB datasource registration
-# DynamoDB authentication is handled through AWS Secrets Manager
-# No username/password required for DynamoDB
-aws_secrets_manager_name = "YOURaccount"  # Name of your AWS Secrets Manager configuration in Guardium
-aws_secrets_manager_region = "us-east-1"  # Region where your AWS Secrets Manager secret is stored
-aws_secrets_manager_secret = "dynamodb-credentials"  # Name of the secret in AWS Secrets Manager
+# Severity Level (how critical is this datasource)
+# Options: "LOW", "MED", "HIGH"
+severity_level = "MED"
 
-
-# Vulnerability Assessment Configuration
+# Vulnerability Assessment Schedule
 enable_vulnerability_assessment = true
-assessment_schedule             = "WEEKLY"
-assessment_day                  = "Monday"
-assessment_time                 = "02:00"  # 2 AM
 
-# Notification Configuration
-enable_notifications  = true
-notification_emails   = ["security@example.com", "dba@example.com"]
-notification_severity = "HIGH"
+# SSL/TLS (Recommended: keep these as true)
+use_ssl                = true
+import_server_ssl_cert = true
 
-# Debug Configuration
-debug_mode = true  # Enable to see API responses for troubleshooting
-
-# Tags
-tags = {
-  Environment = "Production"
-  Owner       = "Security Team"
-  Project     = "Database Security"
-}
+# Debug Mode (set to true if you need to troubleshoot)
+debug_mode = false
 ```
 
-### 2. Initialize Terraform
+---
 
+### Step 5: Run Terraform
+
+Now you're ready to deploy!
+
+#### 5.1 Initialize Terraform
 ```bash
 terraform init
 ```
 
-### 3. Review the plan
-
+#### 5.2 Preview What Will Be Created
 ```bash
 terraform plan
 ```
 
-### 4. Apply the configuration
+Review the output to see what resources will be created.
 
+#### 5.3 Apply the Configuration
 ```bash
 terraform apply
 ```
 
-## Input Variables
+Type `yes` when prompted to confirm.
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| aws_region | AWS region where DynamoDB is deployed | `string` | `"us-east-1"` | no |
-| aws_profile | AWS profile to use for authentication | `string` | `"default"` | no |
-| gdp_server | Hostname or IP address of the Guardium Data Protection server | `string` | n/a | yes |
-| gdp_port | Port for Guardium Data Protection API connection | `number` | `8443` | no |
-| guardium_username | Username for Guardium API authentication | `string` | n/a | yes |
-| guardium_password | Password for Guardium API authentication | `string` | n/a | yes |
-| client_id | The client ID used to create the GDP register_oauth_client client_secret | `string` | `"client1"` | no |
-| client_secret | The client secret output from grdapi register_oauth_client | `string` | n/a | yes |
-| gdp_ssh_username | The SSH user for logging in to Guardium | `string` | `"root"` | no |
-| gdp_ssh_privatekeypath | The path to the SSH private key for logging in to Guardium | `string` | n/a | yes |
-| aws_secrets_manager_name | Name of the AWS Secrets Manager configuration in Guardium | `string` | n/a | yes |
-| aws_secrets_manager_region | AWS region where the Secrets Manager secret is stored | `string` | n/a | yes |
-| dynamodb_datasource_name | Name to register the DynamoDB datasource in Guardium | `string` | `"aws-dynamodb-va-example"` | no |
-| dynamodb_description | Description for the DynamoDB datasource in Guardium | `string` | `"AWS DynamoDB with Vulnerability Assessment"` | no |
-| enable_vulnerability_assessment | Whether to enable vulnerability assessment for DynamoDB | `bool` | `true` | no |
-| assessment_schedule | Schedule for vulnerability assessments (DAILY, WEEKLY, MONTHLY) | `string` | `"WEEKLY"` | no |
-| assessment_day | Day for vulnerability assessments (e.g., Monday, Tuesday) | `string` | `"Monday"` | no |
-| assessment_time | Time for vulnerability assessments in 24-hour format (HH:MM) | `string` | `"00:00"` | no |
-| enable_notifications | Whether to enable notifications for vulnerability assessment results | `bool` | `true` | no |
-| notification_emails | Email addresses to receive vulnerability assessment notifications | `list(string)` | `[]` | no |
-| notification_severity | Minimum severity level for notifications (LOW, MEDIUM, HIGH, CRITICAL) | `string` | `"HIGH"` | no |
-| tags | Tags to apply to resources created by this module | `map(string)` | `{}` | no |
-| use_ssl | Enable SSL/TLS for Guardium connections to AWS services | `bool` | `true` | no |
-| import_server_ssl_cert | Import AWS server SSL certificate automatically | `bool` | `true` | no |
-| debug_mode | Enable debug mode to print API responses for troubleshooting | `bool` | `false` | no |
+---
 
-## Outputs
+## ✅ What Gets Created
 
-| Name | Description |
-|------|-------------|
-| va_iam_role_arn | ARN of the IAM role used for vulnerability assessment |
-| va_iam_policy_arn | ARN of the IAM policy for vulnerability assessment |
-| datasource_name | Name of the registered datasource in Guardium |
-| datasource_type | Type of the registered datasource in Guardium |
-| datasource_hostname | Hostname of the registered datasource in Guardium |
-| va_enabled | Whether vulnerability assessment is enabled |
-| assessment_schedule | Schedule for vulnerability assessments |
-| assessment_day | Day for vulnerability assessments |
-| assessment_time | Time for vulnerability assessments |
-| notifications_enabled | Whether notifications are enabled |
-| notification_emails | Email addresses for notifications |
-| notification_severity | Minimum severity level for notifications |
-| debug_mode_enabled | Whether debug mode is enabled for API responses |
+This Terraform configuration will:
 
-## Security Considerations
+1. **Create IAM Role & Policy** - Allows Guardium to access your DynamoDB tables
+2. **Register Datasource in Guardium** - Adds DynamoDB as a monitored datasource
+3. **Configure Vulnerability Assessment** - Sets up automated security scans
 
-- Store sensitive variables like `guardium_password` and `connection_password` in a secure location such as AWS Secrets Manager or HashiCorp Vault
-- Use environment variables or a `.tfvars` file that is excluded from version control
-- Consider using AWS IAM roles with temporary credentials instead of long-lived access keys
-- Regularly rotate credentials used for the DynamoDB connection
-- Implement least privilege for the IAM policy, restricting access to only the necessary DynamoDB tables
-- Ensure your AWS Secrets Manager secret contains the necessary AWS credentials with appropriate permissions
+---
 
-## AWS Secrets Manager Configuration
+## 📊 View Your Results
 
-For DynamoDB datasources, Guardium requires AWS Secrets Manager configuration. You need to:
+After successful deployment:
 
-1. **Register AWS Authentication Configuration in Guardium UI**:
-   - Navigate to Setup >> Tools >> AWS Authentication Configuration
-   - Create a new configuration with a name (this will be your `aws_secrets_manager_name`)
-   - Enter your AWS credentials (Access Key ID and Secret Access Key)
-   - Save the configuration
+1. Log into your Guardium Data Protection console
+2. Navigate to **Data Sources** to see your registered DynamoDB datasource
+3. Go to **Vulnerability Assessment** to view scan results
 
-2. Create an AWS Secrets Manager secret containing your AWS credentials:
-   ```bash
-   aws secretsmanager create-secret \
-     --name dynamodb-credentials \
-     --description "AWS credentials for Guardium DynamoDB VA" \
-     --secret-string '{"accessKeyId":"YOUR_ACCESS_KEY_ID","secretAccessKey":"YOUR_SECRET_ACCESS_KEY"}'
-   ```
+---
 
-3. Ensure the secret is in the format:
-   ```json
-   {
-     "accessKeyId": "YOUR_ACCESS_KEY_ID",
-     "secretAccessKey": "YOUR_SECRET_ACCESS_KEY"
-   }
-   ```
+## 🔍 Understanding the Variables
 
-4. Provide the configuration details in your terraform.tfvars file:
-   ```hcl
-   aws_secrets_manager_name = "<yourprofile>"  # Name you used in Guardium UI
-   aws_secrets_manager_region = "us-east-1"
-   aws_secrets_manager_secret = "dynamodb-credentials"  # Name of your AWS secret
-   ```
+### What is `application`?
+This categorizes what the datasource is used for:
+- **"Security Assessment"** - For vulnerability scanning (most common)
+- **"Audit Task"** - For compliance auditing
+- **"Compliance"** - For regulatory compliance monitoring
 
-5. The IAM role used by Guardium must have permission to read this secret.
+### What is `severity_level`?
+This indicates how critical this datasource is:
+- **"LOW"** - Development/test environments
+- **"MED"** - Staging or non-critical production
+- **"HIGH"** - Critical production systems
 
-## Additional Notes
+---
 
-- This example focuses solely on vulnerability assessment and does not include audit logging
-- For audit logging of DynamoDB, see the `examples/dynamodb-monitoring` example which uses CloudTrail, CloudWatch, and Universal Connector
-- Vulnerability assessments check for security misconfigurations, weak access controls, and other security issues
-- Assessment results can be viewed in the Guardium Data Protection console
-- DynamoDB authentication is handled entirely through AWS Secrets Manager - no username/password is required.
-- The `aws_secrets_manager_name` variable refers to the AWS Authentication Configuration name you created in the Guardium UI (Setup >> Tools >> AWS Authentication Configuration).
-- **IMPORTANT**: The AWS Authentication Configuration name in Guardium UI must match exactly what you specify in `aws_secrets_manager_name`.
-- The `aws_secrets_manager_region` and `aws_secrets_manager_secret` variables specify the AWS region and secret name containing the AWS credentials.
-- The `debug_mode` variable can be enabled to print detailed API requests and responses for troubleshooting. This is useful when diagnosing issues with the Guardium API integration. Keep this disabled in production environments to avoid exposing sensitive information in logs.
-- Note that for DynamoDB datasources, the vulnerability assessment configuration must be done manually through the Guardium UI after the datasource is registered. The Terraform module will register the datasource but cannot configure the vulnerability assessment for DynamoDB datasources due to API limitations.
+## 🛠️ Troubleshooting
+
+### Problem: "Authentication failed"
+**Solution:** 
+- Verify your Guardium username and password
+- Check that your OAuth client_secret is correct
+- Ensure your Guardium server is accessible
+
+### Problem: "AWS Secrets Manager configuration not found"
+**Solution:**
+- Make sure you completed Step 2.2 (Register in Guardium UI)
+- Verify the `aws_secrets_manager_name` matches exactly what you entered in Guardium UI
+- Configuration names are case-sensitive!
+
+### Problem: "Permission denied" errors
+**Solution:**
+- Verify your AWS credentials have IAM permissions
+- Check that the AWS secret exists: `aws secretsmanager describe-secret --secret-id dynamodb-credentials`
+
+### Enable Debug Mode
+If you're still having issues, enable debug mode in your `terraform.tfvars`:
+```hcl
+debug_mode = true
+```
+
+Then run `terraform apply` again to see detailed API responses.
+
+---
+
+## 🔐 Security Best Practices
+
+1. **Never commit `terraform.tfvars` to version control** - It contains sensitive passwords
+2. **Use strong passwords** for Guardium and AWS credentials
+3. **Rotate credentials regularly** - Change passwords every 90 days
+4. **Use least privilege** - Only grant necessary IAM permissions
+5. **Enable SSL/TLS** - Keep `use_ssl = true` (default)
+6. **Review findings regularly** - Check vulnerability assessment reports weekly
+
+---
+
+## 📚 Additional Resources
+
+- [Guardium Data Protection Documentation](https://www.ibm.com/docs/en/guardium)
+- [AWS DynamoDB Security Best Practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices-security.html)
+- [Terraform AWS Provider Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+
+---
+
+## 🆘 Need Help?
+
+- Check the [Troubleshooting](#-troubleshooting) section above
+- Review Terraform logs: `terraform apply` output
+- Contact your Guardium administrator
+- Open an issue in the GitHub repository
+
+---
+
+## 📝 Quick Reference: All Variables
+
+| Variable | Required? | Default | Description |
+|----------|-----------|---------|-------------|
+| `aws_region` | No | `us-east-1` | AWS region where DynamoDB is deployed |
+| `gdp_server` | **Yes** | - | Your Guardium server hostname |
+| `gdp_port` | No | `8443` | Guardium API port |
+| `guardium_username` | **Yes** | - | Guardium admin username |
+| `guardium_password` | **Yes** | - | Guardium admin password |
+| `client_id` | No | `client1` | OAuth client ID |
+| `client_secret` | **Yes** | - | OAuth client secret from grdapi command |
+| `aws_secrets_manager_name` | **Yes** | - | Name of AWS config in Guardium UI |
+| `aws_secrets_manager_region` | **Yes** | - | AWS region for Secrets Manager |
+| `aws_secrets_manager_secret` | **Yes** | - | Name of secret in AWS Secrets Manager |
+| `dynamodb_datasource_name` | No | `aws-dynamodb-va-example` | Display name in Guardium |
+| `dynamodb_description` | No | `AWS DynamoDB with VA` | Description in Guardium |
+| `application` | No | `Security Assessment` | Datasource category |
+| `severity_level` | No | `MED` | Criticality level (LOW/MED/HIGH) |
+| `enable_vulnerability_assessment` | No | `true` | Enable VA scans |
+| `use_ssl` | No | `true` | Enable SSL/TLS encryption |
+| `import_server_ssl_cert` | No | `true` | Auto-import AWS SSL certificate |
+| `debug_mode` | No | `false` | Enable detailed logging |
+| `tags` | No | `{}` | AWS resource tags |

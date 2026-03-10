@@ -9,8 +9,8 @@
 #------------------------------------------------------------------------------
 # Database Connection Details
 #------------------------------------------------------------------------------
-# Example: mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED
-db_host     = "api.rr1.cp.fyre.ibm.com"
+# Example: mysql -h your-mysql-host.example.com -u root -p -P 3306 --ssl-mode=REQUIRED
+db_host     = "your-mysql-host.example.com"
 db_port     = 3306
 db_username = "root"
 db_password = "your-mysql-root-password"
@@ -35,7 +35,7 @@ client_secret = "your-oauth-client-secret"
 # Datasource Configuration
 #------------------------------------------------------------------------------
 datasource_name        = "onprem-mysql-fyre"
-datasource_description = "On-premise MySQL database at api.rr1.cp.fyre.ibm.com"
+datasource_description = "On-premise MySQL database at your-mysql-host.example.com"
 application            = "Security Assessment"
 severity_level         = "MED"
 
@@ -55,19 +55,9 @@ use_ssl                = true
 import_server_ssl_cert = true  # Default changed to true for security
 
 #------------------------------------------------------------------------------
-# Vulnerability Assessment Schedule Configuration
+# Vulnerability Assessment Configuration
 #------------------------------------------------------------------------------
 enable_vulnerability_assessment = true
-assessment_schedule             = "weekly"
-assessment_day                  = "Monday"
-assessment_time                 = "02:00"
-
-#------------------------------------------------------------------------------
-# Notification Configuration
-#------------------------------------------------------------------------------
-enable_notifications  = true
-notification_emails   = ["security-team@example.com"]
-notification_severity = "HIGH"
 
 #------------------------------------------------------------------------------
 # Tags
