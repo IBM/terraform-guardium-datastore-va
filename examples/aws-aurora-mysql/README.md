@@ -161,19 +161,7 @@ The Lambda function creates a `sqlguard` user in the Aurora MySQL database with 
 - Username (default: `sqlguard`)
 - Password (must be strong and secure)
 
-### Vulnerability Assessment Schedule
 
-Configure when VA scans should run:
-- `assessment_schedule`: daily, weekly, or monthly
-- `assessment_day`: Day of week (for weekly) or day of month (for monthly)
-- `assessment_time`: Time in 24-hour format (e.g., "02:00")
-
-### Notifications
-
-Configure email notifications for assessment results:
-- `enable_notifications`: Enable/disable notifications
-- `notification_emails`: List of email addresses
-- `notification_severity`: Minimum severity level (HIGH, MED, LOW, NONE)
 
 ## Outputs
 
