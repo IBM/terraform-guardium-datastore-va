@@ -69,13 +69,16 @@ Use the `Name` column value for `resource_group_name` in your tfvars.
 ### 2. Find Your MySQL Server
 
 ```bash
-# List all MySQL Flexible Servers in a resource group
-az mysql flexible-server list --resource-group <your-rg-name> --output table
+# List all MySQL Flexible Servers in your subscription (shows resource group automatically)
+az mysql flexible-server list --output table
 
 # Example output:
-# Name              ResourceGroup    Location        Status    Version
-# ----------------  ---------------  --------------  --------  -------
-# my-mysql-server   my-mysql-rg      canadacentral   Ready     8.0.21
+# Name              Resource Group   Location        Version    Storage Size(GiB)    Tier       SKU            State    HA State    Availability zone
+# ----------------  ---------------  --------------  ---------  -------------------  ---------  -------------  -------  ----------  -------------------
+# my-mysql-server   my-mysql-rg      Canada Central  8.0.21     20                   Burstable  Standard_B1ms  Ready    NotEnabled  2
+
+# If you want to list servers in a specific resource group only:
+# az mysql flexible-server list --resource-group <your-rg-name> --output table
 ```
 
 Use the `Name` for `mysql_server_name` and construct the FQDN as `<name>.mysql.database.azure.com` for `db_host`.
