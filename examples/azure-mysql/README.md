@@ -105,11 +105,14 @@ Use the `Name` for `vnet_name` in your tfvars.
 # List subnets in your VNet
 az network vnet subnet list --resource-group <your-rg-name> --vnet-name <your-vnet-name> --output table
 
+# Real example (make sure to use the correct resource group name from step 1):
+# az network vnet subnet list --resource-group guardium-mysql-rg-1u40jd --vnet-name guardium-mysql-vnet --output table
+
 # Example output:
-# Name                AddressPrefix    PrivateEndpointNetworkPolicies
-# ------------------  ---------------  -------------------------------
-# mysql-subnet        10.0.1.0/24      Disabled
-# default             10.0.0.0/24      Disabled
+# AddressPrefix    Name                      PrivateEndpointNetworkPolicies    ProvisioningState    ResourceGroup
+# ---------------  ------------------------  --------------------------------  -------------------  ------------------------
+# 10.0.1.0/24      guardium-mysql-subnet     Enabled                           Succeeded            guardium-mysql-rg-1u40jd
+# 10.0.2.0/24      guardium-function-subnet  Enabled                           Succeeded            guardium-mysql-rg-1u40jd
 ```
 
 Choose an unused address prefix for the Function App subnet (e.g., `10.0.2.0/24`) that doesn't overlap with existing subnets.
