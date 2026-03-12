@@ -1,6 +1,6 @@
 # Guardium Datastore Vulnerability Assessment Terraform Module
 
-Terraform module which configures AWS and on-premises datastores for vulnerability assessment and connects them to IBM Guardium Data Protection (GDP).
+Terraform module which configures AWS, Azure, and on-premises datastores for vulnerability assessment and connects them to IBM Guardium Data Protection (GDP).
 
 ## Scope
 
@@ -22,7 +22,7 @@ This module provides automated configuration of datastores for vulnerability ass
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│                    AWS & On-Premises Datastore Resources                    │
+│              AWS, Azure & On-Premises Datastore Resources                   │
 │                                                                             │
 │   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
 │   │DynamoDB  │  │   RDS    │  │   RDS    │  │   RDS    │  │ Redshift │      │
@@ -33,13 +33,14 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │  Aurora      │  │   RDS    │  │   RDS    │  │ Neptune  │                │
 │   │  PostgreSQL  │  │SQL Server│  │DocumentDB│  │          │                │
 │   └──────────────┘  └──────────┘  └──────────┘  └──────────┘                │
-│   ┌──────────┐  ┌──────────────┐  ┌──────────────┐                          │
-│   │   RDS    │  │  On-Prem     │  │  On-Prem     │                          │
-│   │  Oracle  │  │  MySQL       │  │  PostgreSQL  │                          │
-│   └──────────┘  └──────────────┘  └──────────────┘                          │
+│   ┌──────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
+│   │   RDS    │  │  Azure MySQL │  │  On-Prem     │  │  On-Prem     │        │
+│   │  Oracle  │  │  Flexible    │  │  MySQL       │  │  PostgreSQL  │        │
+│   └──────────┘  └──────────────┘  └──────────────┘  └──────────────┘        │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
-│   • Configures IAM roles and policies                                       │
+│   • Configures IAM roles and policies (AWS)                                 │
+│   • Configures Azure Functions and Key Vault (Azure)                        │
 │   • Sets up database permissions                                            │
 │   • Prepares datastores for security scanning                               │
 │                                                                             │
@@ -70,13 +71,14 @@ This module provides automated configuration of datastores for vulnerability ass
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Neptune: Creates sqlguard user and configures permissions via Lambda
    - For Redshift: Creates VA users and grants system table access
+   - For Azure MySQL Flexible Server: Creates sqlguard user via Azure Function with Key Vault integration
    - For On-Premises databases (MySQL, PostgreSQL): Creates dedicated VA users with appropriate permissions
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
 4. **Ongoing Monitoring**: Guardium performs scheduled security assessments and generates compliance reports
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift) and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift), Azure datastores (MySQL Flexible Server), and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements

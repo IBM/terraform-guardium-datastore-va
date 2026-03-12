@@ -1,0 +1,123 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Azure MySQL with VA Example - Variables
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+location            = "canadacentral"
+name_prefix         = "my-app"
+resource_group_name = "my-mysql-rg"
+
+#------------------------------------------------------------------------------
+# Network Configuration
+# 
+# To find your VNet name:
+# az network vnet list --resource-group <your-rg> --output table
+#------------------------------------------------------------------------------
+vnet_name                      = "my-mysql-vnet"
+function_subnet_address_prefix = "10.0.2.0/24"
+
+#------------------------------------------------------------------------------
+# Firewall Configuration
+# 
+# enable_public_access: Set to true for testing/demo, false for production (use Private Link)
+# guardium_hostname: Hostname or IP of your Guardium server (will be resolved to IP)
+# 
+# To find your Guardium server's outbound IP (if behind NAT):
+# From Guardium server: curl ifconfig.me
+#------------------------------------------------------------------------------
+enable_public_access = true
+guardium_hostname    = "guardium.example.com"
+
+# Additional firewall rules for corporate networks or specific IP ranges
+# Example: Allow IBM internal network range
+additional_firewall_rules = {
+  "AllowCorporateNetwork" = {
+    start_ip = "10.0.0.0"
+    end_ip   = "10.255.255.255"
+  }
+}
+
+#------------------------------------------------------------------------------
+# Azure MySQL Configuration
+#
+# To find your MySQL server name:
+# az mysql flexible-server list --resource-group <your-rg> --output table
+#
+# To get the FQDN:
+# az mysql flexible-server show --name <server-name> --resource-group <your-rg> --query "fullyQualifiedDomainName" -o tsv
+#------------------------------------------------------------------------------
+mysql_server_name = "my-mysql-server"
+db_host           = "my-mysql-server.mysql.database.azure.com"
+db_port           = 3306
+db_name           = "testdb"
+db_username       = "mysqladmin"
+db_password       = "YourSecurePassword123!"
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"
+sqlguard_password = "SqlGuard#Pass123!"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection Configuration
+#------------------------------------------------------------------------------
+gdp_server    = "guardium.example.com"
+gdp_port      = "8443"
+gdp_username  = "admin"
+gdp_password  = "YourGuardiumPassword"
+client_id     = "client2"
+client_secret = "your-client-secret-uuid"
+
+#------------------------------------------------------------------------------
+# Data Source Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "azure-mysql-va"
+datasource_description = "Azure MySQL data source onboarded via Terraform"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["your-email@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# SSL Configuration
+#------------------------------------------------------------------------------
+use_ssl                = true
+import_server_ssl_cert = true
+
+#------------------------------------------------------------------------------
+# External Password Management (Optional)
+# Leave empty if not using Azure Key Vault for password management
+#------------------------------------------------------------------------------
+use_external_password       = false
+external_password_type_name = ""
+azure_key_vault_config_name = ""
+key_vault_name              = ""
+secret_name                 = ""
+
+#------------------------------------------------------------------------------
+# Tags
+#------------------------------------------------------------------------------
+tags = {
+  Purpose     = "guardium-va-config"
+  Environment = "development"
+  Owner       = "your-email@example.com"
+}
