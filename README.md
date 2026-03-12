@@ -29,14 +29,18 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
 │   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
-│   ┌──────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐                │
-│   │  Aurora      │  │   RDS    │  │   RDS    │  │ Neptune  │                │
-│   │  PostgreSQL  │  │SQL Server│  │DocumentDB│  │          │                │
-│   └──────────────┘  └──────────┘  └──────────┘  └──────────┘                │
-│   ┌──────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-│   │   RDS    │  │  Azure MySQL │  │  On-Prem     │  │  On-Prem     │        │
-│   │  Oracle  │  │  Flexible    │  │  MySQL       │  │  PostgreSQL  │        │
-│   └──────────┘  └──────────────┘  └──────────────┘  └──────────────┘        │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────┐  ┌──────────┐            │
+│   │  Aurora      │  │  Aurora      │  │   RDS    │  │   RDS    │            │
+│   │  PostgreSQL  │  │  MySQL       │  │SQL Server│  │DocumentDB│            │
+│   └──────────────┘  └──────────────┘  └──────────┘  └──────────┘            │
+│   ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐            │
+│   │ Neptune  │  │   RDS    │  │  Azure MySQL │  │  On-Prem     │            │
+│   │          │  │  Oracle  │  │  Flexible    │  │  MySQL       │            │
+│   └──────────┘  └──────────┘  └──────────────┘  └──────────────┘            │
+│   ┌──────────────┐                                                           │
+│   │  On-Prem     │                                                           │
+│   │  PostgreSQL  │                                                           │
+│   └──────────────┘                                                           │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
 │   • Configures IAM roles and policies (AWS)                                 │
@@ -66,6 +70,7 @@ This module provides automated configuration of datastores for vulnerability ass
 2. **Database Setup**:
    - For RDS databases (PostgreSQL, MariaDB, MySQL, Oracle): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
    - For Aurora PostgreSQL: Creates sqlguard user and gdmmonitor group via Lambda
+   - For Aurora MySQL: Creates sqlguard user via Lambda
    - For RDS SQL Server: Creates sqlguard user and gdmmonitor group via Lambda
    - For RDS DocumentDB: Creates sqlguard user via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
@@ -78,7 +83,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift), Azure datastores (MySQL Flexible Server), and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, Aurora MySQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift), Azure datastores (MySQL Flexible Server), and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -95,7 +100,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb,aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-aurora-mysql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
    ```
 
 3. **Configure variables**:
@@ -248,6 +253,53 @@ module "connect_aurora_to_gdp" {
   datasource_name = "aurora-postgresql-production"
   
   depends_on = [module.aurora_postgresql_va]
+}
+```
+
+### AWS Aurora MySQL Vulnerability Assessment
+
+Configure vulnerability assessment for AWS Aurora MySQL:
+
+```hcl
+module "aurora_mysql_va" {
+  source = "IBM/datastore-va/guardium//modules/aws-aurora-mysql"
+
+  name_prefix = "myproject"
+  
+  # Database connection details
+  db_host     = "aurora-mysql-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com"
+  db_port     = 3306
+  db_name     = "mysql"
+  db_username = "admin"
+  db_password = var.db_password
+  
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+  
+  # Network configuration
+  vpc_id               = "vpc-12345678"
+  subnet_ids           = ["subnet-12345678", "subnet-87654321"]
+  db_security_group_id = "sg-12345678"
+  aws_region           = "us-east-1"
+}
+
+# Connect to Guardium Data Protection
+module "connect_aurora_mysql_to_gdp" {
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
+  
+  datasource_payload = local.aurora_mysql_config_json_encoded
+  
+  client_secret = var.client_secret
+  client_id     = var.client_id
+  gdp_password  = var.gdp_password
+  gdp_server    = "guardium.example.com"
+  gdp_username  = "admin"
+  gdp_port      = "8443"
+  
+  datasource_name = "aurora-mysql-production"
+  
+  depends_on = [module.aurora_mysql_va]
 }
 ```
 
@@ -505,6 +557,19 @@ Creates the necessary database users and permissions for Guardium vulnerability 
 
 [Module Documentation](./modules/aws-aurora-postgresql/README.md)
 
+### AWS Aurora MySQL VA Configuration
+
+Creates the necessary database users and permissions for Guardium vulnerability assessment on Aurora MySQL clusters.
+
+**Key Features:**
+- Creates `sqlguard` user with required permissions
+- Uses Lambda for SQL execution in VPC
+- Integrates with AWS Secrets Manager
+- Connects directly to Guardium Data Protection
+- Automatically configures security group rules for Lambda access
+
+[Module Documentation](./modules/aws-aurora-mysql/README.md)
+
 ### AWS RDS MariaDB VA Configuration
 
 Configures MariaDB databases for vulnerability assessment using Lambda-based deployment.
@@ -576,6 +641,7 @@ Complete working examples are provided for each supported datastore:
 - [AWS DynamoDB with VA](./examples/aws-dynamodb) - DynamoDB vulnerability assessment configuration
 - [AWS RDS PostgreSQL with VA](./examples/aws-rds-postgresql) - PostgreSQL vulnerability assessment configuration
 - [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
+- [AWS Aurora MySQL with VA](./examples/aws-aurora-mysql) - Aurora MySQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
 - [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
 - [AWS RDS SQL Server with VA](./examples/aws-rds-sql-server) - SQL Server vulnerability assessment configuration

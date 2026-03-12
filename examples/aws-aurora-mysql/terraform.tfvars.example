@@ -1,0 +1,77 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# AWS Aurora MySQL with VA Example - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+aws_region  = "us-east-1"
+name_prefix = "aurora-mysql-monitoring"
+
+tags = {
+  Environment = "development"
+  Purpose     = "guardium-va-config"
+  Owner       = "your-email@example.com"
+}
+
+#------------------------------------------------------------------------------
+# Aurora MySQL Configuration
+#------------------------------------------------------------------------------
+db_host     = "aurora-mysql-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com"
+db_port     = 3306
+db_name     = "mysql"
+db_username = "admin"
+db_password = "your-master-password-here"
+
+#------------------------------------------------------------------------------
+# Network Configuration
+#------------------------------------------------------------------------------
+vpc_id               = "vpc-xxxxx"
+subnet_ids           = ["subnet-xxxxx", "subnet-yyyyy"]
+db_security_group_id = "sg-xxxxx"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Connection Configuration
+#------------------------------------------------------------------------------
+gdp_server   = "guardium.example.com"
+gdp_port     = "8443"
+gdp_username = "admin"
+gdp_password = "your-gdp-password-here"
+client_id    = "client1"
+client_secret = "your-client-secret-here"
+
+#------------------------------------------------------------------------------
+# Guardium Data Source Registration Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "aurora-mysql-va"
+datasource_description = "Aurora MySQL data source onboarded via Terraform"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"
+sqlguard_password = "your-sqlguard-password-here"
+
+#------------------------------------------------------------------------------
+# Optional: SSL Configuration
+#------------------------------------------------------------------------------
+use_ssl                = true
+import_server_ssl_cert = true
+
+#------------------------------------------------------------------------------
+# Optional: Advanced Configuration
+#------------------------------------------------------------------------------
+# shared_datasource      = "Not Shared"
+# connection_properties  = ""
+# compatibility_mode     = ""
+# custom_url             = ""
+# use_kerberos           = false
+# kerberos_config_name   = ""
+# use_ldap               = false
+# use_external_password  = false
