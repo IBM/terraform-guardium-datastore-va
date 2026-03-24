@@ -197,6 +197,11 @@ gdp_password = "YourGuardiumPassword"
 client_id    = "client2"
 client_secret = "your-client-secret"
 
+# Azure Authentication (Required for Azure MySQL datasource)
+azure_client_id     = "your-azure-service-principal-client-id"
+azure_tenant_id     = "your-azure-tenant-id"
+azure_client_secret = "your-azure-service-principal-secret"
+
 # Firewall Configuration (for Guardium connectivity)
 enable_public_access = true
 guardium_hostname    = "guardium.example.com"
@@ -208,6 +213,69 @@ additional_firewall_rules = {
     end_ip   = "10.255.255.255"
   }
 }
+```
+
+### Getting Azure Authentication Credentials
+
+Azure MySQL datasource requires Azure Service Principal credentials. Here's how to get them:
+
+#### Method 1: Using Azure CLI (Recommended)
+
+```bash
+# Get your tenant ID
+az account show --query tenantId -o tsv
+
+# Create a service principal with access to your MySQL server
+az ad sp create-for-rbac --name "guardium-mysql-connector" \
+  --role Contributor \
+  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.DBforMySQL/flexibleServers/YOUR_MYSQL_SERVER
+
+# Output will show:
+# {
+#   "appId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",        # This is azure_client_id
+#   "displayName": "guardium-mysql-connector",
+#   "password": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",     # This is azure_client_secret
+#   "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"        # This is azure_tenant_id
+# }
+```
+
+#### Method 2: Using Azure Portal
+
+1. **Get Tenant ID**:
+   - Go to Azure Active Directory → Overview
+   - Copy the **Tenant ID** (Directory ID)
+
+2. **Create Service Principal**:
+   - Go to Azure Active Directory → App registrations → New registration
+   - Enter name: "guardium-mysql-connector"
+   - Click Register
+   - Copy the **Application (client) ID** → this is `azure_client_id`
+
+3. **Create Client Secret**:
+   - In your app registration, go to Certificates & secrets
+   - Click New client secret
+   - Add description and expiration
+   - Click Add
+   - **IMPORTANT**: Copy the **Value** immediately → this is `azure_client_secret`
+   - (This value is only shown once!)
+
+4. **Grant Permissions**:
+   - Navigate to your MySQL Flexible Server
+   - Go to Access control (IAM) → Add role assignment
+   - Select role: **Contributor**
+   - Search for your service principal name
+   - Select and assign
+
+#### Verify Credentials
+
+```bash
+# Test the service principal login
+az login --service-principal \
+  --username YOUR_CLIENT_ID \
+  --password YOUR_CLIENT_SECRET \
+  --tenant YOUR_TENANT_ID
+
+# If successful, you have the correct credentials
 ```
 
 ### Step 2: Initialize Terraform

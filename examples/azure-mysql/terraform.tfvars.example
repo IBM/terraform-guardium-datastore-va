@@ -4,6 +4,7 @@
 #
 
 # Azure MySQL with VA Example - Variables
+# Copy this file to terraform.tfvars and fill in your values
 
 #------------------------------------------------------------------------------
 # General Configuration

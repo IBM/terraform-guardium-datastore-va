@@ -67,6 +67,9 @@ locals {
     azure_key_vault_config_name = var.azure_key_vault_config_name
     key_vault_name              = var.key_vault_name
     secret_name                 = var.secret_name
+    client_id                   = var.azure_client_id
+    tenant_id                   = var.azure_tenant_id
+    client_secret               = var.azure_client_secret
   })
   azure_mysql_config_json_decoded = jsondecode(local.azure_mysql_config)
   azure_mysql_config_json_encoded = jsonencode(local.azure_mysql_config)

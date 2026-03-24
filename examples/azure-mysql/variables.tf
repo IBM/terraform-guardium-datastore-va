@@ -146,6 +146,26 @@ variable "client_secret" {
 }
 
 #------------------------------------------------------------------------------
+# Azure Authentication Configuration
+#------------------------------------------------------------------------------
+
+variable "azure_client_id" {
+  description = "Azure Service Principal Client ID (Application ID) for authenticating to Azure MySQL"
+  type        = string
+}
+
+variable "azure_tenant_id" {
+  description = "Azure Tenant ID (Directory ID) for authenticating to Azure MySQL"
+  type        = string
+}
+
+variable "azure_client_secret" {
+  description = "Azure Service Principal Client Secret for authenticating to Azure MySQL"
+  type        = string
+  sensitive   = true
+}
+
+#------------------------------------------------------------------------------
 # Guardium Data Source Registration Configuration
 #------------------------------------------------------------------------------
 
