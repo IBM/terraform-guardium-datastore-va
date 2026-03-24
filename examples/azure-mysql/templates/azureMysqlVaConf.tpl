@@ -7,9 +7,7 @@
   "description": "${datasource_description}",
   "severity": "${severity_level}",
   "shared": "Not Shared",
-  "clientId": "${client_id}",
-  "tenantId": "${tenant_id}",
-  "clientSecret": "${client_secret}",
+  "connectionProperties": "{\"clientId\":\"${client_id}\",\"tenantId\":\"${tenant_id}\",\"clientSecret\":\"${client_secret}\"}",
 %{if use_ssl }
   "importServerSSLcert": ${import_server_ssl_cert ? 1 : 0},
   "useSSL": 1,
