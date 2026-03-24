@@ -7,7 +7,7 @@
   "description": "${description}",
   "severity": "${severity}",
   "savePassword": 1,
-  "useSSL": 0,
+  "useSSL": 1,
   "importServerSSLcert": 0,
   "useKerberos": 0,
   "useLDAP": 0,
