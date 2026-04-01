@@ -78,11 +78,11 @@ resource "azurerm_key_vault" "cosmos_credentials" {
 resource "azurerm_key_vault_secret" "cosmos_credentials" {
   name = local.secret_name
   value = jsonencode({
-    endpoint          = var.cosmos_account_endpoint
-    primary_key       = data.azurerm_cosmosdb_account.cosmos.primary_key
-    database_name     = var.database_name
-    cosmos_db_kind    = var.cosmos_db_kind
-    account_name      = var.cosmos_account_name
+    endpoint       = var.cosmos_account_endpoint
+    primary_key    = data.azurerm_cosmosdb_account.cosmos.primary_key
+    database_name  = var.database_name
+    cosmos_db_kind = var.cosmos_db_kind
+    account_name   = var.cosmos_account_name
   })
   key_vault_id = azurerm_key_vault.cosmos_credentials.id
 
