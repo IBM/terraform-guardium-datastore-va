@@ -34,13 +34,13 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │  PostgreSQL  │  │  MySQL       │  │SQL Server│  │DocumentDB│            │
 │   └──────────────┘  └──────────────┘  └──────────┘  └──────────┘            │
 │   ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐            │
-│   │ Neptune  │  │   RDS    │  │  Azure MySQL │  │  On-Prem     │            │
-│   │          │  │  Oracle  │  │  Flexible    │  │  MySQL       │            │
+│   │ Neptune  │  │   RDS    │  │  Azure MySQL │  │ Azure Cosmos │            │
+│   │          │  │  Oracle  │  │  Flexible    │  │      DB      │            │
 │   └──────────┘  └──────────┘  └──────────────┘  └──────────────┘            │
-│   ┌──────────────┐                                                           │
-│   │  On-Prem     │                                                           │
-│   │  PostgreSQL  │                                                           │
-│   └──────────────┘                                                           │
+│   ┌──────────────┐  ┌──────────────┐                                         │
+│   │  On-Prem     │  │  On-Prem     │                                         │
+│   │  MySQL       │  │  PostgreSQL  │                                         │
+│   └──────────────┘  └──────────────┘                                         │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
 │   • Configures IAM roles and policies (AWS)                                 │
@@ -77,13 +77,14 @@ This module provides automated configuration of datastores for vulnerability ass
    - For Neptune: Creates sqlguard user and configures permissions via Lambda
    - For Redshift: Creates VA users and grants system table access
    - For Azure MySQL Flexible Server: Creates sqlguard user via Azure Function with Key Vault integration
+   - For Azure Cosmos DB: Creates sqlguard user via Azure Function with Key Vault integration
    - For On-Premises databases (MySQL, PostgreSQL): Creates dedicated VA users with appropriate permissions
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
 4. **Ongoing Monitoring**: Guardium performs scheduled security assessments and generates compliance reports
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, Aurora MySQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift), Azure datastores (MySQL Flexible Server), and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, Aurora MySQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift), Azure datastores (MySQL Flexible Server, Cosmos DB), and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -100,7 +101,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-aurora-mysql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-aurora-mysql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server, azure-mysql, azure-cosmos
    ```
 
 3. **Configure variables**:
@@ -648,6 +649,8 @@ Complete working examples are provided for each supported datastore:
 - [AWS RDS Oracle with VA](./examples/aws-oracle) - Oracle (RDS/Autonomous) vulnerability assessment configuration
 - [AWS Neptune with VA](./examples/aws-neptune) - Neptune graph database vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
+- [Azure MySQL Flexible Server with VA](./examples/azure-mysql) - Azure MySQL vulnerability assessment configuration
+- [Azure Cosmos DB with VA](./examples/azure-cosmos) - Azure Cosmos DB vulnerability assessment configuration
 
 Each example includes:
 - Complete Terraform configuration
