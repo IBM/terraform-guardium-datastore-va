@@ -1,0 +1,128 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Azure Cosmos DB with VA Example - Variables
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+location            = "eastus"
+name_prefix         = "my-app"
+resource_group_name = "gdcosmos-cosmos-rg-g0qad6"
+
+#------------------------------------------------------------------------------
+# Network Configuration
+# 
+# To find your VNet name:
+# az network vnet list --resource-group <your-rg> --output table
+#------------------------------------------------------------------------------
+vnet_name                      = "gdcosmos-cosmos-vnet"
+function_subnet_address_prefix = "10.0.2.0/24"
+
+#------------------------------------------------------------------------------
+# Firewall Configuration
+# 
+# enable_public_access: Set to true for testing/demo, false for production (use Private Link)
+# guardium_ip_address: IP address of your Guardium server in CIDR format
+# 
+# To find your Guardium server's outbound IP (if behind NAT):
+# From Guardium server: curl ifconfig.me
+#------------------------------------------------------------------------------
+enable_public_access = true
+guardium_ip_address  = "203.0.113.10/32"
+
+#------------------------------------------------------------------------------
+# Azure Cosmos DB Configuration
+#
+# To find your Cosmos DB account:
+# az cosmosdb list --resource-group <your-rg> --output table
+#
+# To get the endpoint:
+# az cosmosdb show --name <account-name> --resource-group <your-rg> --query "documentEndpoint" -o tsv
+#
+# To get the primary key:
+# az cosmosdb keys list --name <account-name> --resource-group <your-rg> --query "primaryMasterKey" -o tsv
+#------------------------------------------------------------------------------
+cosmos_account_name      = "gdcosmos-cosmos-g0qad6"
+cosmos_endpoint          = "https://gdcosmos-cosmos-g0qad6.documents.azure.com:443/"
+cosmos_endpoint_hostname = "gdcosmos-cosmos-g0qad6.documents.azure.com"
+cosmos_primary_key       = "your-cosmos-primary-key-here"
+database_name            = "testdb"
+container_name           = "testcontainer"
+cosmos_port              = 443
+cosmos_username          = "cosmosdb"
+
+#------------------------------------------------------------------------------
+# Azure Authentication Configuration (Required for Cosmos DB)
+#
+# Service Principal credentials for Azure Resource Manager authentication
+# To create a Service Principal:
+# az ad sp create-for-rbac --name "guardium-cosmos-sp" --role "Cosmos DB Account Reader Role"
+#
+# Or get existing values:
+# az account show --query "{subscriptionId:id, tenantId:tenantId}" -o tsv
+#------------------------------------------------------------------------------
+azure_subscription_id = "00000000-0000-0000-0000-000000000000"
+azure_tenant_id       = "00000000-0000-0000-0000-000000000000"
+azure_client_id       = "00000000-0000-0000-0000-000000000000"
+azure_client_secret   = "your-azure-client-secret-here"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection Configuration
+#------------------------------------------------------------------------------
+gdp_server    = "guardium.example.com"
+gdp_port      = "8443"
+gdp_username  = "admin"
+gdp_password  = "YourGuardiumPassword"
+client_id     = "client2"
+client_secret = "your-client-secret-uuid"
+
+#------------------------------------------------------------------------------
+# Data Source Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "azure-cosmos-va"
+datasource_description = "Azure Cosmos DB data source onboarded via Terraform"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["your-email@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# SSL Configuration
+#------------------------------------------------------------------------------
+use_ssl                = true
+import_server_ssl_cert = true
+
+#------------------------------------------------------------------------------
+# External Password Management (Optional)
+# Leave empty if not using Azure Key Vault for password management
+#------------------------------------------------------------------------------
+use_external_password       = false
+external_password_type_name = ""
+azure_key_vault_config_name = ""
+key_vault_name              = ""
+secret_name                 = ""
+
+#------------------------------------------------------------------------------
+# Tags
+#------------------------------------------------------------------------------
+tags = {
+  Purpose     = "guardium-va-config"
+  Environment = "development"
+  Owner       = "your-email@example.com"
+}
