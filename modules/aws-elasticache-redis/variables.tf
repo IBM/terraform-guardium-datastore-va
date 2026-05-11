@@ -50,6 +50,12 @@ variable "aws_region" {
 }
 
 #----------------------------------------
+
+variable "aws_secrets_manager_config_name" {
+  description = "Name of the AWS Secrets Manager configuration in Guardium"
+  type        = string
+}
+
 # Datasource Configuration
 #----------------------------------------
 variable "datasource_name" {
