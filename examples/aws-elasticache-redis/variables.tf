@@ -1,3 +1,8 @@
+-e #
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # AWS ElastiCache Redis with Vulnerability Assessment Example - Variables
 
 #----------------------------------------
