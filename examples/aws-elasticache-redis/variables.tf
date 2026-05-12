@@ -1,4 +1,3 @@
--e #
 # Copyright IBM Corp. 2026
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -185,6 +184,12 @@ variable "auth_token" {
   type        = string
   default     = null
   sensitive   = true
+}
+
+variable "aws_secrets_manager_config_name" {
+  description = "Name of the AWS Secrets Manager configuration in Guardium (optional)"
+  type        = string
+  default     = ""
 }
 
 #----------------------------------------

@@ -1,4 +1,3 @@
--e #
 # Copyright IBM Corp. 2026
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -35,9 +34,10 @@ module "elasticache_redis_va" {
   severity_level         = var.severity_level
 
   # Security Configuration
-  enable_tls             = var.enable_tls
-  import_server_ssl_cert = var.import_server_ssl_cert
-  auth_token             = var.auth_token
+  enable_tls                      = var.enable_tls
+  import_server_ssl_cert          = var.import_server_ssl_cert
+  auth_token                      = var.auth_token
+  aws_secrets_manager_config_name = var.aws_secrets_manager_config_name
 
   # Tags
   tags = var.tags
