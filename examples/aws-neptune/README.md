@@ -93,7 +93,7 @@ terraform destroy
 
 ## Important Notes
 
-1. **Security**: 
+1. **Security**:
    - Store sensitive values (passwords, secrets) securely
    - Use AWS Secrets Manager or HashiCorp Vault for production
    - Ensure proper IAM roles and security groups
@@ -313,7 +313,7 @@ When reporting issues, provide:
    ```bash
    # Test Neptune connectivity
    telnet your-neptune-cluster.amazonaws.com 8182
-   
+
    # Test Guardium connectivity
    curl -k https://your-guardium-server:8443/api/v2/health
    ```

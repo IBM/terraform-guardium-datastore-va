@@ -90,7 +90,7 @@ This example will:
 
 ### 3. Guardium Data Protection
 
-**IMPORTANT: Guardium must be hosted in the same AWS account as DocumentDB** 
+**IMPORTANT: Guardium must be hosted in the same AWS account as DocumentDB**
 
 - Access to a Guardium Data Protection instance
 - Admin credentials for Guardium

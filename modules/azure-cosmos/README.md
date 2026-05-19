@@ -35,16 +35,16 @@ module "azure_cosmos_va" {
   resource_group_name     = "my-resource-group"
   location                = "eastus"
   name_prefix             = "guardium"
-  
+
   # Guardium Configuration
   enable_public_access = true
   guardium_hostname    = "guardium.example.com"
   guardium_ip_address  = "1.2.3.4/32"
-  
+
   # VNet Configuration
   vnet_name                      = "my-vnet"
   function_subnet_address_prefix = "10.0.2.0/24"
-  
+
   tags = {
     Environment = "production"
     Purpose     = "guardium-va"

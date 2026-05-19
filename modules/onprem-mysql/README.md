@@ -22,7 +22,7 @@ This Terraform module configures Vulnerability Assessment (VA) for on-premise My
 1. **MySQL Database**: An accessible on-premise MySQL database
    - **Supported Versions**: MySQL 5.7, 8.0, 8.4, 9.0, 9.1 (check your version with `SELECT VERSION();`)
    - **MySQL 9.x Users**: See [MySQL 9.6 Troubleshooting Guide](./MYSQL_9.6_TROUBLESHOOTING.md) for version-specific considerations
-   
+
 2. **Network Connectivity**: Guardium must be able to reach your MySQL database
 
 3. **MySQL Admin Access**: Database credentials with privileges to create users and grant permissions
@@ -38,7 +38,7 @@ This Terraform module configures Vulnerability Assessment (VA) for on-premise My
    ```bash
    # Check if mysql client is installed
    mysql --version
-   
+
    # Install if needed:
    # macOS: brew install mysql-client
    # Ubuntu: sudo apt-get install mysql-client

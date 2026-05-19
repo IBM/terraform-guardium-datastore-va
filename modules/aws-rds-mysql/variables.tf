@@ -297,4 +297,3 @@ variable "db_instance_directory" {
   type        = string
   default     = ""
 }
-

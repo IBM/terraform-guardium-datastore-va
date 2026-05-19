@@ -283,7 +283,7 @@ This indicates how critical this datasource is:
 ## 🛠️ Troubleshooting
 
 ### Problem: "Authentication failed"
-**Solution:** 
+**Solution:**
 - Verify your Guardium username and password
 - Check that your OAuth client_secret is correct
 - Ensure your Guardium server is accessible
