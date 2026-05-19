@@ -65,9 +65,9 @@ module "vpc_peering" {
 # Step 2: Create DocumentDB VA Configuration
 module "documentdb_va" {
   source = "../../modules/aws-rds-documentdb"
-  
+
   # ... DocumentDB configuration
-  
+
   depends_on = [module.vpc_peering]
 }
 ```
@@ -125,7 +125,7 @@ You only need to provide the VPC IDs!
    data "aws_vpc" "requester" {
      id = var.requester_vpc_id
    }
-   
+
    data "aws_route_tables" "requester" {
      vpc_id = var.requester_vpc_id
    }
