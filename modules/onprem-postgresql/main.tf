@@ -39,16 +39,16 @@ resource "terraform_data" "validate_sqlguard_password" {
       )
       error_message = <<-EOT
         ❌ ERROR: sqlguard_password does not meet PostgreSQL security best practices!
-        
+
         PostgreSQL recommends passwords to have:
           ✓ At least 8 characters
           ✓ At least one uppercase letter (A-Z)
           ✓ At least one lowercase letter (a-z)
           ✓ At least one number (0-9)
           ✓ At least one special character (!@#$%^&*)
-        
+
         Example strong password: SqlGuard@2024!Strong
-        
+
         Update terraform.tfvars:
           sqlguard_password = "SqlGuard@2024!Strong"
       EOT
@@ -63,12 +63,12 @@ resource "terraform_data" "validate_user_separation" {
       condition     = var.sqlguard_username != var.db_username
       error_message = <<-EOT
         ❌ ERROR: sqlguard_username cannot be the same as db_username!
-        
+
         The sqlguard user is for Guardium VA scanning (read-only privileges).
         The db_username is for administrative operations (superuser privileges).
-        
+
         These must be different users for security and least-privilege principles.
-        
+
         Update terraform.tfvars:
           db_username       = "terraform_admin"  # Admin user
           sqlguard_username = "sqlguard"         # VA scanning user
@@ -84,11 +84,11 @@ resource "terraform_data" "validate_ssl_config" {
       condition     = !var.use_ssl || var.ssl_mode != "disable"
       error_message = <<-EOT
         ⚠️  CONFIGURATION ERROR: SSL is enabled but ssl_mode is set to 'disable'!
-        
+
         For production environments with SSL, use:
           use_ssl  = true
           ssl_mode = "require"  # or "verify-ca" or "verify-full"
-        
+
         For development/testing without SSL:
           use_ssl  = false
           ssl_mode = "disable"
@@ -104,10 +104,10 @@ resource "terraform_data" "validate_port" {
       condition     = var.db_port > 0 && var.db_port <= 65535
       error_message = <<-EOT
         ❌ ERROR: Invalid port number!
-        
+
         Port must be between 1 and 65535.
         Standard PostgreSQL port is 5432.
-        
+
         Update terraform.tfvars:
           db_port = 5432
       EOT
@@ -122,12 +122,12 @@ resource "terraform_data" "validate_hostname" {
       condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$", var.db_host))
       error_message = <<-EOT
         ❌ ERROR: Invalid hostname format!
-        
+
         Hostname must:
           ✓ Start and end with alphanumeric characters
           ✓ Contain only letters, numbers, dots, and hyphens
           ✓ Not start or end with a dot or hyphen
-        
+
         Examples:
           ✓ api.rr1.cp.fyre.ibm.com
           ✓ postgres-server.example.com
@@ -176,7 +176,7 @@ resource "null_resource" "create_sqlguard_user" {
             END IF;
           END
           \$\$;
-          
+
           -- Create gdmmonitor group if it doesn't exist
           DO \$\$
           BEGIN
@@ -188,13 +188,13 @@ resource "null_resource" "create_sqlguard_user" {
             END IF;
           END
           \$\$;
-          
+
           -- Add sqlguard to gdmmonitor group
           ALTER GROUP gdmmonitor ADD USER ${var.sqlguard_username};
-          
+
           -- Grant required permissions for VA
           GRANT pg_read_all_settings TO gdmmonitor;
-          
+
           -- Grant CONNECT permission on database
           GRANT CONNECT ON DATABASE ${var.db_name} TO ${var.sqlguard_username};
         "
