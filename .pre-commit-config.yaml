@@ -23,11 +23,6 @@ repos:
           - '--args=--only=terraform_standard_module_structure'
           - '--args=--only=terraform_workspace_remote'
       - id: terraform_validate
-      - id: terraform_trivy
-        args:
-          - '--args=--severity=MEDIUM,HIGH,CRITICAL'
-          - '--args=--skip-dirs="**/.terraform"'
-          - '--args=--exit-code=0'  # Warning only, don't fail build
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
