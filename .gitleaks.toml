@@ -1,0 +1,10 @@
+title = "Gitleaks Configuration"
+
+[allowlist]
+description = "Allowlist for approved secrets and baseline files"
+paths = [
+  '''.secrets.baseline''',
+]
+regexes = [
+  '''hashed_secret''',
+]

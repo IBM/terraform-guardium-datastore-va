@@ -24,7 +24,7 @@ jobs:
       
       - name: Run Gitleaks Scan
         run: |
-          ./gitleaks detect --source . --verbose --exit-code 1
+          ./gitleaks detect --source . --config .gitleaks.toml --verbose --exit-code 1
 
   tfsec:
     name: tfsec Security Scan
