@@ -190,6 +190,10 @@ function_subnet_address_prefix = "10.0.2.0/24"
 db_username = "mysqladmin"
 db_password = "YourSecurePassword123!"
 
+# Azure Authentication (Required for datasource registration)
+api_token    = "your-azure-ad-client-secret"
+con_property = "tenantId=your-tenant-id,clientId=your-client-id,subscriptionId=your-subscription-id,resourceGroup=your-resource-group"
+
 # Guardium Configuration
 gdp_server   = "guardium.example.com"
 gdp_username = "admin"
@@ -208,6 +212,50 @@ additional_firewall_rules = {
     end_ip   = "10.255.255.255"
   }
 }
+```
+
+### Important: Azure Authentication Setup
+
+To register the Azure MySQL datasource with Guardium, you need to create an Azure AD application and obtain authentication credentials:
+
+#### Step-by-Step Azure AD Setup:
+
+1. **Create an Azure AD Application**:
+   ```bash
+   az ad app create --display-name "guardium-mysql-app"
+   ```
+   Note the `appId` from the output.
+
+2. **Create a Service Principal**:
+   ```bash
+   az ad sp create --id <appId-from-step-1>
+   ```
+
+3. **Create a Client Secret** (this is your `api_token`):
+   ```bash
+   az ad app credential reset --id <appId> --append
+   ```
+   Save the `password` value - this is your `api_token`.
+
+4. **Get Your Tenant ID**:
+   ```bash
+   az account show --query tenantId -o tsv
+   ```
+
+5. **Get Your Subscription ID**:
+   ```bash
+   az account show --query id -o tsv
+   ```
+
+6. **Construct the `con_property` value**:
+   ```
+   tenantId=<tenant-id>,clientId=<app-id>,subscriptionId=<subscription-id>,resourceGroup=<your-resource-group>
+   ```
+
+#### Example:
+```hcl
+api_token    = "your-azure-ad-client-secret-here"
+con_property = "tenantId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,clientId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,subscriptionId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,resourceGroup=your-resource-group-name"
 ```
 
 ### Step 2: Initialize Terraform

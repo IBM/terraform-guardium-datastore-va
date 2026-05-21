@@ -265,14 +265,31 @@ variable "secret_name" {
   default     = ""
 }
 
-# VA Configuration Outputs
+#------------------------------------------------------------------------------
+# Azure Authentication Configuration
+#------------------------------------------------------------------------------
+
+variable "api_token" {
+  description = "Azure API token for authentication (Azure AD application client secret)"
+  type        = string
+  sensitive   = true
+}
+
+variable "con_property" {
+  description = "Azure connection properties in format: tenantId=xxx,clientId=xxx,subscriptionId=xxx,resourceGroup=xxx"
+  type        = string
+}
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+
 variable "sqlguard_username" {
   description = "Username for the Guardium VA user"
   type        = string
   default     = "sqlguard"
 }
 
-# VA Configuration Outputs
 variable "sqlguard_password" {
   description = "Password for the Guardium VA user"
   type        = string
