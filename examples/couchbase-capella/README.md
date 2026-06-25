@@ -90,7 +90,7 @@ gdp_server                      = "guardium.example.com"
 gdp_username                    = "admin"
 gdp_password                    = "your-guardium-password" # pragma: allowlist secret
 client_secret                   = "your-client-secret" # pragma: allowlist secret
-aws_secrets_manager_config_name = "aws-prod"  # Must exist in Guardium
+aws_secrets_manager_config_name = "aws-prod"  # pragma: allowlist secret
 
 # VA User
 sqlguard_password = "your-sqlguard-password" # pragma: allowlist secret

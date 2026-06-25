@@ -98,9 +98,9 @@ This module supports two deployment modes for Guardium connectivity:
 ```hcl
 module "azure_postgresql_va" {
   source = "../../modules/azure-postgresql"
-  
+
   # ... other required variables ...
-  
+
   enable_public_access = false  # Default - no public access
   # guardium_hostname and postgresql_server_name not required
 }
@@ -127,9 +127,9 @@ module "azure_postgresql_va" {
 ```hcl
 module "azure_postgresql_va" {
   source = "../../modules/azure-postgresql"
-  
+
   # ... other required variables ...
-  
+
   # Enable public access mode
   enable_public_access    = true
   guardium_hostname       = "guardium.example.com"  # Resolved to IP automatically
@@ -263,7 +263,7 @@ See the [examples/azure-postgresql](../../examples/azure-postgresql) directory f
 1. **Corporate Network/Firewall Blocking Outbound PostgreSQL Connections**
    - Many corporate networks block outbound connections on port 5432
    - The Guardium server may be behind a corporate proxy or firewall
-   
+
    **Solution**: Add additional firewall rules for your corporate network range:
    ```hcl
    additional_firewall_rules = {
@@ -277,7 +277,7 @@ See the [examples/azure-postgresql](../../examples/azure-postgresql) directory f
 2. **Guardium Server Uses Different Outbound IP**
    - The `guardium_hostname` resolves to an internal IP (e.g., 9.46.196.79)
    - But the server uses a NAT gateway with a different public IP for outbound connections
-   
+
    **Solution**: Find the actual outbound IP and add it:
    ```hcl
    additional_firewall_rules = {
@@ -290,7 +290,7 @@ See the [examples/azure-postgresql](../../examples/azure-postgresql) directory f
 
 3. **DNS Resolution Issues**
    - The Guardium server cannot resolve the Azure PostgreSQL FQDN
-   
+
    **Solution**: Verify DNS resolution from Guardium server:
    ```bash
    nslookup your-postgresql-server.postgres.database.azure.com
@@ -298,7 +298,7 @@ See the [examples/azure-postgresql](../../examples/azure-postgresql) directory f
 
 4. **Temporary Workaround: Allow All IPs (Testing Only)**
    - **⚠️ WARNING**: This is insecure and should only be used temporarily for diagnosis
-   
+
    ```hcl
    additional_firewall_rules = {
      "TemporaryAllowAll" = {
@@ -307,7 +307,7 @@ See the [examples/azure-postgresql](../../examples/azure-postgresql) directory f
      }
    }
    ```
-   
+
    If this works, the issue is firewall-related. Find the correct IP range and restrict access.
 
 ### Function App Permission Errors

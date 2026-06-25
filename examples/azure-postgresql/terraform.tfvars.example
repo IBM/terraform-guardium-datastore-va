@@ -14,7 +14,7 @@ resource_group_name = "my-postgresql-rg"
 
 #------------------------------------------------------------------------------
 # Network Configuration
-# 
+#
 # To find your VNet name:
 # az network vnet list --resource-group <your-rg> --output table
 #------------------------------------------------------------------------------
@@ -23,10 +23,10 @@ function_subnet_address_prefix = "10.0.2.0/24"
 
 #------------------------------------------------------------------------------
 # Firewall Configuration
-# 
+#
 # enable_public_access: Set to true for testing/demo, false for production (use Private Link)
 # guardium_hostname: Hostname or IP of your Guardium server (will be resolved to IP)
-# 
+#
 # To find your Guardium server's outbound IP (if behind NAT):
 # From Guardium server: curl ifconfig.me
 #------------------------------------------------------------------------------

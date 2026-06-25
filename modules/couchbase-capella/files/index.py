@@ -50,14 +50,14 @@ def get_couchbase_credentials():
         )
 
         logger.debug(f"Starting credential request from Secrets Manager: {SECRETS_MANAGER_SECRET_ID}")
-        
+
         # Parse the secret JSON with validation
         try:
             secret = json.loads(get_secret_value_response['SecretString'])
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in secret: {e}")
             raise ValueError(f"Secret contains invalid JSON: {e}")
-        
+
         # Validate required fields
         required_fields = [
             'username', 'password', 'cluster_endpoint', 'rest_api_endpoint',
@@ -93,12 +93,12 @@ def verify_connection(credentials):
     try:
         endpoint = credentials['rest_api_endpoint']
         auth = HTTPBasicAuth(credentials['username'], credentials['password'])
-        
+
         logger.info(f"Verifying connection to Couchbase Capella at {endpoint}")
-        
+
         # Create session with retry logic
         session = get_session_with_retries()
-        
+
         # Test connection by getting cluster info
         response = session.get(
             f"{endpoint}/pools/default",
@@ -106,7 +106,7 @@ def verify_connection(credentials):
             verify=certifi.where(),
             timeout=30
         )
-        
+
         if response.status_code == 200:
             logger.info("Successfully connected to Couchbase Capella cluster")
             return True
@@ -114,7 +114,7 @@ def verify_connection(credentials):
             logger.error(f"Failed to connect to Couchbase Capella: HTTP {response.status_code}")
             # Don't log response.text as it may contain sensitive information
             return False
-            
+
     except requests.exceptions.RequestException as e:
         logger.error(f"Connection error to Couchbase Capella: {e}")
         return False
@@ -124,15 +124,15 @@ def get_user(credentials, username):
     try:
         endpoint = credentials['rest_api_endpoint']
         auth = HTTPBasicAuth(credentials['username'], credentials['password'])
-        
+
         # Sanitize username to prevent path traversal
         safe_username = quote(username, safe='')
-        
+
         logger.info(f"Checking if user exists (sanitized)")
-        
+
         # Create session with retry logic
         session = get_session_with_retries()
-        
+
         # Get user details
         response = session.get(
             f"{endpoint}/settings/rbac/users/local/{safe_username}",
@@ -140,7 +140,7 @@ def get_user(credentials, username):
             verify=certifi.where(),
             timeout=30
         )
-        
+
         if response.status_code == 200:
             logger.info(f"User exists")
             return response.json()
@@ -151,7 +151,7 @@ def get_user(credentials, username):
             logger.warning(f"Unexpected response when checking user: HTTP {response.status_code}")
             # Don't log response.text as it may contain sensitive information
             return None
-            
+
     except requests.exceptions.RequestException as e:
         logger.error(f"Error checking user existence: {e}")
         return None
@@ -160,22 +160,22 @@ def create_or_update_va_user(credentials):
     """Create or update the VA user in Couchbase Capella with appropriate permissions"""
     start_time = datetime.now()
     operation_details = []
-    
+
     try:
         endpoint = credentials['rest_api_endpoint']
         auth = HTTPBasicAuth(credentials['username'], credentials['password'])
         username = credentials['sqlguard_username']
         password = credentials['sqlguard_password']
         bucket_name = credentials['bucket_name']
-        
+
         # Sanitize username to prevent path traversal
         safe_username = quote(username, safe='')
-        
+
         logger.info(f"Configuring VA user for bucket '{bucket_name}'")
-        
+
         # Check if user exists
         existing_user = get_user(credentials, username)
-        
+
         # Define roles for VA user
         # Couchbase Capella roles for read-only access and query capabilities
         roles = [
@@ -183,24 +183,24 @@ def create_or_update_va_user(credentials):
             f"query_select[{bucket_name}]",     # Execute SELECT queries
             f"query_system_catalog",             # Access system catalog for metadata
         ]
-        
+
         # Prepare user data
         user_data = {
             'password': password,
             'roles': ','.join(roles),
             'name': f'Guardium VA User for {bucket_name}'
         }
-        
+
         if existing_user:
             logger.info(f"Updating existing VA user")
             operation = "updated"
         else:
             logger.info(f"Creating new VA user")
             operation = "created"
-        
+
         # Create session with retry logic
         session = get_session_with_retries()
-        
+
         # Create or update user via REST API
         response = session.put(
             f"{endpoint}/settings/rbac/users/local/{safe_username}",
@@ -209,11 +209,11 @@ def create_or_update_va_user(credentials):
             verify=certifi.where(),
             timeout=30
         )
-        
+
         if response.status_code in [200, 201]:
             logger.info(f"Successfully {operation} VA user")
             operation_details.append(f"Successfully {operation} VA user with roles: {', '.join(roles)}")
-            
+
             # Verify user creation/update
             verify_user = get_user(credentials, username)
             if verify_user:
@@ -222,10 +222,10 @@ def create_or_update_va_user(credentials):
             else:
                 logger.warning(f"Could not verify VA user after {operation}")
                 operation_details.append(f"Warning: Could not verify user after {operation}")
-            
+
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
-            
+
             return {
                 'success': True,
                 'message': f'VA user configuration completed successfully',
@@ -243,7 +243,7 @@ def create_or_update_va_user(credentials):
                 'error': f"Failed to {operation} VA user: HTTP {response.status_code}",
                 'operations': operation_details
             }
-            
+
     except requests.exceptions.RequestException as e:
         logger.error(f"Request error during VA user configuration: {e}")
         return {
@@ -264,11 +264,11 @@ def handler(event, context):
     logger.info("Starting Couchbase Capella VA configuration")
     logger.info(f"Event: {json.dumps(event)}")
     logger.info(f"Datasource Type: {DATASOURCE_TYPE}")
-    
+
     try:
         # Get credentials from Secrets Manager
         credentials = get_couchbase_credentials()
-        
+
         # Verify connection to Couchbase Capella
         if not verify_connection(credentials):
             return {
@@ -278,10 +278,10 @@ def handler(event, context):
                     'error': 'Failed to connect to Couchbase Capella cluster'
                 })
             }
-        
+
         # Configure VA user
         result = create_or_update_va_user(credentials)
-        
+
         if result['success']:
             logger.info("Couchbase Capella VA configuration completed successfully")
             return {
@@ -294,7 +294,7 @@ def handler(event, context):
                 'statusCode': 500,
                 'body': json.dumps(result)
             }
-            
+
     except Exception as e:
         logger.error(f"Unexpected error in Lambda handler: {e}")
         return {

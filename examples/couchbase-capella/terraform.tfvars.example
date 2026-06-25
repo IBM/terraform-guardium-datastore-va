@@ -115,13 +115,13 @@ secret_name                     = "guardium/couchbase-capella/credentials"  # pr
 
 # For CyberArk (Alternative):
 # use_external_password       = true  # MUST be true
-# external_password_type_name = "CyberArk"
+# external_password_type_name = "CyberArk" # pragma: allowlist secret
 # cyberark_config_name        = "cyberark-prod" # pragma: allowlist secret
 # cyberark_object_name        = "couchbase-credentials" # pragma: allowlist secret
 
 # For HashiCorp Vault (Alternative):
 # use_external_password       = true  # MUST be true
-# external_password_type_name = "HashiCorp Vault"
+# external_password_type_name = "HashiCorp Vault" # pragma: allowlist secret
 # hashicorp_config_name       = "vault-prod" # pragma: allowlist secret
 # hashicorp_path              = "secret/data/couchbase" # pragma: allowlist secret
 # hashicorp_role              = "guardium-role"

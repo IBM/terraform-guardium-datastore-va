@@ -62,7 +62,7 @@ db_password            = "<from-phase-1>"
 # New for VA
 name_prefix                    = "guardium-pg-va"
 function_subnet_address_prefix = "10.0.2.0/24"  # Must not overlap with Phase 1 subnets
-sqlguard_password              = "SecurePassword123!"
+sqlguard_password              = "SecurePassword123!" # pragma: allowlist secret
 
 # Guardium connection
 gdp_host     = "guardium.example.com"

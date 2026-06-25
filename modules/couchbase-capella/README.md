@@ -88,7 +88,7 @@ module "couchbase_capella_va_config" {
   admin_password    = data.terraform_remote_state.infrastructure.outputs.admin_password
   connection_string = data.terraform_remote_state.infrastructure.outputs.connection_string
   rest_api_endpoint = data.terraform_remote_state.infrastructure.outputs.rest_api_endpoint
-  
+
   # ... other variables
 }
 ```
