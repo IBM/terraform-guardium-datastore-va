@@ -319,7 +319,7 @@ az account set --subscription "SUBSCRIPTION_ID"
    ```bash
    # From Guardium server, check outbound IP
    curl ifconfig.me
-   
+
    # Add to terraform.tfvars
    additional_firewall_rules = {
      "AllowGuardiumOutbound" = {

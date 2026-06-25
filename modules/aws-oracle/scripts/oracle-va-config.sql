@@ -12,11 +12,11 @@
 -- This script creates a 'gdmmonitor' role required for Assessment on the Oracle autonomous services.
 --
 --
--- This script does not create a user.  You should grant the roles created in this script to any Oracle user(s) that you 
--- choose to perform security assessment scan.  If you choose to create a new user for this function, the syntax 
--- can be as simple as:  
+-- This script does not create a user.  You should grant the roles created in this script to any Oracle user(s) that you
+-- choose to perform security assessment scan.  If you choose to create a new user for this function, the syntax
+-- can be as simple as:
 --
---			create user <username> identified by some_Passw0rd;  
+--			create user <username> identified by some_Passw0rd;
 --                      grant connect to <username>;
 --
 --  To run this script using Oracle SQL Developer:
@@ -96,9 +96,9 @@ begin
 	execute immediate 'create role GDMMONITOR';
 	dbms_output.put_line('==> Granting CONNECT to GDMMONITOR');
 	execute immediate 'grant CONNECT to GDMMONITOR';
-	dbms_output.put_line('==> Granting SELECT_CATALOG_ROLE to GDMMONITOR');	
+	dbms_output.put_line('==> Granting SELECT_CATALOG_ROLE to GDMMONITOR');
   	execute immediate 'grant SELECT_CATALOG_ROLE to GDMMONITOR';
-  
+
   	-- Grant READ on DBA_USERS_WITH_DEFPWD if it exists
 	begin
 		select 1 into objectExists
@@ -168,7 +168,7 @@ begin
 	end if;
 
 
-	
+
 	-- Grant the user password validation function
 	select LIMIT bulk collect into pwVerifyFuns
 	from DBA_PROFILES

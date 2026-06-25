@@ -200,5 +200,3 @@ resource "gdp-middleware-helper_execute_aws_lambda_function" "invoke_lambda" {
     aws_lambda_function.va_config_lambda,
   ]
 }
-
-

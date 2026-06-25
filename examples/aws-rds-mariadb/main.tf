@@ -88,4 +88,3 @@ module "mariadb_va_config" {
   notification_emails   = var.notification_emails
   notification_severity = var.notification_severity
 }
-

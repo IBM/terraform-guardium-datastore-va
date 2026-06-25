@@ -12,7 +12,7 @@
 --
 -- There is no need to run this script but, in the PostgresSQL datasource connection, the logged in user must be 'postgres'.
 --
--- 
+--
 --===============================  For PostgreSQL 10.x or above  ==============================
 --
 --
@@ -35,7 +35,7 @@
 --	    ENCRYPTED PASSWORD 'your_password_here'
 --	    NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE;
 --
--- 2).  When running this script, you must be connected as the postgres user or as a user with superuser privilege. 
+-- 2).  When running this script, you must be connected as the postgres user or as a user with superuser privilege.
 --      You must be connected to the actual database named 'postgres'
 --
 -- ------------------------------
@@ -43,7 +43,7 @@
 -- ------------------------------
 -- Nothing to do.
 --
---  
+--
 -- ------------------------------
 -- User/Password to use
 -- ------------------------------
@@ -52,12 +52,12 @@
 --
 -- 20200515 : GRANT pg_read_all_settings TO sqlguard.  Require for new configuration tests
 -- 20220215 : grant SELECT ON pg_authid privilege
--- 20240620 : user must create login user with CONNECT permission 
+-- 20240620 : user must create login user with CONNECT permission
 -- 20240709 : commnet out pg_authid line, no longer in use
 --===================================================================================
 
 CREATE GROUP gdmmonitor;
-COMMIT; 
+COMMIT;
 ALTER GROUP gdmmonitor ADD USER sqlguard;
 GRANT pg_read_all_settings TO gdmmonitor;
 -- GRANT SELECT ON pg_authid TO gdmmonitor;

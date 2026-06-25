@@ -466,7 +466,7 @@ After running `terraform apply`, you **MUST** complete the Azure authentication 
    - ✅ Import server ssl certificate: Checked (if needed)
 
 5. **Configure Authentication Section** (MANUAL - CRITICAL STEP)
-   
+
    Scroll down to the **"Authentication"** section and fill in these fields:
 
    ```
@@ -484,9 +484,9 @@ After running `terraform apply`, you **MUST** complete the Azure authentication 
    - These values are from your `terraform.tfvars` file
 
 6. **Click "Advanced" Tab** (Optional but Recommended)
-   
+
    Add additional Azure authentication parameters:
-   
+
    ```
    Subscription ID: 85de16ef-7645-417d-acff-f5bee9c2e45e
    Tenant ID: 32bfacf3-8eb1-498d-b7d9-6f567cf065cd

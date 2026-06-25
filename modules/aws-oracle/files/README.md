@@ -74,7 +74,7 @@ The secret should contain:
 
 1. **Retrieve Credentials**: Gets Oracle admin and sqlguard credentials from Secrets Manager
 2. **Connect to Oracle**: Uses `oracledb` in thin mode (pure Python, no client libraries needed)
-3. **Create gdmmonitor Role**: 
+3. **Create gdmmonitor Role**:
    - Drops existing role if present (preserving members)
    - Creates new role with required privileges
    - Grants READ on system tables

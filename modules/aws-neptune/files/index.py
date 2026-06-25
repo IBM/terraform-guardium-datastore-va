@@ -70,14 +70,14 @@ def get_iam_token(endpoint, port, region):
     try:
         session = boto3.Session()
         credentials = session.get_credentials()
-        
+
         # Create the request to sign
         url = f"https://{endpoint}:{port}/"
         request = AWSRequest(method='GET', url=url)
-        
+
         # Sign the request with SigV4
         SigV4Auth(credentials, 'neptune-db', region).add_auth(request)
-        
+
         # Extract the authorization header
         return request.headers.get('Authorization', '')
     except Exception as e:
@@ -89,10 +89,10 @@ def connect_to_neptune(credentials):
     try:
         # Neptune uses WebSocket connection for Gremlin
         neptune_endpoint = f"wss://{credentials['endpoint']}:{credentials['port']}/gremlin"
-        
+
         logger.info(f"Connecting to Neptune at {neptune_endpoint}")
         logger.info(f"Using IAM authentication: {USE_IAM_AUTH}")
-        
+
         # Create Gremlin client with appropriate authentication
         if USE_IAM_AUTH:
             # For IAM authentication, Neptune uses IAM database authentication
@@ -113,7 +113,7 @@ def connect_to_neptune(credentials):
                 password=credentials.get('password'),
                 message_serializer=serializer.GraphSONSerializersV2d0()
             )
-        
+
         logger.info("Successfully connected to Neptune")
         return gremlin_client
     except Exception as e:
@@ -122,28 +122,28 @@ def connect_to_neptune(credentials):
 
 def configure_va_user(gremlin_client, credentials):
     """Configure VA user in Neptune
-    
+
     Note: Neptune is a graph database and doesn't have traditional SQL users.
     This function creates metadata about the VA configuration that can be used
     by Guardium for vulnerability assessment.
     """
     start_time = datetime.now()
     operation_details = []
-    
+
     try:
         username = credentials['sqlguard_username']
-        
+
         logger.info(f"Configuring VA metadata for user {username}")
-        
+
         # Neptune doesn't have traditional user management like SQL databases
         # Instead, we'll create a vertex to store VA configuration metadata
         # This can be used by Guardium to track VA setup
-        
+
         # Check if VA config vertex exists
         check_query = f"g.V().hasLabel('va_config').has('username', '{username}').count()"
         result = gremlin_client.submit(check_query).all().result()
         exists = result[0] > 0
-        
+
         if not exists:
             logger.info(f"Creating VA configuration metadata for {username}")
             create_query = f"""
@@ -164,15 +164,15 @@ def configure_va_user(gremlin_client, credentials):
             """
             gremlin_client.submit(update_query).all().result()
             operation_details.append(f"Updated VA configuration metadata for {username}")
-        
+
         # Verify the configuration
         verify_query = f"g.V().hasLabel('va_config').has('username', '{username}').valueMap()"
         config = gremlin_client.submit(verify_query).all().result()
         logger.info(f"VA configuration verified: {config}")
-        
+
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
-        
+
         return {
             'success': True,
             'message': 'VA configuration completed successfully',
@@ -180,7 +180,7 @@ def configure_va_user(gremlin_client, credentials):
             'duration_seconds': duration,
             'timestamp': datetime.utcnow().isoformat()
         }
-        
+
     except GremlinServerError as e:
         logger.error(f"Gremlin server error during VA configuration: {e}")
         return {
@@ -200,11 +200,11 @@ def handler(event, context):
     """Lambda handler function"""
     logger.info("Starting Neptune VA configuration")
     logger.info(f"Event: {json.dumps(event)}")
-    
+
     try:
         # Get credentials from Secrets Manager
         credentials = get_neptune_credentials()
-        
+
         # Connect to Neptune
         gremlin_client = connect_to_neptune(credentials)
         if not gremlin_client:
@@ -215,13 +215,13 @@ def handler(event, context):
                     'error': 'Failed to connect to Neptune'
                 })
             }
-        
+
         # Configure VA user
         result = configure_va_user(gremlin_client, credentials)
-        
+
         # Close the connection
         gremlin_client.close()
-        
+
         if result['success']:
             logger.info("Neptune VA configuration completed successfully")
             return {
@@ -234,7 +234,7 @@ def handler(event, context):
                 'statusCode': 500,
                 'body': json.dumps(result)
             }
-            
+
     except Exception as e:
         logger.error(f"Unexpected error in Lambda handler: {e}")
         return {

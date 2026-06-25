@@ -87,9 +87,9 @@ This module supports two deployment modes for Guardium connectivity:
 ```hcl
 module "azure_mysql_va" {
   source = "../../modules/azure-mysql"
-  
+
   # ... other required variables ...
-  
+
   enable_public_access = false  # Default - no public access
   # guardium_hostname and mysql_server_name not required
 }
@@ -116,9 +116,9 @@ module "azure_mysql_va" {
 ```hcl
 module "azure_mysql_va" {
   source = "../../modules/azure-mysql"
-  
+
   # ... other required variables ...
-  
+
   # Enable public access mode
   enable_public_access = true
   guardium_hostname    = "guardium.example.com"  # Resolved to IP automatically
@@ -326,7 +326,7 @@ module "azure_mysql_va_config" {
 1. **Corporate Network/Firewall Blocking Outbound MySQL Connections**
    - Many corporate networks block outbound connections on port 3306
    - The Guardium server may be behind a corporate proxy or firewall
-   
+
    **Solution**: Add additional firewall rules for your corporate network range:
    ```hcl
    additional_firewall_rules = {
@@ -340,7 +340,7 @@ module "azure_mysql_va_config" {
 2. **Guardium Server Uses Different Outbound IP**
    - The `guardium_hostname` resolves to an internal IP (e.g., 9.46.196.79)
    - But the server uses a NAT gateway with a different public IP for outbound connections
-   
+
    **Solution**: Find the actual outbound IP and add it:
    ```hcl
    additional_firewall_rules = {
@@ -353,7 +353,7 @@ module "azure_mysql_va_config" {
 
 3. **DNS Resolution Issues**
    - The Guardium server cannot resolve the Azure MySQL FQDN
-   
+
    **Solution**: Verify DNS resolution from Guardium server:
    ```bash
    nslookup your-mysql-server.mysql.database.azure.com
@@ -361,7 +361,7 @@ module "azure_mysql_va_config" {
 
 4. **Temporary Workaround: Allow All IPs (Testing Only)**
    - **⚠️ WARNING**: This is insecure and should only be used temporarily for diagnosis
-   
+
    ```hcl
    additional_firewall_rules = {
      "TemporaryAllowAll" = {
@@ -370,7 +370,7 @@ module "azure_mysql_va_config" {
      }
    }
    ```
-   
+
    If this works, the issue is firewall-related. Find the correct IP range and restrict access.
 
 ### Function App Permission Errors

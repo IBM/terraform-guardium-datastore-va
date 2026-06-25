@@ -335,7 +335,7 @@ This separation follows security best practices - Guardium never needs your mast
 ## 🛠️ Troubleshooting
 
 ### Problem: "Lambda cannot connect to database"
-**Solution:** 
+**Solution:**
 - Check security group rules: `aws ec2 describe-security-groups --group-ids sg-xxxxx`
 - Ensure inbound rule allows traffic from Lambda security group on port 5432
 - Verify Lambda subnets have route to database subnets
