@@ -15,6 +15,7 @@ output "datasource_name" {
 output "datasource_payload" {
   description = "JSON payload used for Guardium datasource registration"
   value       = module.elasticache_redis_va.datasource_payload
+  sensitive   = true
 }
 
 #----------------------------------------

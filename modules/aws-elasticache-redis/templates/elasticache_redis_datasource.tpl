@@ -12,7 +12,7 @@
   "useSSL": ${enable_tls ? 1 : 0},
   "importServerSSLcert": ${import_server_ssl_cert ? 1 : 0},
   "region": "${aws_region}",
-  "awsSecretsManagerConfigName": "${aws_secrets_manager_config_name}",
-  "useKerberos": false,
+  %{if aws_secrets_manager_config_name != ""~}"awsSecretsManagerConfigName": "${aws_secrets_manager_config_name}",
+  %{endif~}"useKerberos": false,
   "useLDAP": false
 }
