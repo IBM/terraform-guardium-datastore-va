@@ -131,7 +131,7 @@ GRANT SELECT ON pg_catalog.pg_database TO sqlguard;
 
 PostgreSQL connection uses the following format:
 ```
-postgresql://username:password@hostname:5432/database?sslmode=require
+postgresql://username:password@hostname:5432/database?sslmode=require # pragma: allowlist secret
 ```
 
 ### Differences from MySQL

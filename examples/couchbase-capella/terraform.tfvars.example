@@ -18,7 +18,7 @@ tags = {
 cluster_endpoint  = "cb.abc123.cloud.couchbase.com"
 bucket_name       = "production-bucket"
 admin_username    = "admin"
-admin_password    = "your-couchbase-admin-password"  # Use a secure password
+admin_password    = "your-couchbase-admin-password"  # pragma: allowlist secret
 connection_string = "couchbases://cb.abc123.cloud.couchbase.com"
 rest_api_endpoint = "https://cb.abc123.cloud.couchbase.com:18091"
 cluster_port      = 18091
@@ -37,7 +37,7 @@ datasource_database = ""
 #   5. Save with a memorable name (e.g., "aws-prod", "aws-dev")
 #   6. Use that exact name below (case-sensitive)
 #------------------------------------------------------------------------------
-aws_secrets_manager_config_name = "your-aws-secrets-manager-config-name"  # Name of existing AWS Secrets Manager config in Guardium (e.g., "aws-prod")
+aws_secrets_manager_config_name = "your-aws-secrets-manager-config-name"  # pragma: allowlist secret
 
 #------------------------------------------------------------------------------
 # Network Configuration
@@ -53,11 +53,11 @@ subnet_ids = ["subnet-xxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyy"]
 gdp_server   = "guardium.example.com"
 gdp_port     = "8443"
 gdp_username = "admin"
-gdp_password = "your-guardium-password"  # Use a secure password
+gdp_password = "your-guardium-password"  # pragma: allowlist secret
 
 # OAuth client credentials (generated via: grdapi register_oauth_client client_id=client1 grant_types=password)
 client_id     = "client1"
-client_secret = "your-client-secret"
+client_secret = "your-client-secret" # pragma: allowlist secret
 
 #------------------------------------------------------------------------------
 # Data Source Registration
@@ -71,7 +71,7 @@ severity_level         = "MED"
 # VA User Configuration
 #------------------------------------------------------------------------------
 sqlguard_username = "sqlguard"
-sqlguard_password = "your-sqlguard-password"  # Use a secure password
+sqlguard_password = "your-sqlguard-password"  # pragma: allowlist secret
 
 #------------------------------------------------------------------------------
 # Optional: Guardium Hostname
@@ -111,19 +111,19 @@ shared_datasource      = "Not Shared"
 use_external_password           = true  # MUST be true when using AWS Secrets Manager
 # aws_secrets_manager_config_name is already set above
 region                          = "us-east-1"  # AWS region where secret is stored
-secret_name                     = "guardium/couchbase-capella/credentials"  # Secret name in AWS Secrets Manager
+secret_name                     = "guardium/couchbase-capella/credentials"  # pragma: allowlist secret
 
 # For CyberArk (Alternative):
 # use_external_password       = true  # MUST be true
 # external_password_type_name = "CyberArk"
-# cyberark_config_name        = "cyberark-prod"
-# cyberark_object_name        = "couchbase-credentials"
+# cyberark_config_name        = "cyberark-prod" # pragma: allowlist secret
+# cyberark_object_name        = "couchbase-credentials" # pragma: allowlist secret
 
 # For HashiCorp Vault (Alternative):
 # use_external_password       = true  # MUST be true
 # external_password_type_name = "HashiCorp Vault"
-# hashicorp_config_name       = "vault-prod"
-# hashicorp_path              = "secret/data/couchbase"
+# hashicorp_config_name       = "vault-prod" # pragma: allowlist secret
+# hashicorp_path              = "secret/data/couchbase" # pragma: allowlist secret
 # hashicorp_role              = "guardium-role"
 
 # If NOT using external password (store in Guardium):

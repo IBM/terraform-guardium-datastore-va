@@ -1,0 +1,84 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+output "function_app_name" {
+  description = "Name of the Azure Function App"
+  value       = module.azure_postgresql_va_config.function_app_name
+}
+
+output "function_app_id" {
+  description = "ID of the Azure Function App"
+  value       = module.azure_postgresql_va_config.function_app_id
+}
+
+output "function_app_default_hostname" {
+  description = "Default hostname of the Azure Function App"
+  value       = module.azure_postgresql_va_config.function_app_default_hostname
+}
+
+output "key_vault_name" {
+  description = "Name of the Key Vault"
+  value       = module.azure_postgresql_va_config.key_vault_name
+}
+
+output "key_vault_id" {
+  description = "ID of the Key Vault"
+  value       = module.azure_postgresql_va_config.key_vault_id
+}
+
+output "sqlguard_username" {
+  description = "Username for the Guardium VA user"
+  value       = module.azure_postgresql_va_config.sqlguard_username
+}
+
+output "va_config_completed" {
+  description = "Indicates that VA configuration infrastructure is deployed"
+  value       = module.azure_postgresql_va_config.va_config_completed
+}
+
+output "guardium_resolved_ip" {
+  description = "Resolved IP address of the Guardium server (added to PostgreSQL firewall)"
+  value       = module.azure_postgresql_va_config.guardium_resolved_ip
+}
+
+output "firewall_rules_created" {
+  description = "Indicates that firewall rules have been created for Guardium access"
+  value       = module.azure_postgresql_va_config.firewall_rules_created
+}
+
+output "next_steps" {
+  description = "Next steps for completing the VA configuration"
+  value       = <<-EOT
+    VA infrastructure deployed successfully!
+    
+    Next steps:
+    1. Wait 5-10 minutes for Function App deployment to complete
+    2. Get function key:
+       az functionapp keys list --resource-group ${var.resource_group_name} --name ${module.azure_postgresql_va_config.function_app_name} --query "functionKeys.default" -o tsv
+    3. Invoke function to create sqlguard user:
+       curl -X POST "https://${module.azure_postgresql_va_config.function_app_default_hostname}/api/PostgreSQLVAConfig?code=<key>" -H "Content-Type: application/json" -d '{}'
+    4. Datasource automatically registered in Guardium (if enable_vulnerability_assessment = true)
+    5. VA scans scheduled according to assessment_schedule configuration
+  EOT
+}
+
+#------------------------------------------------------------------------------
+# GDP Connection Outputs
+#------------------------------------------------------------------------------
+
+output "datasource_id" {
+  description = "ID of the datasource registered in Guardium"
+  value       = var.enable_vulnerability_assessment ? module.azure_postgresql_gdp_connection[0].datasource_id : null
+}
+
+output "datasource_registered" {
+  description = "Indicates whether the datasource was successfully registered in Guardium"
+  value       = var.enable_vulnerability_assessment ? true : false
+}
+
+output "va_schedule_configured" {
+  description = "Indicates whether VA scanning schedule was configured"
+  value       = var.enable_vulnerability_assessment ? true : false
+}

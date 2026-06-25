@@ -224,7 +224,7 @@ The function:
 
 Example permissions for sqlguard user:
 ```sql
-CREATE USER sqlguard WITH PASSWORD 'password';
+CREATE USER sqlguard WITH PASSWORD 'password'; # pragma: allowlist secret
 GRANT CONNECT ON DATABASE mydatabase TO sqlguard;
 GRANT USAGE ON SCHEMA public TO sqlguard;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO sqlguard;

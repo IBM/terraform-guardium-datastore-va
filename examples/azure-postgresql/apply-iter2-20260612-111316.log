@@ -1,0 +1,113 @@
+[0m[1mmodule.azure_postgresql_va_config.data.azurerm_client_config.current: Reading...[0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_service_plan.function_plan: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/serverFarms/guardium-test-postgresql-va-plan][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_subnet.function_subnet: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Network/virtualNetworks/guardium-test-postgresql-vnet/subnets/guardium-test-function-subnet][0m
+[0m[1mmodule.azure_postgresql_va_config.data.azurerm_client_config.current: Read complete after 0s [id=Y2xpZW50Q29uZmlncy9jbGllbnRJZD0wNGIwNzc5NS04ZGRiLTQ2MWEtYmJlZS0wMmY5ZTFiZjdiNDY7b2JqZWN0SWQ9ZjNiMDgyMTYtZjE5NS00NWFiLTg5NzQtZjUzYTNmZGFhNzcyO3N1YnNjcmlwdGlvbklkPTg1ZGUxNmVmLTc2NDUtNDE3ZC1hY2ZmLWY1YmVlOWMyZTQ1ZTt0ZW5hbnRJZD0zMmJmYWNmMy04ZWIxLTQ5OGQtYjdkOS02ZjU2N2NmMDY1Y2Q=][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_key_vault.postgresql_credentials: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.KeyVault/vaults/guardium-test-kv][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_storage_account.function_storage: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Storage/storageAccounts/guardiumtestpostgresqlva][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_key_vault_secret.postgresql_credentials: Refreshing state... [id=https://guardium-test-kv.vault.azure.net/secrets/guardium-test-azure-postgresql-va-password/0009ec48fcb3409581c33db9aa55613b][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/sites/guardium-test-postgresql-va-func][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_key_vault_access_policy.function_access: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.KeyVault/vaults/guardium-test-kv/objectId/0a4c3a8a-a3d1-4dd7-a025-6fee3c09fee9][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_app_service_virtual_network_swift_connection.function_vnet_integration: Refreshing state... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/sites/guardium-test-postgresql-va-func/config/virtualNetwork][0m
+[0m[1mmodule.azure_postgresql_va_config.null_resource.deploy_function: Refreshing state... [id=8669493656880994659][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+  [33m~[0m update in-place[0m
+ [36m<=[0m read (data resources)[0m
+
+Terraform will perform the following actions:
+
+[1m  # module.azure_postgresql_gdp_connection[0].data.guardium-data-protection_authentication.access_token[0m will be read during apply
+  # (depends on a resource or a module with changes pending)
+[0m [36m<=[0m[0m data "guardium-data-protection_authentication" "access_token" {
+      [32m+[0m[0m access_token  = (sensitive value)
+      [32m+[0m[0m client_id     = "client2"
+      [32m+[0m[0m client_secret = (sensitive value)
+      [32m+[0m[0m password      = (sensitive value)
+      [32m+[0m[0m username      = "admin"
+    }
+
+[1m  # module.azure_postgresql_gdp_connection[0].guardium-data-protection_register_va_datasource.register_va_datasource[0m will be created
+[0m  [32m+[0m[0m resource "guardium-data-protection_register_va_datasource" "register_va_datasource" {
+      [32m+[0m[0m access_token         = (sensitive value)
+      [32m+[0m[0m id                   = (known after apply)
+      [32m+[0m[0m last_registered_time = (known after apply)
+      [32m+[0m[0m payload              = (sensitive value)
+    }
+
+[1m  # module.azure_postgresql_va_config.azurerm_key_vault_access_policy.function_access[0m will be created
+[0m  [32m+[0m[0m resource "azurerm_key_vault_access_policy" "function_access" {
+      [32m+[0m[0m id                 = (known after apply)
+      [32m+[0m[0m key_vault_id       = "/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.KeyVault/vaults/guardium-test-kv"
+      [32m+[0m[0m object_id          = "0a4c3a8a-a3d1-4dd7-a025-6fee3c09fee9"
+      [32m+[0m[0m secret_permissions = [
+          [32m+[0m[0m "Get",
+          [32m+[0m[0m "List",
+        ]
+      [32m+[0m[0m tenant_id          = "32bfacf3-8eb1-498d-b7d9-6f567cf065cd"
+    }
+
+[1m  # module.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function[0m will be updated in-place
+[0m  [33m~[0m[0m resource "azurerm_linux_function_app" "va_config_function" {
+        id                                             = "/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/sites/guardium-test-postgresql-va-func"
+        name                                           = "guardium-test-postgresql-va-func"
+        tags                                           = {
+            "Environment"   = "development"
+            "GeneratedFrom" = "Phase1"
+            "ManagedBy"     = "terraform-rr-agent"
+            "Phase"         = "2"
+            "Purpose"       = "guardium-va-config"
+        }
+      [31m-[0m[0m virtual_network_subnet_id                      = "/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Network/virtualNetworks/guardium-test-postgresql-vnet/subnets/guardium-test-function-subnet" [90m-> null[0m[0m
+        [90m# (31 unchanged attributes hidden)[0m[0m
+
+        [90m# (2 unchanged blocks hidden)[0m[0m
+    }
+
+[1mPlan:[0m [0m2 to add, 1 to change, 0 to destroy.
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Modifying... [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/sites/guardium-test-postgresql-va-func][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 00m10s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 00m20s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 00m30s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 00m40s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 00m50s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 01m00s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 01m10s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Still modifying... [id=/subscriptions/85de16ef-7645-417d-acff-...sites/guardium-test-postgresql-va-func, 01m20s elapsed][0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_linux_function_app.va_config_function: Modifications complete after 1m24s [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/sites/guardium-test-postgresql-va-func][0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_key_vault_access_policy.function_access: Creating...[0m[0m
+[0m[1mmodule.azure_postgresql_va_config.azurerm_key_vault_access_policy.function_access: Creation complete after 6s [id=/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.KeyVault/vaults/guardium-test-kv/objectId/0a4c3a8a-a3d1-4dd7-a025-6fee3c09fee9][0m
+[0m[1mmodule.azure_postgresql_gdp_connection[0].data.guardium-data-protection_authentication.access_token: Reading...[0m[0m
+[0m[1mmodule.azure_postgresql_gdp_connection[0].data.guardium-data-protection_authentication.access_token: Read complete after 1s[0m
+[0m[1mmodule.azure_postgresql_gdp_connection[0].guardium-data-protection_register_va_datasource.register_va_datasource: Creating...[0m[0m
+[0m[1mmodule.azure_postgresql_gdp_connection[0].guardium-data-protection_register_va_datasource.register_va_datasource: Creation complete after 1s [id="{\n  \"name\": \"azure-postgresql-va\",\n  \"type\": \"Azure PostgreSQL\",\n  \"host\": \"guardium-test-postgresql-clbr4l.postgres.database.azure.com\",\n  \"port\": 5432,\n  \"application\": \"Security Assessment\",\n  \"description\": \"Azure PostgreSQL data source onboarded via Terraform\",\n  \"severity\": \"MED\",\n  \"dbName\": \"postgresdb\",\n  \"user\": \"sqlguard\",\n  \"password\": \"SqlGuard#Pass123!\",\n  \"savePassword\": 1,\n  \"useKerberos\": 0,\n  \"useLDAP\": 0,\n  \"useSSL\": 1,\n  \"importServerSSLcert\": 1,\n  \"useExternalPassword\": 0\n}\n"ã°ÄB˜üšûôÈ™o¹$'®Aäd›“L¤•™xR¸U-2026-06-12T11:15:29-04:00][0m
+[0m[1m[32m
+Apply complete! Resources: 2 added, 1 changed, 0 destroyed.[0m
+[0m[1m[32m
+Outputs:
+
+[0mdatasource_registered = true
+firewall_rules_created = "Public access disabled - Guardium must connect via Private Link/VPN"
+function_app_default_hostname = "guardium-test-postgresql-va-func.azurewebsites.net"
+function_app_id = "/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.Web/sites/guardium-test-postgresql-va-func"
+function_app_name = "guardium-test-postgresql-va-func"
+guardium_resolved_ip = "N/A - Public access disabled"
+key_vault_id = "/subscriptions/85de16ef-7645-417d-acff-f5bee9c2e45e/resourceGroups/guardium-test-postgresql-rg-clbr4l/providers/Microsoft.KeyVault/vaults/guardium-test-kv"
+key_vault_name = "guardium-test-kv"
+next_steps = <<EOT
+VA infrastructure deployed successfully!
+    
+Next steps:
+1. Wait 5-10 minutes for Function App deployment to complete
+2. Get function key:
+   az functionapp keys list --resource-group guardium-test-postgresql-rg-clbr4l --name guardium-test-postgresql-va-func --query "functionKeys.default" -o tsv
+3. Invoke function to create sqlguard user:
+   curl -X POST "https://guardium-test-postgresql-va-func.azurewebsites.net/api/PostgreSQLVAConfig?code=<key>" -H "Content-Type: application/json" -d '{}'
+4. Datasource automatically registered in Guardium (if enable_vulnerability_assessment = true)
+5. VA scans scheduled according to assessment_schedule configuration
+
+EOT
+sqlguard_username = "sqlguard"
+va_config_completed = "Azure Function infrastructure created. Function code deployment required."
+va_schedule_configured = true

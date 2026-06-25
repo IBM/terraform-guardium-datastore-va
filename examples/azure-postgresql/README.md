@@ -67,7 +67,7 @@ sqlguard_password              = "SecurePassword123!"
 # Guardium connection
 gdp_host     = "guardium.example.com"
 gdp_username = "admin"
-gdp_password = "<your-guardium-password>"
+gdp_password = "<your-guardium-password>" # pragma: allowlist secret
 ```
 
 ### Step 3: Initialize and Apply

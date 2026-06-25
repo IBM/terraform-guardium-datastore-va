@@ -1,0 +1,56 @@
+[31mâ•·[0m[0m
+[31mâ”‚[0m [0m[1m[31mError: [0m[0m[1mInconsistent dependency lock file[0m
+[31mâ”‚[0m [0m
+[31mâ”‚[0m [0m[0mThe following dependency selections recorded in the lock file are
+[31mâ”‚[0m [0minconsistent with the current configuration:
+[31mâ”‚[0m [0m  - provider registry.terraform.io/hashicorp/aws: required by this configuration but no version is selected
+[31mâ”‚[0m [0m
+[31mâ”‚[0m [0mTo update the locked dependency selections to match a changed
+[31mâ”‚[0m [0mconfiguration, run:
+[31mâ”‚[0m [0m  terraform init -upgrade
+[31mâ•µ[0m[0m
+[0m[1mmodule.elasticache_redis_gdp_connection.data.guardium-data-protection_authentication.access_token: Reading...[0m[0m
+[0m[1mmodule.elasticache_redis_gdp_connection.data.guardium-data-protection_authentication.access_token: Read complete after 1s[0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+
+Terraform will perform the following actions:
+
+[1m  # module.elasticache_redis_gdp_connection.guardium-data-protection_register_va_datasource.register_va_datasource[0m will be created
+[0m  [32m+[0m[0m resource "guardium-data-protection_register_va_datasource" "register_va_datasource" {
+      [32m+[0m[0m access_token         = (sensitive value)
+      [32m+[0m[0m id                   = (known after apply)
+      [32m+[0m[0m last_registered_time = (known after apply)
+      [32m+[0m[0m payload              = (sensitive value)
+    }
+
+[1mPlan:[0m [0m1 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  [32m+[0m[0m assessment_schedule              = "WEEKLY"
+  [32m+[0m[0m aws_region                       = "us-east-1"
+  [32m+[0m[0m datasource_name                  = "aws-elasticache-redis-test"
+  [32m+[0m[0m datasource_payload               = (sensitive value)
+  [32m+[0m[0m elasticache_cluster_id           = "guardium-redis-e2e-redis-jf3f2x-001"
+  [32m+[0m[0m elasticache_endpoint             = "guardium-redis-e2e-redis-jf3f2x-001.guardium-redis-e2e-redis-jf3f2x.gj42vz.use1.cache.amazonaws.com"
+  [32m+[0m[0m elasticache_port                 = 6379
+  [32m+[0m[0m guardium_datasource_type         = "Redis"
+  [32m+[0m[0m vulnerability_assessment_enabled = true
+[0m[1mmodule.elasticache_redis_gdp_connection.guardium-data-protection_register_va_datasource.register_va_datasource: Creating...[0m[0m
+[0m[1mmodule.elasticache_redis_gdp_connection.guardium-data-protection_register_va_datasource.register_va_datasource: Creation complete after 0s [id={"application":"Security Assessment","awsSecretsManagerConfigName":"elasticache-redis-secrets","description":"AWS ElastiCache Redis Test with VA","host":"guardium-redis-e2e-redis-jf3f2x-001.guardium-redis-e2e-redis-jf3f2x.gj42vz.use1.cache.amazonaws.com","importServerSSLcert":1,"name":"aws-elasticache-redis-test","password":"","port":6379,"region":"us-east-1","savePassword":0,"severity":"MED","type":"Amazon Elasticache (Redis OSS)","useKerberos":false,"useLDAP":false,"useSSL":1,"user":""}ã°ÄB˜üšûôÈ™o¹$'®Aäd›“L¤•™xR¸U-2026-06-25T12:19:58-04:00][0m
+[0m[1m[32m
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.[0m
+[0m[1m[32m
+Outputs:
+
+[0massessment_schedule = "WEEKLY"
+aws_region = "us-east-1"
+datasource_name = "aws-elasticache-redis-test"
+datasource_payload = <sensitive>
+elasticache_cluster_id = "guardium-redis-e2e-redis-jf3f2x-001"
+elasticache_endpoint = "guardium-redis-e2e-redis-jf3f2x-001.guardium-redis-e2e-redis-jf3f2x.gj42vz.use1.cache.amazonaws.com"
+elasticache_port = 6379
+guardium_datasource_type = "Redis"
+vulnerability_assessment_enabled = true

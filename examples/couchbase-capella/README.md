@@ -77,7 +77,7 @@ Update the following required values:
 cluster_endpoint  = "cb.abc123.cloud.couchbase.com"
 bucket_name       = "production-bucket"
 admin_username    = "admin"
-admin_password    = "your-secure-password"
+admin_password    = "your-secure-password" # pragma: allowlist secret
 connection_string = "couchbases://cb.abc123.cloud.couchbase.com"
 rest_api_endpoint = "https://cb.abc123.cloud.couchbase.com:18091"
 
@@ -88,12 +88,12 @@ subnet_ids = ["subnet-xxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyy"]
 # Guardium
 gdp_server                      = "guardium.example.com"
 gdp_username                    = "admin"
-gdp_password                    = "your-guardium-password"
-client_secret                   = "your-client-secret"
+gdp_password                    = "your-guardium-password" # pragma: allowlist secret
+client_secret                   = "your-client-secret" # pragma: allowlist secret
 aws_secrets_manager_config_name = "aws-prod"  # Must exist in Guardium
 
 # VA User
-sqlguard_password = "your-sqlguard-password"
+sqlguard_password = "your-sqlguard-password" # pragma: allowlist secret
 
 # Notifications
 notification_emails = ["security@example.com"]
