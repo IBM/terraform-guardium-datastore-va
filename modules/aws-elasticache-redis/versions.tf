@@ -7,8 +7,7 @@ terraform {
 
   required_providers {
     guardium-data-protection = {
-      source  = "IBM/guardium-data-protection"
-      version = "~> 1.0"
+      source = "IBM/guardium-data-protection"
     }
     null = {
       source  = "hashicorp/null"
