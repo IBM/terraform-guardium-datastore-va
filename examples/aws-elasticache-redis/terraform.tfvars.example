@@ -51,8 +51,8 @@ notification_severity = "HIGH"
 #----------------------------------------
 enable_tls             = true
 import_server_ssl_cert = true
-# auth_token                      = "change-me-if-redis-auth-enabled"  # Uncomment if Redis AUTH is enabled
-# aws_secrets_manager_config_name = "my-secrets-config"                # Uncomment if using AWS Secrets Manager
+# auth_token                      = "change-me-if-redis-auth-enabled"  # pragma: allowlist secret
+# aws_secrets_manager_config_name = "my-secrets-config"                # pragma: allowlist secret
 
 #----------------------------------------
 # Debug Configuration
