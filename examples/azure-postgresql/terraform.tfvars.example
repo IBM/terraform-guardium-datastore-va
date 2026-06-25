@@ -56,13 +56,13 @@ db_host                = "my-postgresql-server.postgres.database.azure.com"
 db_port                = 5432
 db_name                = "testdb"
 db_username            = "pgadmin"
-db_password            = "YourSecurePassword123!"
+db_password            = "YourSecurePassword123!" # pragma: allowlist secret
 
 #------------------------------------------------------------------------------
 # VA User Configuration
 #------------------------------------------------------------------------------
 sqlguard_username = "sqlguard"
-sqlguard_password = "SqlGuard#Pass123!"
+sqlguard_password = "SqlGuard#Pass123!" # pragma: allowlist secret
 
 #------------------------------------------------------------------------------
 # Guardium Data Protection Configuration
@@ -70,7 +70,7 @@ sqlguard_password = "SqlGuard#Pass123!"
 gdp_host     = "guardium.example.com"
 gdp_port     = 8443
 gdp_username = "admin"
-gdp_password = "YourGuardiumPassword"
+gdp_password = "YourGuardiumPassword" # pragma: allowlist secret
 
 #------------------------------------------------------------------------------
 # Tags
