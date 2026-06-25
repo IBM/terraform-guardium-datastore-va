@@ -5,18 +5,23 @@ on:
   push:
     branches: [main, master]
 
+env:
+  TF_HTTP_RETRY_MAX: 10
+  TF_HTTP_RETRY_WAIT_MIN: 1
+  TF_HTTP_RETRY_WAIT_MAX: 30
+
 jobs:
   validate-modules:
     name: Validate Modules
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ~1.4
-      
+
       - name: Find and validate all modules
         run: |
           echo "Finding all module directories with Terraform files..."
@@ -24,16 +29,28 @@ jobs:
             if [ -f "${dir}main.tf" ] || [ -f "${dir}versions.tf" ]; then
               echo "Validating module: $dir"
               cd "$dir"
-              
+
               echo "  Running terraform fmt -check..."
               terraform fmt -check -recursive || exit 1
-              
-              echo "  Running terraform init..."
-              terraform init -backend=false || exit 1
-              
+
+              echo "  Running terraform init with retry..."
+              for i in {1..3}; do
+                if terraform init -backend=false; then
+                  break
+                else
+                  if [ $i -lt 3 ]; then
+                    echo "  Init failed, retrying in 10 seconds... (attempt $i/3)"
+                    sleep 10
+                  else
+                    echo "  Init failed after 3 attempts"
+                    exit 1
+                  fi
+                fi
+              done
+
               echo "  Running terraform validate..."
               terraform validate || exit 1
-              
+
               cd - > /dev/null
               echo "  ✓ Module $dir validated successfully"
             else
@@ -46,12 +63,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ~1.4
-      
+
       - name: Find and validate all examples
         run: |
           echo "Finding all example directories with Terraform files..."
@@ -59,21 +76,31 @@ jobs:
             if [ -f "${dir}main.tf" ] || [ -f "${dir}versions.tf" ]; then
               echo "Validating example: $dir"
               cd "$dir"
-              
+
               echo "  Running terraform fmt -check..."
               terraform fmt -check -recursive || exit 1
-              
-              echo "  Running terraform init..."
-              terraform init -backend=false || exit 1
-              
+
+              echo "  Running terraform init with retry..."
+              for i in {1..3}; do
+                if terraform init -backend=false; then
+                  break
+                else
+                  if [ $i -lt 3 ]; then
+                    echo "  Init failed, retrying in 10 seconds... (attempt $i/3)"
+                    sleep 10
+                  else
+                    echo "  Init failed after 3 attempts"
+                    exit 1
+                  fi
+                fi
+              done
+
               echo "  Running terraform validate..."
               terraform validate || exit 1
-              
+
               cd - > /dev/null
               echo "  ✓ Example $dir validated successfully"
             else
               echo "  ⊘ Skipping $dir (no Terraform files found)"
             fi
           done
-
- 

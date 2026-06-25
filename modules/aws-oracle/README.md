@@ -127,7 +127,7 @@ module "datastore-va_aws-oracle-autonomous" {
    - RDS Oracle: Usually the database name (e.g., `ORCL`)
    - Autonomous: Service name with suffix (e.g., `mydb_high`, `mydb_medium`, `mydb_low`)
 
-2. **Port**: 
+2. **Port**:
    - RDS Oracle: Default is 1521
    - Autonomous: Usually 1522
 

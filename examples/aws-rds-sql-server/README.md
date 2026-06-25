@@ -408,7 +408,7 @@ This means a secret with the same name exists but is scheduled for deletion. The
    # Replace SECRET_NAME with the name from your error message
    SECRET_NAME="guardium-sqlserver-test-va-mssql-rds-va-credentials"
    REGION="us-east-2"
-   
+
    # Include deleted secrets in the search
    aws secretsmanager list-secrets \
      --include-planned-deletion \
@@ -417,7 +417,7 @@ This means a secret with the same name exists but is scheduled for deletion. The
      --query 'SecretList[0].ARN' \
      --output text
    ```
-   
+
    **Note**: The `--include-planned-deletion` flag is required to find secrets scheduled for deletion.
 
 2. **Choose one of the following options:**
@@ -426,15 +426,15 @@ This means a secret with the same name exists but is scheduled for deletion. The
    ```bash
    # Use the ARN from step 1
    SECRET_ARN="arn:aws:secretsmanager:us-east-2:1234567893:secret:guardium-sqlserver-test-va-mssql-rds-va-credentials-AbCdEf"
-   
+
    # Restore the secret
    aws secretsmanager restore-secret \
      --secret-id $SECRET_ARN \
      --region $REGION
-   
+
    # Import into Terraform state (single line to avoid spacing issues)
    terraform import 'module.mssql_va_config.aws_secretsmanager_secret.mssql_credentials' $SECRET_ARN
-   
+
    # Re-run apply
    terraform apply
    ```
@@ -443,13 +443,13 @@ This means a secret with the same name exists but is scheduled for deletion. The
    ```bash
    # Use the ARN from step 1
    SECRET_ARN="arn:aws:secretsmanager:us-east-2:1234567893:secret:guardium-sqlserver-test-va-mssql-rds-va-credentials-AbCdEf"
-   
+
    # Force delete immediately (bypasses 30-day recovery window)
    aws secretsmanager delete-secret \
      --secret-id $SECRET_ARN \
      --force-delete-without-recovery \
      --region $REGION
-   
+
    # Wait a few seconds, then re-run
    terraform apply
    ```
@@ -470,10 +470,10 @@ This means a secret with the same name exists but is scheduled for deletion. The
   ```sql
   -- Check server-level permissions
   SELECT * FROM sys.server_permissions WHERE grantee_principal_id = SUSER_ID('sqlguard');
-  
+
   -- Check server role membership
   SELECT IS_SRVROLEMEMBER('setupadmin', 'sqlguard');
-  
+
   -- Check database role membership (in user databases)
   USE YourDatabase;
   SELECT IS_ROLEMEMBER('gdmmonitor', 'sqlguard');
@@ -532,17 +532,17 @@ terraform destroy
    - Server-level VIEW permissions (VIEW SERVER STATE, VIEW ANY DEFINITION, VIEW ANY DATABASE)
    - setupadmin server role
    - gdmmonitor role in user databases (SELECT on system views)
-3. **Network Security**: 
+3. **Network Security**:
    - Use security groups to restrict database access
    - Lambda runs in private subnet with no internet access
    - VPC endpoint for secure Secrets Manager access
-4. **Audit Logs**: 
+4. **Audit Logs**:
    - Enable CloudTrail for Secrets Manager access
    - Lambda logs all user creation activities
-5. **Encryption**: 
+5. **Encryption**:
    - Secrets Manager encrypts data at rest by default
    - Use KMS for additional key management
-6. **Separation of Duties**: 
+6. **Separation of Duties**:
    - `rdsadmin` for database administration
    - `sqlguard` dedicated for Guardium VA scans only
 
@@ -559,4 +559,3 @@ terraform destroy
 - **Documentation**: [IBM Guardium Docs](https://www.ibm.com/docs/en/guardium)
 - **Issues**: Open an issue in the repository
 - **Questions**: Contact IBM Guardium support
-

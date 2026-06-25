@@ -16,22 +16,22 @@ This module configures an AWS Redshift cluster for Guardium Vulnerability Assess
 # For publicly accessible Redshift clusters
 module "datastore-va_aws-redshift" {
   source = "IBM/datastore-va/guardium//modules/aws-redshift"
-  
+
   # General Configuration
   name_prefix = "guardium"
   aws_region  = "us-east-1"
-  
+
   # Redshift Connection Details
   redshift_host     = "your-redshift-cluster.region.redshift.amazonaws.com"
   redshift_port     = 5439
   redshift_database = "dev"
   redshift_username = "admin"
   redshift_password = "your-password"
-  
+
   # VA User Configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = "your-sqlguard-password"
-  
+
   # Tags
   tags = {
     Environment = "dev"
@@ -42,26 +42,26 @@ module "datastore-va_aws-redshift" {
 # For Redshift clusters in a private VPC
 module "datastore-va_aws-redshift" {
   source = "IBM/datastore-va/guardium//modules/aws-redshift"
-  
+
   # General Configuration
   name_prefix = "guardium"
   aws_region  = "us-east-1"
-  
+
   # Redshift Connection Details
   redshift_host     = "your-redshift-cluster.region.redshift.amazonaws.com"
   redshift_port     = 5439
   redshift_database = "dev"
   redshift_username = "admin"
   redshift_password = "your-password"
-  
+
   # VA User Configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = "your-sqlguard-password"
-  
+
   # Network Configuration for Lambda (required for private Redshift)
   vpc_id    = "vpc-12345678"
   subnet_ids = ["subnet-12345678", "subnet-87654321"]
-  
+
   # Tags
   tags = {
     Environment = "dev"
@@ -103,4 +103,3 @@ module "datastore-va_aws-redshift" {
 | lambda_function_name | Name of the Lambda function created for VA configuration |
 | security_group_id | ID of the security group created for the Lambda function |
 | va_config_completed | Whether the VA configuration has been completed |
-

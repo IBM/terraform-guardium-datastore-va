@@ -66,7 +66,7 @@ module "datastore-va_aws-aurora-postgresql" {
   db_name          = "postgres"
   db_username      = "postgres"
   db_password      = "your-password"
-  
+
   sqlguard_username = "custom_guard"
   sqlguard_password = "custom-password"
 

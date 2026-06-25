@@ -1,0 +1,151 @@
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+aws_region  = "us-east-1"
+name_prefix = "guardium-couchbase-va"
+
+tags = {
+  Environment = "production"
+  Purpose     = "guardium-va-couchbase-capella"
+  Owner       = "your-email@example.com"
+  ManagedBy   = "terraform"
+}
+
+#------------------------------------------------------------------------------
+# Couchbase Capella Configuration
+# Replace these with your actual Couchbase Capella cluster details
+#------------------------------------------------------------------------------
+cluster_endpoint  = "cb.abc123.cloud.couchbase.com"
+bucket_name       = "production-bucket"
+admin_username    = "admin"
+admin_password    = "your-couchbase-admin-password"  # pragma: allowlist secret
+connection_string = "couchbases://cb.abc123.cloud.couchbase.com"
+rest_api_endpoint = "https://cb.abc123.cloud.couchbase.com:18091"
+cluster_port      = 18091
+
+# Optional: Database name (defaults to bucket_name if not specified)
+datasource_database = ""
+
+#------------------------------------------------------------------------------
+# AWS Secrets Manager Configuration
+# IMPORTANT: The AWS Secrets Manager configuration MUST exist in Guardium BEFORE running Terraform
+# Steps to create in Guardium:
+#   1. Log into Guardium UI
+#   2. Navigate to: Setup → Tools and Views → Secrets Management
+#   3. Click Add → AWS Secrets Manager
+#   4. Configure with your AWS credentials and region
+#   5. Save with a memorable name (e.g., "aws-prod", "aws-dev")
+#   6. Use that exact name below (case-sensitive)
+#------------------------------------------------------------------------------
+aws_secrets_manager_config_name = "your-aws-secrets-manager-config-name"  # pragma: allowlist secret
+
+#------------------------------------------------------------------------------
+# Network Configuration
+# IMPORTANT: Subnets MUST have internet access via NAT Gateway
+# Couchbase Capella is a cloud service requiring internet connectivity
+#------------------------------------------------------------------------------
+vpc_id     = "vpc-xxxxxxxxxxxxx"
+subnet_ids = ["subnet-xxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyy"]
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Configuration
+#------------------------------------------------------------------------------
+gdp_server   = "guardium.example.com"
+gdp_port     = "8443"
+gdp_username = "admin"
+gdp_password = "your-guardium-password"  # pragma: allowlist secret
+
+# OAuth client credentials (generated via: grdapi register_oauth_client client_id=client1 grant_types=password)
+client_id     = "client1"
+client_secret = "your-client-secret" # pragma: allowlist secret
+
+#------------------------------------------------------------------------------
+# Data Source Registration
+#------------------------------------------------------------------------------
+datasource_name        = "couchbase-capella-production-va"
+datasource_description = "Production Couchbase Capella cluster for vulnerability assessment"
+application            = "Security Assessment"
+severity_level         = "MED"
+
+#------------------------------------------------------------------------------
+# VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"
+sqlguard_password = "your-sqlguard-password"  # pragma: allowlist secret
+
+#------------------------------------------------------------------------------
+# Optional: Guardium Hostname
+#------------------------------------------------------------------------------
+guardium_hostname = "guardium.example.com"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Monday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com", "dba-team@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# Advanced Configuration (Optional)
+#------------------------------------------------------------------------------
+save_password          = true
+use_ssl                = true
+import_server_ssl_cert = false
+shared_datasource      = "Not Shared"
+
+#------------------------------------------------------------------------------
+# External Password Management
+# IMPORTANT: When using AWS Secrets Manager, CyberArk, or HashiCorp Vault,
+# you MUST set use_external_password = true
+#------------------------------------------------------------------------------
+
+# For AWS Secrets Manager (RECOMMENDED):
+use_external_password           = true  # MUST be true when using AWS Secrets Manager
+# aws_secrets_manager_config_name is already set above
+region                          = "us-east-1"  # AWS region where secret is stored
+secret_name                     = "guardium/couchbase-capella/credentials"  # pragma: allowlist secret
+
+# For CyberArk (Alternative):
+# use_external_password       = true  # MUST be true
+# external_password_type_name = "CyberArk" # pragma: allowlist secret
+# cyberark_config_name        = "cyberark-prod" # pragma: allowlist secret
+# cyberark_object_name        = "couchbase-credentials" # pragma: allowlist secret
+
+# For HashiCorp Vault (Alternative):
+# use_external_password       = true  # MUST be true
+# external_password_type_name = "HashiCorp Vault" # pragma: allowlist secret
+# hashicorp_config_name       = "vault-prod" # pragma: allowlist secret
+# hashicorp_path              = "secret/data/couchbase" # pragma: allowlist secret
+# hashicorp_role              = "guardium-role"
+
+# If NOT using external password (store in Guardium):
+# use_external_password = false
+# save_password         = true
+
+# Kerberos Configuration (Optional - not typically used with Couchbase Capella)
+# use_kerberos         = false
+# kerberos_config_name = ""
+
+# LDAP Configuration (Optional - not typically used with Couchbase Capella)
+# use_ldap = false
+
+#------------------------------------------------------------------------------
+# Phase 1 Integration (Optional)
+# Uncomment to use outputs from Phase 1 Couchbase Capella deployment
+#------------------------------------------------------------------------------
+# To use Phase 1 outputs, uncomment the terraform_remote_state data source in main.tf
+# and comment out the direct variable assignments above for:
+#   - cluster_endpoint
+#   - bucket_name
+#   - admin_username
+#   - admin_password
+#   - connection_string
+#   - rest_api_endpoint

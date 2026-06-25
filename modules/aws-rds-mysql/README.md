@@ -44,13 +44,13 @@ module "aws-rds-mysql" {
   source = "IBM/datastore-va/guardium//modules/aws-rds-mysql"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host     = "your-mysql-instance.rds.amazonaws.com"
   db_port     = 3306
   db_username = "admin"
   db_password = "your-password"
-  
+
   # Network configuration
   vpc_id      = "vpc-xxxxxx"
   subnet_ids  = ["subnet-xxxxxx", "subnet-xxxxxx"]
@@ -65,17 +65,17 @@ module "aws-rds-mysql" {
   source = "IBM/datastore-va/guardium//modules/aws-rds-mysql"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host          = "your-mysql-instance.rds.amazonaws.com"
   db_port          = 3306
   db_username      = "admin"
   db_password      = "your-password"
-  
+
   # Custom sqlguard credentials
   sqlguard_username = "custom_guard"
   sqlguard_password = "CustomPassword123!"
-  
+
   # Network configuration
   vpc_id      = "vpc-xxxxxxxx"
   subnet_ids  = ["subnet-xxxxxxxx"]
@@ -237,4 +237,3 @@ Common issues and their solutions:
 3. **Guardium connection issues**:
    - Verify that the Guardium server is accessible from the Lambda function
    - Check that the provided Guardium credentials and OAuth client details are correct
-

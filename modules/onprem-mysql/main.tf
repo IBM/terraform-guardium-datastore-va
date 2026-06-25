@@ -18,14 +18,14 @@ resource "terraform_data" "validate_admin_user" {
       condition     = var.db_username != "root"
       error_message = <<-EOT
         ⚠️  SECURITY WARNING: Using 'root' user is not recommended!
-        
+
         Best Practice: Create a dedicated admin user for Terraform operations.
-        
+
         On your MySQL server, run:
           CREATE USER 'terraform_admin'@'%' IDENTIFIED WITH caching_sha2_password BY 'StrongPassword123!';
           GRANT ALL PRIVILEGES ON *.* TO 'terraform_admin'@'%' WITH GRANT OPTION;
           FLUSH PRIVILEGES;
-        
+
         Then update terraform.tfvars:
           db_username = "terraform_admin"
           db_password = "StrongPassword123!"
@@ -47,16 +47,16 @@ resource "terraform_data" "validate_sqlguard_password" {
       )
       error_message = <<-EOT
         ❌ ERROR: sqlguard_password does not meet MySQL 9.6 password policy requirements!
-        
+
         MySQL 9.6 requires passwords to have:
           ✓ At least 8 characters
           ✓ At least one uppercase letter (A-Z)
           ✓ At least one lowercase letter (a-z)
           ✓ At least one number (0-9)
           ✓ At least one special character (!@#$%^&*)
-        
+
         Example strong password: SqlGuard@2024!Strong
-        
+
         Update terraform.tfvars:
           sqlguard_password = "SqlGuard@2024!Strong"
       EOT
@@ -71,12 +71,12 @@ resource "terraform_data" "validate_user_separation" {
       condition     = var.sqlguard_username != var.db_username
       error_message = <<-EOT
         ❌ ERROR: sqlguard_username cannot be the same as db_username!
-        
+
         The sqlguard user is for Guardium VA scanning (read-only privileges).
         The db_username is for administrative operations (full privileges).
-        
+
         These must be different users for security and least-privilege principles.
-        
+
         Update terraform.tfvars:
           db_username       = "terraform_admin"  # Admin user
           sqlguard_username = "sqlguard"         # VA scanning user
@@ -92,13 +92,13 @@ resource "terraform_data" "validate_ssl_config" {
       condition     = !var.use_ssl || var.import_server_ssl_cert
       error_message = <<-EOT
         ⚠️  SECURITY WARNING: SSL is enabled but certificate verification is disabled!
-        
+
         This configuration is vulnerable to man-in-the-middle attacks.
-        
+
         For production environments, set:
           use_ssl                = true
           import_server_ssl_cert = true
-        
+
         This ensures MySQL server's SSL certificate is verified by Guardium.
       EOT
     }
@@ -122,7 +122,7 @@ resource "terraform_data" "validate_hostname" {
       condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$", var.db_host))
       error_message = <<-EOT
         ❌ ERROR: db_host must be a valid hostname or IP address.
-        
+
         Examples:
           - api.rr1.cp.fyre.ibm.com
           - mysql.example.com

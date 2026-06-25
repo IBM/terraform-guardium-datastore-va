@@ -138,7 +138,7 @@ This example creates the following resources:
 
 1. **Lambda Function**: Executes SQL commands to configure VA user on Aurora
 2. **IAM Role & Policy**: Permissions for Lambda to access Secrets Manager and create network interfaces
-3. **Security Groups**: 
+3. **Security Groups**:
    - Lambda security group (allows outbound to Aurora)
    - Secrets Manager VPC endpoint security group
 4. **Secrets Manager Secret**: Stores Aurora and sqlguard credentials securely

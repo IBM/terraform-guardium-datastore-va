@@ -184,7 +184,7 @@ sqlguard_username = "sqlguard"  # ❌ Will fail validation
 
 ## What This Module Creates
 
-1. **sqlguard User**: 
+1. **sqlguard User**:
    - LOGIN privilege
    - ENCRYPTED password (scram-sha-256)
    - NO SUPERUSER, NO CREATEDB, NO CREATEROLE
