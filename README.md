@@ -34,13 +34,13 @@ This module provides automated configuration of datastores for vulnerability ass
 │   │  PostgreSQL  │  │  MySQL       │  │SQL Server│  │DocumentDB│            │
 │   └──────────────┘  └──────────────┘  └──────────┘  └──────────┘            │
 │   ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐            │
-│   │ Neptune  │  │   RDS    │  │  Azure MySQL │  │ Azure Cosmos │            │
-│   │          │  │  Oracle  │  │  Flexible    │  │      DB      │            │
+│   │ Neptune  │  │   RDS    │  │ ElastiCache  │  │  Azure MySQL │            │
+│   │          │  │  Oracle  │  │    Redis     │  │  Flexible    │            │
 │   └──────────┘  └──────────┘  └──────────────┘  └──────────────┘            │
-│   ┌──────────────┐  ┌──────────────┐                                         │
-│   │  On-Prem     │  │  On-Prem     │                                         │
-│   │  MySQL       │  │  PostgreSQL  │                                         │
-│   └──────────────┘  └──────────────┘                                         │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                      │
+│   │ Azure Cosmos │  │  On-Prem     │  │  On-Prem     │                      │
+│   │      DB      │  │  MySQL       │  │  PostgreSQL  │                      │
+│   └──────────────┘  └──────────────┘  └──────────────┘                      │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
 │   • Configures IAM roles and policies (AWS)                                 │
@@ -76,6 +76,7 @@ This module provides automated configuration of datastores for vulnerability ass
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Neptune: Creates sqlguard user and configures permissions via Lambda
    - For Redshift: Creates VA users and grants system table access
+   - For ElastiCache Redis: Configures datasource registration with optional AUTH token support
    - For Azure MySQL Flexible Server: Creates sqlguard user via Azure Function with Key Vault integration
    - For Azure Cosmos DB: Creates sqlguard user via Azure Function with Key Vault integration
    - For On-Premises databases (MySQL, PostgreSQL): Creates dedicated VA users with appropriate permissions
@@ -84,7 +85,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, Aurora MySQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift), Azure datastores (MySQL Flexible Server, Cosmos DB), and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, Aurora MySQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift, ElastiCache Redis), Azure datastores (MySQL Flexible Server, Cosmos DB), and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -101,7 +102,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-aurora-mysql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server, azure-mysql, azure-cosmos
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-aurora-mysql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server, aws-elasticache-redis, azure-mysql, azure-cosmos
    ```
 
 3. **Configure variables**:
@@ -662,7 +663,7 @@ Each example includes:
 
 Before using this module, ensure you have:
 
-1. **Guardium Data Protection Instance**: A running GDP cluster with API access enabled (version 12.2.1 or later)
+1. **Guardium Data Protection Instance**: A running GDP cluster with API access enabled (version 12.2.3 or later for Azure MySQL, 12.2.1 or later for other datastores)
 2. **Guardium Configuration**: Complete the one-time manual configurations:
    - Enable OAuth client for REST API access
    - Configure AWS credentials (for DynamoDB)
