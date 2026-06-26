@@ -1,6 +1,6 @@
 {
   "name": "${datasource_name}",
-  "type": "MySQL",
+  "type": "Azure MySQL",
   "host": "${datasource_hostname}",
   "port": ${datasource_port},
   "application": "${application}",
