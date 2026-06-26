@@ -62,7 +62,7 @@ module "mssql_va_config" {
 
   # General Configuration
   aws_region = "us-east-1"
-  
+
   tags = {
     Environment = "production"
     Application = "guardium-va"
@@ -83,14 +83,14 @@ module "mssql_va_config" {
   db_username   = "rdsadmin"
   db_password   = var.rdsadmin_password
   database_name = "master"
-  
+
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
-  
+
   vpc_id               = var.vpc_id
   subnet_ids           = var.subnet_ids
   db_security_group_id = var.db_security_group_id
-  
+
   aws_region = var.aws_region
   tags       = var.tags
 }

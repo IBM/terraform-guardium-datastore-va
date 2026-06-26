@@ -35,4 +35,3 @@ output "iam_policy_id" {
   description = "ID of the IAM policy for Guardium vulnerability assessment"
   value       = aws_iam_policy.guardium_va_policy.id
 }
-

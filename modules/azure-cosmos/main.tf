@@ -218,14 +218,14 @@ resource "null_resource" "cosmos_firewall_guardium" {
     command = <<-EOT
       # Get current IP rules
       CURRENT_IPS=$(az cosmosdb show --name ${var.cosmos_account_name} --resource-group ${var.resource_group_name} --query "ipRules[].ipAddressOrRange" -o tsv | tr '\n' ',')
-      
+
       # Add Guardium IP if not already present
       if [[ ! "$CURRENT_IPS" =~ "${var.guardium_ip_address}" ]]; then
         NEW_IPS="${var.guardium_ip_address}"
         if [ ! -z "$CURRENT_IPS" ]; then
           NEW_IPS="$CURRENT_IPS,$NEW_IPS"
         fi
-        
+
         az cosmosdb update \
           --name ${var.cosmos_account_name} \
           --resource-group ${var.resource_group_name} \

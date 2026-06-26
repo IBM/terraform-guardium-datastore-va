@@ -41,7 +41,8 @@ az login --tenant YOUR_TENANT_ID
 ```
 
 ### Guardium Requirements
-- IBM Guardium Data Protection instance accessible from Azure
+- IBM Guardium Data Protection 12.2.3 or higher
+- Guardium instance accessible from Azure
 - Guardium API credentials (client_id, client_secret)
 - Guardium admin credentials
 
@@ -367,7 +368,7 @@ az account set --subscription "SUBSCRIPTION_ID"
    ```bash
    # From Guardium server, check outbound IP
    curl ifconfig.me
-   
+
    # Add to terraform.tfvars
    additional_firewall_rules = {
      "AllowGuardiumOutbound" = {

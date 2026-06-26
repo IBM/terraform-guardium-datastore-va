@@ -38,30 +38,30 @@ module "mariadb_va_config" {
   source = "github.com/IBM/terraform-guardium-datastore-va//modules/aws-rds-mariadb"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host     = "your-mariadb-instance.rds.amazonaws.com"
   db_port     = 3306
   db_username = "admin"
   db_password = "your-password"
-  
+
   # Guardium VA user configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
-  
+
   # Network configuration
   vpc_id               = "vpc-12345678"
   subnet_ids           = ["subnet-12345678", "subnet-87654321"]
   db_security_group_id = "sg-12345678"  # MariaDB security group
   aws_region           = "us-east-1"
-  
+
   # Guardium Data Protection configuration
   gdp_server   = "your-guardium-server.example.com"
   gdp_username = "admin"
   gdp_password = "your-gdp-password"
   client_id    = "client1"
   client_secret = "your-client-secret"
-  
+
   tags = {
     Environment = "production"
     Project     = "guardium-va"
@@ -76,47 +76,47 @@ module "mariadb_va_config" {
   source = "github.com/IBM/terraform-guardium-datastore-va//modules/aws-rds-mariadb"
 
   name_prefix = "custom-prefix"
-  
+
   # Database connection details
   db_host     = "your-mariadb-instance.rds.amazonaws.com"
   db_port     = 3306
   db_username = "admin"
   db_password = "your-password"
-  
+
   # Guardium VA user configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = "CustomPassword123!"
-  
+
   # Network configuration
   vpc_id               = "vpc-12345678"
   subnet_ids           = ["subnet-12345678"]
   db_security_group_id = "sg-12345678"  # MariaDB security group
   aws_region           = "us-west-2"
-  
+
   # Guardium Data Protection configuration
   gdp_server   = "your-guardium-server.example.com"
   gdp_username = "admin"
   gdp_password = "your-gdp-password"
   client_id    = "client1"
   client_secret = "your-client-secret"
-  
+
   # Data source configuration
   datasource_name        = "mariadb-production"
   datasource_description = "Production MariaDB database"
   application            = "Security Assessment"
   severity_level         = "HIGH"
-  
+
   # Vulnerability assessment schedule
   enable_vulnerability_assessment = true
   assessment_schedule             = "weekly"
   assessment_day                  = "Sunday"
   assessment_time                 = "01:00"
-  
+
   # Notification configuration
   enable_notifications  = true
   notification_emails   = ["security-team@example.com", "dba-team@example.com"]
   notification_severity = "MED"
-  
+
   tags = {
     Environment = "production"
     Project     = "guardium-va"

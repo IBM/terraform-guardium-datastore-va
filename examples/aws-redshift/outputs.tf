@@ -71,17 +71,17 @@ output "connection_instructions" {
   description = "Instructions for connecting to the Redshift cluster"
   value       = <<-EOT
     To connect to your existing Redshift cluster using psql:
-    
+
     1. Connection details for your Redshift cluster:
        HOST=${local.redshift_hostname}
        PORT=${local.redshift_port}
        DB_NAME=${local.redshift_database_name}
        DB_USER=${local.redshift_master_username}
-    
+
     2. Connect using psql (replace "your_secure_password" with your actual password):
        export PGPASSWORD="your_secure_password"
        psql -h ${local.redshift_hostname} -p ${local.redshift_port} -d ${local.redshift_database_name} -U ${local.redshift_master_username}
-    
+
     3. To verify the VA configuration:
        psql -h ${local.redshift_hostname} -p ${local.redshift_port} -d ${local.redshift_database_name} -U ${local.redshift_master_username} -c "SELECT * FROM pg_user_info WHERE usename = '${var.sqlguard_username}';"
        psql -h ${local.redshift_hostname} -p ${local.redshift_port} -d ${local.redshift_database_name} -U ${local.redshift_master_username} -c "SELECT groname, grosysid FROM pg_group WHERE groname = 'gdmmonitor';"

@@ -122,4 +122,3 @@ module "mysql_gdp_connection" {
   # Depends on the VA configuration being completed
   depends_on = [module.mysql_va_config]
 }
-

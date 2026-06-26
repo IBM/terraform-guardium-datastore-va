@@ -1,0 +1,69 @@
+# AWS ElastiCache Redis with Vulnerability Assessment Example - Terraform Variables
+
+#----------------------------------------
+# AWS Configuration
+#----------------------------------------
+aws_region  = "us-east-1"
+aws_profile = "default"
+
+#----------------------------------------
+# Guardium Data Protection Connection Configuration
+#----------------------------------------
+gdp_server         = "guardium.example.com"
+gdp_port           = 8443
+guardium_username  = "admin"
+guardium_password  = "change-me"
+client_id          = "client1"
+client_secret      = "change-me"
+
+#----------------------------------------
+# ElastiCache Redis Configuration
+#----------------------------------------
+elasticache_cluster_id              = "example-redis-cluster"
+elasticache_endpoint                = "example-redis.xxxxxx.use1.cache.amazonaws.com"
+elasticache_port                    = 6379
+elasticache_redis_datasource_name   = "aws-elasticache-redis-va-example"
+elasticache_redis_description       = "AWS ElastiCache Redis with Vulnerability Assessment"
+
+#----------------------------------------
+# Datasource Configuration
+#----------------------------------------
+application    = "Security Assessment"
+severity_level = "MED"
+
+#----------------------------------------
+# Vulnerability Assessment Configuration
+#----------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "WEEKLY"
+assessment_day                  = "Monday"
+assessment_time                 = "00:00"
+
+#----------------------------------------
+# Notification Configuration
+#----------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com"]
+notification_severity = "HIGH"
+
+#----------------------------------------
+# SSL/TLS Configuration
+#----------------------------------------
+enable_tls             = true
+import_server_ssl_cert = true
+# auth_token                      = "change-me-if-redis-auth-enabled"  # pragma: allowlist secret
+# aws_secrets_manager_config_name = "my-secrets-config"                # pragma: allowlist secret
+
+#----------------------------------------
+# Debug Configuration
+#----------------------------------------
+debug_mode = false
+
+#----------------------------------------
+# Tags
+#----------------------------------------
+tags = {
+  Environment = "development"
+  ManagedBy   = "terraform"
+  Purpose     = "vulnerability-assessment"
+}
