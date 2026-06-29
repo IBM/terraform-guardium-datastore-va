@@ -1,12 +1,14 @@
 {
   "name": "${datasource_name}",
-  "type": "MySQL",
+  "type": "Azure MySQL",
   "host": "${datasource_hostname}",
   "port": ${datasource_port},
   "application": "${application}",
   "description": "${datasource_description}",
   "severity": "${severity_level}",
-  "shared": "Not Shared",
+  "dbName": "${db_name}",
+  "useKerberos": 0,
+  "useLDAP": 0,
 %{if use_ssl }
   "importServerSSLcert": ${import_server_ssl_cert ? 1 : 0},
   "useSSL": 1,
@@ -24,5 +26,7 @@
   "useExternalPassword": 0,
   "user": "${sqlguard_username}",
   "password": "${sqlguard_password}"
-%{ endif }
+%{ endif },
+  "apiToken": "${api_token}",
+  "conProperty": "${con_property}"
 }

@@ -1,0 +1,2 @@
+# Ignore the secrets baseline file which contains hashed/approved secrets
+.secrets.baseline

@@ -57,6 +57,7 @@ locals {
     datasource_port             = var.db_port
     application                 = var.application
     datasource_description      = var.datasource_description
+    db_name                     = var.db_name
     sqlguard_username           = var.sqlguard_username
     sqlguard_password           = var.sqlguard_password
     severity_level              = var.severity_level
@@ -67,6 +68,8 @@ locals {
     azure_key_vault_config_name = var.azure_key_vault_config_name
     key_vault_name              = var.key_vault_name
     secret_name                 = var.secret_name
+    api_token                   = var.api_token
+    con_property                = var.con_property
   })
   azure_mysql_config_json_decoded = jsondecode(local.azure_mysql_config)
   azure_mysql_config_json_encoded = jsonencode(local.azure_mysql_config)
