@@ -1,0 +1,104 @@
+#
+# Copyright IBM Corp. 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# AWS RDS DocumentDB with VA Example - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+
+#------------------------------------------------------------------------------
+# General Configuration
+#------------------------------------------------------------------------------
+aws_region  = "us-east-1"
+name_prefix = "my-documentdb-va"
+
+tags = {
+  Environment = "production"
+  Purpose     = "guardium-va-config"
+  Owner       = "your-email@example.com"
+  Project     = "guardium-integration"
+}
+
+#------------------------------------------------------------------------------
+# VPC Peering Configuration (Optional - only if Guardium in different VPC)
+#------------------------------------------------------------------------------
+# Set to true if Guardium is in a different VPC from DocumentDB
+enable_vpc_peering = false
+
+# Guardium VPC ID (required if enable_vpc_peering = true)
+# CIDR block and route tables will be automatically discovered
+# guardium_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
+
+
+#------------------------------------------------------------------------------
+# DocumentDB Cluster Configuration
+#------------------------------------------------------------------------------
+db_host     = "your-documentdb-cluster.cluster-xxxxxx.us-east-1.docdb.amazonaws.com"
+db_port     = 27017
+db_username = "admin"
+db_password = "YourSecurePassword123!"
+
+#------------------------------------------------------------------------------
+# Network Configuration
+#------------------------------------------------------------------------------
+vpc_id                = "vpc-xxxxxxxxxxxxxxxxx"
+subnet_ids            = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]
+db_security_group_id  = "sg-xxxxxxxxxxxxxxxxx"
+
+#------------------------------------------------------------------------------
+# Guardium VA User Configuration
+#------------------------------------------------------------------------------
+sqlguard_username = "sqlguard"
+sqlguard_password = "SecureVAPassword123!"
+db_name           = "admin"
+lambda_log_level  = "INFO"
+
+#------------------------------------------------------------------------------
+# Guardium Data Protection (GDP) Configuration
+#------------------------------------------------------------------------------
+gdp_server   = "guardium.example.com"
+gdp_port     = "8443"
+gdp_username = "admin"
+gdp_password = "GuardiumAdminPassword123!"
+
+# OAuth Client Configuration
+# Generate these using: grdapi register_oauth_client client_id=client1 grant_types=password
+client_id     = "client1"
+client_secret = "your-oauth-client-secret"
+
+#------------------------------------------------------------------------------
+# Data Source Configuration
+#------------------------------------------------------------------------------
+datasource_name        = "my-documentdb-cluster"
+datasource_description = "Production DocumentDB cluster for application data"
+application            = "Security Assessment"
+severity_level         = "HIGH"
+
+#------------------------------------------------------------------------------
+# Vulnerability Assessment Schedule
+#------------------------------------------------------------------------------
+enable_vulnerability_assessment = true
+assessment_schedule             = "weekly"
+assessment_day                  = "Sunday"
+assessment_time                 = "02:00"
+
+#------------------------------------------------------------------------------
+# Notification Configuration
+#------------------------------------------------------------------------------
+enable_notifications  = true
+notification_emails   = ["security-team@example.com", "dba-team@example.com"]
+notification_severity = "HIGH"
+
+#------------------------------------------------------------------------------
+# Advanced Configuration (Optional)
+#------------------------------------------------------------------------------
+use_ssl                = true
+import_server_ssl_cert = true
+save_password          = true
+aws_secrets_manager_config_name = "your-gdp-aws-config-name"
+region                          = "us-east-1"
+
+# Connection Properties (Optional)
+# connection_properties = ""
+# custom_url           = ""
+# service_name         = ""

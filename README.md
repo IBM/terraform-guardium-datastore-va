@@ -1,6 +1,6 @@
 # Guardium Datastore Vulnerability Assessment Terraform Module
 
-Terraform module which configures AWS and on-premises datastores for vulnerability assessment and connects them to IBM Guardium Data Protection (GDP).
+Terraform module which configures AWS, Azure, and on-premises datastores for vulnerability assessment and connects them to IBM Guardium Data Protection (GDP).
 
 ## Scope
 
@@ -22,24 +22,29 @@ This module provides automated configuration of datastores for vulnerability ass
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│                    AWS & On-Premises Datastore Resources                    │
+│              AWS, Azure & On-Premises Datastore Resources                   │
 │                                                                             │
 │   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
 │   │DynamoDB  │  │   RDS    │  │   RDS    │  │   RDS    │  │ Redshift │      │
 │   │          │  │PostgreSQL│  │ MariaDB  │  │  MySQL   │  │          │      │
 │   └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
 │                                                                             │
-│   ┌──────────────┐  ┌──────────┐  ┌──────────┐                              │
-│   │  Aurora      │  │   RDS    │  │ Neptune  │                              │
-│   │  PostgreSQL  │  │SQL Server│  │          │                              │
-│   └──────────────┘  └──────────┘  └──────────┘                              │
-│   ┌──────────┐  ┌──────────────┐  ┌──────────────┐                          │
-│   │   RDS    │  │  On-Prem     │  │  On-Prem     │                          │
-│   │  Oracle  │  │  MySQL       │  │  PostgreSQL  │                          │
-│   └──────────┘  └──────────────┘  └──────────────┘                          │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────┐  ┌──────────┐            │
+│   │  Aurora      │  │  Aurora      │  │   RDS    │  │   RDS    │            │
+│   │  PostgreSQL  │  │  MySQL       │  │SQL Server│  │DocumentDB│            │
+│   └──────────────┘  └──────────────┘  └──────────┘  └──────────┘            │
+│   ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐            │
+│   │ Neptune  │  │   RDS    │  │ ElastiCache  │  │  Azure MySQL │            │
+│   │          │  │  Oracle  │  │    Redis     │  │  Flexible    │            │
+│   └──────────┘  └──────────┘  └──────────────┘  └──────────────┘            │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                      │
+│   │ Azure Cosmos │  │  On-Prem     │  │  On-Prem     │                      │
+│   │      DB      │  │  MySQL       │  │  PostgreSQL  │                      │
+│   └──────────────┘  └──────────────┘  └──────────────┘                      │
 │                                                                             │
 │   • Creates VA users (sqlguard/gdmmonitor)                                  │
-│   • Configures IAM roles and policies                                       │
+│   • Configures IAM roles and policies (AWS)                                 │
+│   • Configures Azure Functions and Key Vault (Azure)                        │
 │   • Sets up database permissions                                            │
 │   • Prepares datastores for security scanning                               │
 │                                                                             │
@@ -65,17 +70,22 @@ This module provides automated configuration of datastores for vulnerability ass
 2. **Database Setup**:
    - For RDS databases (PostgreSQL, MariaDB, MySQL, Oracle): Creates dedicated VA users (sqlguard/gdmmonitor) with appropriate permissions
    - For Aurora PostgreSQL: Creates sqlguard user and gdmmonitor group via Lambda
+   - For Aurora MySQL: Creates sqlguard user via Lambda
    - For RDS SQL Server: Creates sqlguard user and gdmmonitor group via Lambda
+   - For RDS DocumentDB: Creates sqlguard user via Lambda
    - For DynamoDB: Configures IAM roles and policies for read-only access
    - For Neptune: Creates sqlguard user and configures permissions via Lambda
    - For Redshift: Creates VA users and grants system table access
+   - For ElastiCache Redis: Configures datasource registration with optional AUTH token support
+   - For Azure MySQL Flexible Server: Creates sqlguard user via Azure Function with Key Vault integration
+   - For Azure Cosmos DB: Creates sqlguard user via Azure Function with Key Vault integration
    - For On-Premises databases (MySQL, PostgreSQL): Creates dedicated VA users with appropriate permissions
 3. **Guardium Integration**: Registers datasources with Guardium and configures vulnerability assessment schedules
 4. **Ongoing Monitoring**: Guardium performs scheduled security assessments and generates compliance reports
 
 ## Features
 
-- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, RDS MariaDB, RDS MySQL, RDS Oracle, RDS SQL Server, Neptune, Redshift) and on-premises databases (MySQL, PostgreSQL)
+- **Multi-Datastore Support**: Configure vulnerability assessment for AWS datastores (DynamoDB, RDS PostgreSQL, Aurora PostgreSQL, Aurora MySQL, RDS MariaDB, RDS MySQL, RDS DocumentDB, RDS Oracle, RDS SQL Server, Neptune, Redshift, ElastiCache Redis), Azure datastores (MySQL Flexible Server, Cosmos DB), and on-premises databases (MySQL, PostgreSQL)
 - **Automated User Creation**: Automatically creates and configures database users with appropriate permissions
 - **IAM Integration**: Sets up IAM roles and policies for secure access
 - **Lambda-Based Configuration**: Uses AWS Lambda for database configuration, eliminating local client requirements
@@ -92,7 +102,7 @@ This module provides automated configuration of datastores for vulnerability ass
 
 2. **Choose an example**:
    ```bash
-   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-rds-mariadb, aws-rds-mysql, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server
+   cd examples/aws-dynamodb  # or aws-rds-postgresql, aws-aurora-postgresql, aws-aurora-mysql, aws-rds-mariadb, aws-rds-mysql, aws-rds-documentdb, aws-oracle, aws-neptune, aws-redshift, aws-rds-sql-server, aws-elasticache-redis, azure-mysql, azure-cosmos
    ```
 
 3. **Configure variables**:
@@ -130,11 +140,11 @@ module "datastore-va_aws-dynamodb" {
   iam_role_name        = "guardium-dynamodb-va-role"
   iam_policy_name      = "guardium-dynamodb-va-policy"
   iam_role_description = "IAM role for Guardium vulnerability assessment of DynamoDB"
-  
+
   # Connection Configuration
   connection_username = var.aws_access_key_id
   connection_password = var.aws_secret_access_key
-  
+
   # Tags
   tags = {
     Environment = "Production"
@@ -145,17 +155,17 @@ module "datastore-va_aws-dynamodb" {
 # Connect to Guardium Data Protection
 module "connect_dynamodb_to_gdp" {
   source = "IBM/datastore-va/guardium//modules/connect-datasource-to-gdp"
-  
+
   gdp_server   = "guardium.example.com"
   gdp_username = "admin"
   gdp_password = var.guardium_password
   client_id    = "client1"
   client_secret = var.client_secret
-  
+
   datasource_name = "dynamodb-production"
   datasource_type = "DYNAMODB"
   hostname        = "dynamodb.us-east-1.amazonaws.com"
-  
+
   # Use AWS Secrets Manager for authentication
   aws_secrets_manager_name   = "my-aws-config"
   aws_secrets_manager_region = "us-east-1"
@@ -176,7 +186,7 @@ module "postgres_va" {
   db_name     = "postgres"
   db_username = "postgres"
   db_password = var.db_password
-  
+
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
 }
@@ -184,19 +194,19 @@ module "postgres_va" {
 # Connect to Guardium Data Protection
 module "connect_postgres_to_gdp" {
   source = "IBM/datastore-va/guardium//modules/connect-datasource-to-gdp"
-  
+
   gdp_server   = "guardium.example.com"
   gdp_username = "admin"
   gdp_password = var.guardium_password
   client_id    = "client1"
   client_secret = var.client_secret
-  
+
   datasource_name = "postgres-production"
   datasource_type = "POSTGRESQL"
   hostname        = "postgres.rds.amazonaws.com"
   port            = 5432
   database_name   = "postgres"
-  
+
   connection_username = module.postgres_va.sqlguard_username
   connection_password = module.postgres_va.sqlguard_password
 }
@@ -211,18 +221,18 @@ module "aurora_postgresql_va" {
   source = "IBM/datastore-va/guardium//modules/aws-aurora-postgresql"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host     = "aurora-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com"
   db_port     = 5432
   db_name     = "postgres"
   db_username = "postgres"
   db_password = var.db_password
-  
+
   # VA User Configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
-  
+
   # Network configuration
   vpc_id      = "vpc-12345678"
   subnet_ids  = ["subnet-12345678", "subnet-87654321"]
@@ -232,19 +242,66 @@ module "aurora_postgresql_va" {
 # Connect to Guardium Data Protection
 module "connect_aurora_to_gdp" {
   source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
-  
+
   datasource_payload = local.aurora_postgres_config_json_encoded
-  
+
   client_secret = var.client_secret
   client_id     = var.client_id
   gdp_password  = var.gdp_password
   gdp_server    = "guardium.example.com"
   gdp_username  = "admin"
   gdp_port      = "8443"
-  
+
   datasource_name = "aurora-postgresql-production"
-  
+
   depends_on = [module.aurora_postgresql_va]
+}
+```
+
+### AWS Aurora MySQL Vulnerability Assessment
+
+Configure vulnerability assessment for AWS Aurora MySQL:
+
+```hcl
+module "aurora_mysql_va" {
+  source = "IBM/datastore-va/guardium//modules/aws-aurora-mysql"
+
+  name_prefix = "myproject"
+
+  # Database connection details
+  db_host     = "aurora-mysql-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com"
+  db_port     = 3306
+  db_name     = "mysql"
+  db_username = "admin"
+  db_password = var.db_password
+
+  # VA User Configuration
+  sqlguard_username = "sqlguard"
+  sqlguard_password = var.sqlguard_password
+
+  # Network configuration
+  vpc_id               = "vpc-12345678"
+  subnet_ids           = ["subnet-12345678", "subnet-87654321"]
+  db_security_group_id = "sg-12345678"
+  aws_region           = "us-east-1"
+}
+
+# Connect to Guardium Data Protection
+module "connect_aurora_mysql_to_gdp" {
+  source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
+
+  datasource_payload = local.aurora_mysql_config_json_encoded
+
+  client_secret = var.client_secret
+  client_id     = var.client_id
+  gdp_password  = var.gdp_password
+  gdp_server    = "guardium.example.com"
+  gdp_username  = "admin"
+  gdp_port      = "8443"
+
+  datasource_name = "aurora-mysql-production"
+
+  depends_on = [module.aurora_mysql_va]
 }
 ```
 
@@ -257,26 +314,26 @@ module "mariadb_va" {
   source = "IBM/datastore-va/guardium//modules/aws-rds-mariadb"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host     = "mariadb.rds.amazonaws.com"
   db_port     = 3306
   db_username = "admin"
   db_password = var.db_password
   gdmmonitor_password = var.gdmmonitor_password
-  
+
   # Network configuration
   vpc_id      = "vpc-12345678"
   subnet_ids  = ["subnet-12345678", "subnet-87654321"]
   aws_region  = "us-east-1"
-  
+
   # Guardium Data Protection configuration
   gdp_server   = "guardium.example.com"
   gdp_username = "admin"
   gdp_password = var.guardium_password
   client_id    = "client1"
   client_secret = var.client_secret
-  
+
   # Data source configuration
   datasource_name        = "mariadb-production"
   datasource_description = "Production MariaDB database"
@@ -292,26 +349,26 @@ module "mysql_va" {
   source = "IBM/datastore-va/guardium//modules/aws-rds-mysql"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host     = "mysql.rds.amazonaws.com"
   db_port     = 3306
   db_username = "admin"
   db_password = var.db_password
   sqlguard_password = var.sqlguard_password
-  
+
   # Network configuration
   vpc_id      = "vpc-12345678"
   subnet_ids  = ["subnet-12345678", "subnet-87654321"]
   aws_region  = "us-east-1"
-  
+
   # Guardium Data Protection configuration
   gdp_server   = "guardium.example.com"
   gdp_username = "admin"
   gdp_password = var.guardium_password
   client_id    = "client1"
   client_secret = var.client_secret
-  
+
   # Data source configuration
   datasource_name        = "mysql-production"
   datasource_description = "Production MySQL database"
@@ -327,26 +384,26 @@ module "mssql_va" {
   source = "IBM/datastore-va/guardium//modules/aws-rds-sql-server"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host     = "sqlserver.rds.amazonaws.com"
   db_port     = 1433
   db_username = "admin"  # Master username from RDS instance creation
   db_password = var.db_password
   database_name = "master"
-  
+
   # VA User Configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
-  
+
   # Network configuration
   vpc_id               = "vpc-12345678"
   subnet_ids           = ["subnet-12345678", "subnet-87654321"]
   db_security_group_id = "sg-12345678"  # RDS SQL Server security group
-  
+
   # AWS Configuration
   aws_region  = "us-east-1"
-  
+
   # Guardium Data Protection configuration
   gdp_server   = "guardium.example.com"
   gdp_port     = "8443"
@@ -354,12 +411,12 @@ module "mssql_va" {
   gdp_password = var.guardium_password
   client_id    = "client1"
   client_secret = var.client_secret
-  
+
   # Data source configuration
   datasource_name        = "sqlserver-production"
   datasource_description = "Production SQL Server database"
   application            = "Security Assessment"
-  
+
   tags = {
     Environment = "Production"
     Owner       = "Security Team"
@@ -376,21 +433,21 @@ Configure vulnerability assessment for AWS Redshift:
 ```hcl
 module "redshift_va" {
   source = "IBM/datastore-va/guardium//modules/aws-redshift"
-  
+
   name_prefix = "guardium"
   aws_region  = "us-east-1"
-  
+
   # Redshift Connection Details
   redshift_host     = "redshift-cluster.region.redshift.amazonaws.com"
   redshift_port     = 5439
   redshift_database = "dev"
   redshift_username = "admin"
   redshift_password = var.redshift_password
-  
+
   # VA User Configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
-  
+
   # Network Configuration (for private Redshift)
   vpc_id     = "vpc-12345678"
   subnet_ids = ["subnet-12345678", "subnet-87654321"]
@@ -399,19 +456,19 @@ module "redshift_va" {
 # Connect to Guardium Data Protection
 module "connect_redshift_to_gdp" {
   source = "IBM/datastore-va/guardium//modules/connect-datasource-to-gdp"
-  
+
   gdp_server   = "guardium.example.com"
   gdp_username = "admin"
   gdp_password = var.guardium_password
   client_id    = "client1"
   client_secret = var.client_secret
-  
+
   datasource_name = "redshift-production"
   datasource_type = "REDSHIFT"
   hostname        = "redshift-cluster.region.redshift.amazonaws.com"
   port            = 5439
   database_name   = "dev"
-  
+
   connection_username = module.redshift_va.sqlguard_username
   connection_password = module.redshift_va.sqlguard_password
 }
@@ -426,18 +483,18 @@ module "oracle_va" {
   source = "IBM/datastore-va/guardium//modules/aws-oracle"
 
   name_prefix = "myproject"
-  
+
   # Database connection details
   db_host         = "oracle-db.xxxxx.us-east-1.rds.amazonaws.com"
   db_port         = 1521
   db_service_name = "ORCL"
   db_username     = "admin"
   db_password     = var.db_password
-  
+
   # VA User Configuration
   sqlguard_username = "sqlguard"
   sqlguard_password = var.sqlguard_password
-  
+
   # Network configuration
   vpc_id     = "vpc-12345678"
   subnet_ids = ["subnet-12345678", "subnet-87654321"]
@@ -447,18 +504,18 @@ module "oracle_va" {
 # Connect to Guardium Data Protection
 module "connect_oracle_to_gdp" {
   source = "IBM/gdp/guardium//modules/connect-datasource-to-va"
-  
+
   datasource_payload = local.oracle_config_json_encoded
-  
+
   client_secret = var.client_secret
   client_id     = var.client_id
   gdp_password  = var.gdp_password
   gdp_server    = "guardium.example.com"
   gdp_username  = "admin"
   gdp_port      = "8443"
-  
+
   datasource_name = "oracle-production"
-  
+
   depends_on = [module.oracle_va]
 }
 ```
@@ -501,6 +558,19 @@ Creates the necessary database users and permissions for Guardium vulnerability 
 - Connects directly to Guardium Data Protection
 
 [Module Documentation](./modules/aws-aurora-postgresql/README.md)
+
+### AWS Aurora MySQL VA Configuration
+
+Creates the necessary database users and permissions for Guardium vulnerability assessment on Aurora MySQL clusters.
+
+**Key Features:**
+- Creates `sqlguard` user with required permissions
+- Uses Lambda for SQL execution in VPC
+- Integrates with AWS Secrets Manager
+- Connects directly to Guardium Data Protection
+- Automatically configures security group rules for Lambda access
+
+[Module Documentation](./modules/aws-aurora-mysql/README.md)
 
 ### AWS RDS MariaDB VA Configuration
 
@@ -573,12 +643,15 @@ Complete working examples are provided for each supported datastore:
 - [AWS DynamoDB with VA](./examples/aws-dynamodb) - DynamoDB vulnerability assessment configuration
 - [AWS RDS PostgreSQL with VA](./examples/aws-rds-postgresql) - PostgreSQL vulnerability assessment configuration
 - [AWS Aurora PostgreSQL with VA](./examples/aws-aurora-postgresql) - Aurora PostgreSQL vulnerability assessment configuration
+- [AWS Aurora MySQL with VA](./examples/aws-aurora-mysql) - Aurora MySQL vulnerability assessment configuration
 - [AWS RDS MariaDB with VA](./examples/aws-rds-mariadb) - MariaDB vulnerability assessment configuration
 - [AWS RDS MySQL with VA](./examples/aws-rds-mysql) - MySQL vulnerability assessment configuration
 - [AWS RDS SQL Server with VA](./examples/aws-rds-sql-server) - SQL Server vulnerability assessment configuration
 - [AWS RDS Oracle with VA](./examples/aws-oracle) - Oracle (RDS/Autonomous) vulnerability assessment configuration
 - [AWS Neptune with VA](./examples/aws-neptune) - Neptune graph database vulnerability assessment configuration
 - [AWS Redshift with VA](./examples/aws-redshift) - Redshift vulnerability assessment configuration
+- [Azure MySQL Flexible Server with VA](./examples/azure-mysql) - Azure MySQL vulnerability assessment configuration
+- [Azure Cosmos DB with VA](./examples/azure-cosmos) - Azure Cosmos DB vulnerability assessment configuration
 
 Each example includes:
 - Complete Terraform configuration
@@ -590,7 +663,7 @@ Each example includes:
 
 Before using this module, ensure you have:
 
-1. **Guardium Data Protection Instance**: A running GDP cluster with API access enabled (version 12.2.1 or later)
+1. **Guardium Data Protection Instance**: A running GDP cluster with API access enabled (version 12.2.3 or later for Azure MySQL, 12.2.1 or later for other datastores)
 2. **Guardium Configuration**: Complete the one-time manual configurations:
    - Enable OAuth client for REST API access
    - Configure AWS credentials (for DynamoDB)

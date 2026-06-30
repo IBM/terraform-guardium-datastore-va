@@ -1,61 +1,104 @@
-# On-Premise MySQL Vulnerability Assessment Example
+# On-Premise MySQL with Vulnerability Assessment - Quick Start Guide
 
-This example demonstrates how to configure Vulnerability Assessment (VA) for an on-premise MySQL database using IBM Guardium Data Protection.
+This guide helps you set up vulnerability assessment for on-premise MySQL using IBM Guardium Data Protection. Follow the steps in order for a smooth setup.
 
-## ⚠️ IMPORTANT SECURITY NOTICE
+> **🔒 Security Note:** SSL/TLS encryption with certificate verification is enabled by default (`import_server_ssl_cert = true`) to prevent man-in-the-middle attacks.
 
-**SSL Certificate Verification**: This example now uses **secure defaults** with SSL certificate verification enabled (`import_server_ssl_cert = true`). This is critical for production security to prevent man-in-the-middle attacks.
+---
 
-**If you're upgrading from an older version**, please review your SSL configuration. Previous versions had insecure defaults that were NOT production-ready.
+## 🏗️ What This Example Does
 
-## Overview
+This Terraform configuration:
+- **Connects to your on-premise MySQL database** directly from Guardium
+- **Creates a dedicated `sqlguard` user** with read-only permissions for security assessments
+- **Registers MySQL as a datasource** in Guardium Data Protection
+- **Configures vulnerability assessment** to automatically scan for security issues
+- **Enables SSL/TLS with certificate verification** by default for secure connections
 
-This example shows how to:
-- Connect to an on-premise MySQL database (e.g., `mysql -h mysql.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED`)
-- Register the database with Guardium for vulnerability assessments
-- Configure **secure** SSL/TLS connections with certificate verification
-- Set up automated assessment schedules
-- Configure email notifications for security findings
+### Architecture Overview
 
-## Prerequisites
+```
+Guardium Server → MySQL Database (port 3306)
+```
 
-1. **On-Premise MySQL Database**
-   - **Supported Versions**: MySQL 5.7, 8.0, 8.4, 9.0, 9.1
-   - Network accessible from Guardium
-   - Admin credentials with privileges to create users
-   - **⚠️ SECURITY**: Use a dedicated admin user, NOT root (see setup below)
+If using SSL, ensure certificates are properly configured on both sides.
 
-2. **Guardium Data Protection**
-   - Guardium instance with API access
-   - OAuth credentials (client_id and client_secret)
-   - Network connectivity to your MySQL database
+### How It Works (Data Flow)
 
-3. **Terraform**
-   - Version 1.3 or higher
-   - IBM Guardium provider configured
+1. **Terraform configures Guardium** - Registers your on-premise MySQL database as a datasource
+2. **Guardium connects to MySQL** - Uses the `sqlguard` user credentials to access your database
+3. **Automated security scans** - Guardium performs vulnerability assessments on your schedule
+4. **Results and alerts** - Findings are stored in Guardium for review
+5. **Review and remediate** - Security teams can review findings and take action
 
-4. **MySQL Client**
-   - MySQL command-line client installed on your machine
-   ```bash
-   # Check if installed
-   mysql --version
-   ```
+### What Gets Scanned?
 
-## Initial Setup
+Guardium vulnerability assessment checks for:
+- ✅ **Security configuration** - Weak passwords, excessive privileges, authentication methods
+- ✅ **Database configuration** - MySQL version, deprecated features, insecure parameters
+- ✅ **Access control** - Overprivileged users, unused accounts, missing RBAC
+- ✅ **Encryption settings** - Unencrypted connections, missing SSL/TLS
+- ✅ **Compliance violations** - CIS MySQL Benchmark, PCI-DSS, HIPAA, GDPR, SOC 2
+- ✅ **Audit logging** - Missing or inadequate audit configurations
 
-### Step 1: Check Your MySQL Version
+---
+
+## 📦 Modules Used
+
+This example uses one Terraform module:
+
+### `onprem-mysql` Module (Local)
+**Location:** `../../modules/onprem-mysql`
+
+**What it does:**
+- Registers on-premise MySQL as a datasource in Guardium
+- Configures vulnerability assessment schedule
+- Manages SSL certificate import
+- Handles OAuth authentication
+
+**Resources created:**
+- Guardium datasource registration
+- Vulnerability assessment configuration
+- SSL certificate import (if enabled)
+
+**Note:** Unlike AWS RDS examples, this module does NOT create a Lambda function. Guardium connects directly to your on-premise MySQL database.
+
+---
+
+
+## 📋 What You'll Need (Prerequisites)
+
+Before starting, make sure you have:
+
+- ✅ An on-premise MySQL database (versions 5.7, 8.0, 8.4, 9.0, 9.1 supported)
+- ✅ Network accessibility from Guardium to MySQL (port 3306)
+- ✅ Admin credentials with privileges to create users
+- ✅ A running Guardium Data Protection instance
+- ✅ Admin credentials for Guardium
+- ✅ OAuth client credentials (generated using `grdapi register_oauth_client`)
+- ✅ MySQL command-line client installed on your machine
+- ✅ Terraform installed (version >= 1.3)
+
+---
+
+## 🚀 Step-by-Step Setup
+
+### Step 1: Verify Your MySQL Version and Connectivity
+
+First, check your MySQL version and test connectivity:
 
 ```bash
 # Connect and check version
-mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 -e "SELECT VERSION();"
+mysql -h your-mysql-host.example.com -u root -p -P 3306 -e "SELECT VERSION();"
 
-# Example output:
-# +-----------+
-# | VERSION() |
-# +-----------+
-# | 8.0.44    |
-# +-----------+
+# Test SSL connection (if using SSL)
+mysql -h your-mysql-host.example.com -u root -p -P 3306 --ssl-mode=REQUIRED
+
+# Verify SSL is enabled and check cipher
+mysql -h your-mysql-host.example.com -u root -p -P 3306 --ssl-mode=REQUIRED -e "SHOW STATUS LIKE 'Ssl_cipher';"
 ```
+
+---
 
 ### Step 2: Create Dedicated Admin User (Recommended)
 
@@ -63,7 +106,7 @@ mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 -e "SELECT VERSION();"
 
 ```sql
 -- Connect as root (one-time setup)
-mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED
+mysql -h your-mysql-host.example.com -u root -p -P 3306 --ssl-mode=REQUIRED
 
 -- Create dedicated admin user for Terraform
 CREATE USER 'terraform_admin'@'%' IDENTIFIED BY 'SecurePassword123!';
@@ -81,241 +124,252 @@ SELECT User, Host FROM mysql.user WHERE User = 'terraform_admin';
 SHOW GRANTS FOR 'terraform_admin'@'%';
 ```
 
+---
+
 ### Step 3: Test the Admin User
 
 ```bash
 # Test connection with the new admin user
-mysql -h api.rr1.cp.fyre.ibm.com -u terraform_admin -p -P 3306 --ssl-mode=REQUIRED
+mysql -h your-mysql-host.example.com -u terraform_admin -p -P 3306 --ssl-mode=REQUIRED
 
 # Verify it can create users (test command)
-mysql -h api.rr1.cp.fyre.ibm.com -u terraform_admin -p -P 3306 --ssl-mode=REQUIRED \
+mysql -h your-mysql-host.example.com -u terraform_admin -p -P 3306 --ssl-mode=REQUIRED \
   -e "SELECT USER(), CURRENT_USER(); SHOW GRANTS;"
 ```
 
-## Quick Start
+---
 
-### 1. Clone and Navigate
+### Step 4: Get Your Guardium OAuth Credentials
+
+You need OAuth credentials to connect Terraform to Guardium:
+
+1. SSH into your Guardium server:
+   ```bash
+   ssh cli@your-guardium-server.com
+   ```
+
+2. Run this command to generate OAuth credentials:
+   ```bash
+   grdapi register_oauth_client client_id=client1 grant_types=password
+   ```
+
+3. **Save the output** - you'll need the `client_secret` value in the next step
+
+---
+
+### Step 5: Configure Your Variables
+
+Copy the example file and edit it with your values:
 
 ```bash
-cd terraform-guardium-datastore-va/examples/onprem-mysql
-```
-
-### 2. Configure Variables
-
-Copy the example variables file and customize it:
-
-```bash
+cd examples/onprem-mysql
 cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars  # or use your preferred editor
 ```
 
-Edit `terraform.tfvars` with your values:
+Now fill in these values:
+
+#### 🔧 Required Settings (You MUST change these)
 
 ```hcl
-# Database Connection (example: api.rr1.cp.fyre.ibm.com)
-db_host     = "api.rr1.cp.fyre.ibm.com"
-db_port     = 3306
-db_username = "terraform_admin"  # Use dedicated admin user, NOT root!
-db_password = "your-admin-password"
+# Database Connection
+db_host     = "your-mysql-host.example.com"    # ← Your MySQL hostname
+db_port     = 3306                             # ← MySQL port
+db_username = "root"                           # ← Admin username
+db_password = "your-mysql-root-password"       # ← Admin password
 
-# VA User Credentials (will be created by Terraform)
-sqlguard_username = "sqlguard"
-sqlguard_password = "your-secure-sqlguard-password"
+# VA User Credentials
+sqlguard_username = "sqlguard"                 # ← VA user to create
+sqlguard_password = "your-sqlguard-password"   # ← Create a strong password
 
-# Guardium Connection
-gdp_server    = "your-guardium-server.example.com"
-gdp_username  = "your-guardium-username"
-gdp_password  = "your-guardium-password"
-client_id     = "your-oauth-client-id"
-client_secret = "your-oauth-client-secret"
-
-# Datasource Configuration
-datasource_name        = "onprem-mysql-fyre"
-datasource_description = "On-premise MySQL at api.rr1.cp.fyre.ibm.com"
-
-# SSL Configuration (for --ssl-mode=REQUIRED)
-use_ssl = true
-
-# Notifications
-notification_emails = ["security-team@example.com"]
+# Guardium Server Details
+gdp_server    = "your-guardium-server.example.com"  # ← Your Guardium hostname
+gdp_username  = "your-guardium-username"            # ← Your Guardium username
+gdp_password  = "your-guardium-password"            # ← Your Guardium password
+client_id     = "your-oauth-client-id"              # ← From Step 4
+client_secret = "your-oauth-client-secret"          # ← From Step 4 output
 ```
 
-### 3. Test MySQL Connection and Verify SSL Certificate
+#### ⚙️ Optional Settings (You can customize these)
 
-Before running Terraform, verify you can connect to MySQL and check the SSL certificate:
+```hcl
+# Datasource Details
+datasource_name        = "onprem-mysql-fyre"  # Name shown in Guardium
+datasource_description = "On-premise MySQL database at your-mysql-host.example.com"
 
-```bash
-# Test basic connection
-mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306
+# Application Type (what this datasource is used for)
+# Options: "Security Assessment", "Audit Task", "Compliance"
+application = "Security Assessment"
 
-# Test SSL connection (if using SSL)
-mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED
+# Severity Level (how critical is this datasource)
+# Options: "LOW", "NONE", "MED", "HIGH"
+severity_level = "MED"
 
-# Verify SSL is enabled and check cipher
-mysql -h api.rr1.cp.fyre.ibm.com -u root -p -P 3306 --ssl-mode=REQUIRED -e "SHOW STATUS LIKE 'Ssl_cipher';"
+# Vulnerability Assessment
+enable_vulnerability_assessment = true
 
-# View the server's SSL certificate (one-liner - no file saved)
-openssl s_client -connect api.rr1.cp.fyre.ibm.com:3306 -starttls mysql -showcerts 2>/dev/null | openssl x509 -noout -text | grep -A2 "Subject:"
+# SSL/TLS Configuration (RECOMMENDED: keep these as true)
+# ⚠️ IMPORTANT: Certificate verification prevents man-in-the-middle attacks
+use_ssl                = true   # Enable SSL/TLS encryption
+import_server_ssl_cert = true   # Verify server certificate (DEFAULT - secure)
+
+# Tags
+tags = {
+  Purpose     = "guardium-va-onprem-mysql"
+  Owner       = "security-team@example.com"
+  Environment = "production"
+  Database    = "mysql-fyre"
+}
 ```
 
-**Important**: When `import_server_ssl_cert = true` (the default), Guardium automatically retrieves and verifies the server's SSL certificate. You don't need to manually extract or save certificate files.
+---
 
-### 4. Initialize Terraform
+### Step 6: Run Terraform
 
+Now you're ready to deploy!
+
+#### 6.1 Initialize Terraform
 ```bash
 terraform init
 ```
 
-### 5. Review the Plan
-
+#### 6.2 Preview What Will Be Created
 ```bash
 terraform plan
 ```
 
-### 6. Apply Configuration
+Review the output to see what resources will be created.
 
+#### 6.3 Apply the Configuration
 ```bash
 terraform apply
 ```
 
-Review the changes and type `yes` to proceed.
+Type `yes` when prompted to confirm.
 
-## What Gets Created
+---
 
-1. **Guardium Datasource**: Your MySQL database is registered in Guardium
-2. **VA Schedule**: Automated vulnerability assessments are configured
-3. **Notifications**: Email alerts for security findings are set up
+## ✅ What Gets Created
 
-## Configuration Options
+This Terraform configuration will:
 
-### SSL/TLS Configuration
+1. **Register Datasource in Guardium** - Adds your on-premise MySQL as a monitored datasource
+2. **Configure Vulnerability Assessment** - Sets up automated security scans
+3. **Import SSL Certificate** - Automatically retrieves and verifies the server's SSL certificate (if enabled)
 
-**For Production Databases (RECOMMENDED):**
+---
 
-```hcl
-use_ssl                = true   # Enable SSL/TLS encryption
-import_server_ssl_cert = true   # Verify server certificate (DEFAULT - secure)
-```
+## 📊 View Your Results
 
-**⚠️ For Development/Testing Only (NOT RECOMMENDED FOR PRODUCTION):**
+After successful deployment:
 
-```hcl
-use_ssl                = true
-import_server_ssl_cert = false  # Disables certificate verification - INSECURE!
-```
+1. Log into your Guardium Data Protection console
+2. Navigate to **Data Sources** to see your registered MySQL datasource
+3. Verify the status shows "Connected"
+4. Go to **Vulnerability Assessment** to view scan results
 
-**Why Certificate Verification Matters:**
+---
+
+## 🔍 Understanding the Variables
+
+### What is `application`?
+This categorizes what the datasource is used for:
+- **"Security Assessment"** - For vulnerability scanning (most common)
+- **"Audit Task"** - For compliance auditing
+- **"Compliance"** - For regulatory compliance monitoring
+
+### What is `severity_level`?
+This indicates how critical this datasource is:
+- **"LOW"** - Development/test environments
+- **"NONE"** - Non-sensitive data
+- **"MED"** - Staging or non-critical production
+- **"HIGH"** - Critical production systems with sensitive data
+
+### Why SSL Certificate Verification?
 - **With verification** (`import_server_ssl_cert = true`): Guardium validates the MySQL server's identity, preventing man-in-the-middle attacks
 - **Without verification** (`import_server_ssl_cert = false`): Connection is encrypted but vulnerable to MITM attacks - an attacker can impersonate your MySQL server
 
 **Always use certificate verification in production environments!**
 
-### Assessment Schedule
+---
 
-Configure when vulnerability assessments run:
+## 🛠️ Troubleshooting
 
-```hcl
-assessment_schedule = "weekly"   # Options: daily, weekly, monthly
-assessment_day      = "Monday"   # Day of week or day of month
-assessment_time     = "02:00"    # 24-hour format
-```
+### Problem: "Guardium cannot connect to MySQL"
+**Solution:**
+- Verify network connectivity: `telnet your-mysql-host.example.com 3306`
+- Check firewall rules allow traffic from Guardium
+- Verify MySQL is listening on the correct interface:
+  ```sql
+  SHOW VARIABLES LIKE 'bind_address';
+  ```
+- Ensure MySQL is accessible from Guardium's network
 
-### Notification Settings
+### Problem: "SSL connection fails"
+**Solution:**
+- Verify MySQL SSL is enabled:
+  ```sql
+  SHOW VARIABLES LIKE '%ssl%';
+  ```
+- Check certificate validity
+- Try setting `import_server_ssl_cert = true` (default)
+- View the server's SSL certificate:
+  ```bash
+  openssl s_client -connect your-mysql-host.example.com:3306 -starttls mysql -showcerts 2>/dev/null | openssl x509 -noout -text | grep -A2 "Subject:"
+  ```
 
-Control who gets notified and when:
+### Problem: "Cannot create sqlguard user"
+**Solution:**
+- Verify admin user has sufficient privileges:
+  ```sql
+  SHOW GRANTS FOR CURRENT_USER();
+  ```
+- Check MySQL error logs
+- Ensure user has CREATE USER and GRANT privileges
 
-```hcl
-enable_notifications  = true
-notification_emails   = ["security@example.com", "dba@example.com"]
-notification_severity = "HIGH"  # Options: HIGH, MED, LOW, NONE
-```
+### Problem: "Authentication failed"
+**Solution:**
+- Verify db_username and db_password in terraform.tfvars
+- Check for typos or extra spaces
+- Test connection manually:
+  ```bash
+  mysql -h your-mysql-host.example.com -u root -p -P 3306 --ssl-mode=REQUIRED
+  ```
 
-## Outputs
+### Problem: "Assessment not running"
+**Solution:**
+- Check data source status in Guardium console (should show "Connected")
+- Run manual assessment: Guardium → Vulnerability Assessment → Run Assessment Now
+- Check Guardium logs for error messages
 
-After successful deployment, you'll see:
+---
 
-```
-datasource_name                  = "onprem-mysql-fyre"
-datasource_host                  = "api.rr1.cp.fyre.ibm.com"
-datasource_port                  = 3306
-vulnerability_assessment_enabled = true
-assessment_schedule              = "weekly"
-ssl_enabled                      = true
-```
+## 🔐 Security Best Practices
 
-## Verification
+1. **Never commit `terraform.tfvars` to version control** - It contains sensitive passwords
+2. **Use strong passwords** - Minimum 12 characters with mixed case, numbers, and symbols
+3. **Rotate credentials regularly** - Change passwords every 90 days
+4. **Use dedicated admin user** - Create terraform_admin instead of using root
+5. **Enable SSL/TLS with certificate verification** - Keep `use_ssl = true` and `import_server_ssl_cert = true` (defaults)
+6. **Use firewalls** - Restrict MySQL access to only Guardium servers
+7. **Least privilege** - The sqlguard user is created with minimal required permissions
+8. **Regular assessments** - Schedule VA scans at least weekly
+9. **Certificate management** - Ensure MySQL server certificates are valid and not expired
+10. **Review findings regularly** - Check vulnerability assessment reports weekly
 
-### 1. Check Guardium Console
+---
 
-Log into your Guardium console and verify:
-- The datasource appears in the datasource list
-- VA schedule is configured
-- Test connection is successful
+## 🧹 Cleanup
 
-### 2. Verify MySQL User
-
-Connect to MySQL and check the sqlguard user was created:
-
-```sql
-SELECT User, Host FROM mysql.user WHERE User = 'sqlguard';
-SHOW GRANTS FOR 'sqlguard'@'%';
-```
-
-### 3. Test VA Scan
-
-Trigger a manual vulnerability assessment from Guardium to verify everything works.
-
-## Troubleshooting
-
-### Connection Issues
-
-**Problem**: Guardium cannot connect to MySQL
-
-**Solutions**:
-1. Verify network connectivity:
-   ```bash
-   telnet api.rr1.cp.fyre.ibm.com 3306
-   ```
-2. Check firewall rules allow traffic from Guardium
-3. Verify MySQL is listening on the correct interface:
-   ```sql
-   SHOW VARIABLES LIKE 'bind_address';
-   ```
-
-### SSL Issues
-
-**Problem**: SSL connection fails
-
-**Solutions**:
-1. Verify MySQL SSL is enabled:
-   ```sql
-   SHOW VARIABLES LIKE '%ssl%';
-   ```
-2. Check certificate validity
-3. Try setting `import_server_ssl_cert = true`
-
-### Permission Issues
-
-**Problem**: Cannot create sqlguard user
-
-**Solutions**:
-1. Verify admin user has sufficient privileges:
-   ```sql
-   SHOW GRANTS FOR CURRENT_USER();
-   ```
-2. Check MySQL error logs
-3. Ensure user has CREATE USER and GRANT privileges
-
-## Cleanup
-
-To remove all resources:
+To remove all resources created by this example:
 
 ```bash
 terraform destroy
 ```
 
-**Note**: This will:
+**Note:** This will:
 - Remove the datasource from Guardium
-- Delete VA schedules and notifications
+- Delete VA schedules
 - The `sqlguard` user in MySQL will remain (manual cleanup required if needed)
 
 To manually remove the sqlguard user from MySQL:
@@ -324,101 +378,50 @@ To manually remove the sqlguard user from MySQL:
 DROP USER IF EXISTS 'sqlguard'@'%';
 ```
 
-## Network Requirements
+---
 
-Ensure the following network connectivity:
+## 📚 Additional Resources
 
-```
-Guardium Server → MySQL Database (port 3306)
-```
-
-If using SSL, ensure certificates are properly configured on both sides.
-
-## Security Best Practices
-
-1. **🔒 SSL/TLS with Certificate Verification**:
-   - **Always enable SSL** for production databases (`use_ssl = true`)
-   - **Always verify certificates** in production (`import_server_ssl_cert = true` - this is now the default)
-   - Without certificate verification, you're vulnerable to man-in-the-middle attacks
-
-2. **Strong Passwords**: Use strong, unique passwords for sqlguard user
-
-3. **Least Privilege**: The sqlguard user is created with minimal required permissions
-
-4. **Secrets Management**: Store credentials in Terraform variables or a secrets manager
-
-5. **Network Security**: Use firewalls to restrict MySQL access to only Guardium servers
-
-6. **Regular Assessments**: Schedule regular VA scans (at least weekly)
-
-7. **Certificate Management**: Ensure MySQL server certificates are valid and not expired
-
-## Example: Complete terraform.tfvars
-
-```hcl
-# Database Connection
-db_host     = "api.rr1.cp.fyre.ibm.com"
-db_port     = 3306
-db_username = "root"
-db_password = "SecurePassword123!"
-
-# VA User
-sqlguard_username = "sqlguard"
-sqlguard_password = "AnotherSecurePassword456!"
-
-# Guardium
-gdp_server    = "guardium.example.com"
-gdp_username  = "admin"
-gdp_password  = "GuardiumPassword789!"
-client_id     = "oauth-client-id-here"
-client_secret = "oauth-client-secret-here"
-
-# Datasource
-datasource_name        = "onprem-mysql-fyre"
-datasource_description = "Production MySQL at IBM Fyre"
-severity_level         = "HIGH"
-
-# SSL - SECURE CONFIGURATION FOR PRODUCTION
-use_ssl                = true
-import_server_ssl_cert = true  # IMPORTANT: Verifies server certificate (default)
-                               # Set to false ONLY for dev/test (NOT RECOMMENDED)
-
-# VA Schedule
-enable_vulnerability_assessment = true
-assessment_schedule             = "weekly"
-assessment_day                  = "Sunday"
-assessment_time                 = "03:00"
-
-# Notifications
-enable_notifications  = true
-notification_emails   = ["security@example.com", "dba@example.com"]
-notification_severity = "HIGH"
-
-# Tags
-tags = {
-  Purpose     = "guardium-va-onprem-mysql"
-  Owner       = "security-team@example.com"
-  Environment = "production"
-  Database    = "mysql-fyre"
-  Location    = "on-premise"
-}
-```
-
-## Additional Resources
-
-- [Module Documentation](../../modules/onprem-mysql/README.md)
-- [Guardium Documentation](https://www.ibm.com/docs/en/guardium)
+- [Guardium Data Protection Documentation](https://www.ibm.com/docs/en/guardium)
 - [MySQL Security Best Practices](https://dev.mysql.com/doc/refman/8.0/en/security.html)
+- [MySQL SSL/TLS Configuration](https://dev.mysql.com/doc/refman/8.0/en/using-encrypted-connections.html)
+- [Terraform Documentation](https://www.terraform.io/docs)
 
-## Support
+---
 
-For issues or questions:
-1. Check the module README
-2. Review Guardium logs
-3. Verify MySQL configuration
-4. Check network connectivity
+## 🆘 Need Help?
 
-## License
+- Check the [Troubleshooting](#-troubleshooting) section above
+- Review Terraform logs: `terraform apply` output
+- Review module documentation: `../../modules/onprem-mysql/README.md`
+- Verify MySQL configuration and logs
+- Check network connectivity between Guardium and MySQL
+- Contact your Guardium administrator
+- Open an issue in the GitHub repository
 
-Copyright IBM Corp. 2026
-SPDX-License-Identifier: Apache-2.0
+---
+
+## 📝 Quick Reference: All Variables
+
+| Variable | Required? | Default | Description |
+|----------|-----------|---------|-------------|
+| `db_host` | **Yes** | - | Hostname or IP of on-premise MySQL |
+| `db_port` | No | `3306` | MySQL port |
+| `db_username` | **Yes** | - | Admin username for MySQL |
+| `db_password` | **Yes** | - | Admin password for MySQL |
+| `sqlguard_username` | No | `sqlguard` | Username for VA user |
+| `sqlguard_password` | **Yes** | - | Password for VA user |
+| `gdp_server` | **Yes** | - | Guardium server hostname or IP |
+| `gdp_port` | No | `8443` | Guardium API port |
+| `gdp_username` | **Yes** | - | Guardium admin username |
+| `gdp_password` | **Yes** | - | Guardium admin password |
+| `client_id` | **Yes** | - | OAuth client ID |
+| `client_secret` | **Yes** | - | OAuth client secret from grdapi command |
+| `datasource_name` | No | `onprem-mysql-va` | Display name in Guardium |
+| `datasource_description` | No | `On-premise MySQL...` | Description in Guardium |
+| `application` | No | `Security Assessment` | Datasource category |
+| `severity_level` | No | `MED` | Criticality level (LOW/NONE/MED/HIGH) |
+| `enable_vulnerability_assessment` | No | `true` | Enable VA scans |
+| `use_ssl` | No | `true` | Enable SSL/TLS encryption |
+| `import_server_ssl_cert` | No | `true` | Verify server certificate (RECOMMENDED) |
+| `tags` | No | `{}` | Resource tags |

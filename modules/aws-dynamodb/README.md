@@ -19,11 +19,11 @@ module "datastore-va_aws-dynamodb" {
   iam_role_name        = "guardium-dynamodb-va-role"
   iam_policy_name      = "guardium-dynamodb-va-policy"
   iam_role_description = "IAM role for Guardium vulnerability assessment of DynamoDB"
-  
+
   # Connection Configuration
   connection_username = var.aws_access_key_id
   connection_password = var.aws_secret_access_key
-  
+
   # Tags
   tags = {
     Environment = "Production"

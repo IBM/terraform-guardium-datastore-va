@@ -85,7 +85,7 @@ You can customize this example by modifying the following variables:
   ```hcl
   # Resource naming
   name_prefix = "guardium"
-  
+
   # Network configuration for Lambda
   vpc_id = "vpc-12345678"
   subnet_ids = ["subnet-12345678", "subnet-87654321"]

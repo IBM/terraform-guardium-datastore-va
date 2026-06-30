@@ -189,7 +189,7 @@ terraform import module.neptune_va_config.aws_secretsmanager_secret.neptune_cred
    ```hcl
    # ❌ WRONG - Using encrypted or invalid name
    aws_secrets_manager_config_name = "xGRCCZy9DZPH+vFo6Wk8Apc1KpnCqM5sRCd23yrk"
-   
+
    # ✅ CORRECT - Using actual config name from GDP
    aws_secrets_manager_config_name = "aws-prod-config"
    ```
