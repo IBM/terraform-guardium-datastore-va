@@ -197,7 +197,7 @@ resource "gdp-middleware-helper_execute_aws_lambda_function" "invoke_lambda" {
 }
 
 locals {
-  rds_postgres_config = templatefile("../../modules/aws-rds-mariadb/templates/mariadb_datasource.tpl", {
+  rds_postgres_config = templatefile("${path.module}/templates/mariadb_datasource.tpl", {
     datasource_name                 = var.datasource_name
     datasource_hostname             = var.db_host
     datasource_port                 = var.db_port
