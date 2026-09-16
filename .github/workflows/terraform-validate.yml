@@ -20,7 +20,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ~1.4
+          terraform_version: ~1.16.0
 
       - name: Find and validate all modules
         run: |
@@ -67,7 +67,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ~1.4
+          terraform_version: ~1.16.0
 
       - name: Find and validate all examples
         run: |
